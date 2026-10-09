@@ -107,3 +107,51 @@ change, budget accounting, service drift, resource identity, failed controls
 and preservation of planned denominators on partial runs. No A2 factory GPU
 inference has run here. Current stage remains A2, awaiting the real handoff
 metrics/audit/cases; A3/B/C and the unrelated stopped training are not executed.
+
+## 2026-10-09 — Accept reported A2 engineering evidence; implement reviewed A3 pilot
+
+The user returned factory A1+A2 results from `a17f1f3`, with 20/20 exact
+E0/E0 controls, 20/20 historical agreements, 20 valid single-observation
+permutations and zero drift in 150 live retrieval calls (133 with an existing
+reference). Raw artifacts remain on the factory server; record these as reported
+evidence, not independently recalculated developer results. Accept the
+engineering prerequisites for E2–E4 implementation; no scientific/RL GO.
+The descriptive 0.40→0.25 EM, and the turn-1 difference, do not establish
+significance, semantic off-target search or recovery from 10 correlated questions.
+
+Fix the legacy parser interpreting `Flat ...; NOT HNSW` as hnsw, reject ambiguous
+positive declarations, and prefer `flat`/`hnsw` enums for new configuration.
+Do not edit A1/A2 historical manifests or rewrite local descriptions to bypass
+validation. New A3 provenance binds original file hashes and includes an additive
+index-label erratum for this known old commit; this normalizes a declaration,
+not a binary FAISS inspection. Keep the exact F1 comparison; include both repr
+values and types in errors. The transient factory failure's cause is unresolved.
+
+Current stage: reviewed **10-question A3 engineering pilot**, first five A1
+questions per dataset, turns 1/2. Offline preparation rechecks real local A2
+controls, source hashes, metrics and retrieval audit. Freeze independent review
+decisions, candidate ranks/slots and evidence before observing new perturbation
+outcomes. Approvals require semantic reviewer attestations plus conservative
+supporting-sentence screens; automatic lexical hits never prove bridge roles or
+noncriticality. E3 excludes bridge facts already present in prior observations.
+Use original rank-4–20 real passages, exactly one replacement and a preregistered
+engineering character ratio 0.5–2.0; preserve content and record token/cost deltas.
+Do not imply token matching or elimination of length confounding.
+
+Fresh E0/E0 and historical agreement must pass before E1/E2–E4; later retrieval
+is live and normal, raw prefix and spent global budget are retained. Freeze the
+review packet with its SHA256 and preserve partial/failed cases, planned
+denominators and skips. Compare each eligible condition with E1 on the same
+subset. Report next-query availability/string changes as descriptive only.
+Semantic OffTarget/Recovery remain null, and question-clustered paired intervals
+are deferred to the full diagnostic protocol. No automatic 200-question expansion,
+training restart, baseline-method selection or RL execution is performed.
+
+Validation before publication: **34 CPU tests passed**, including all original
+A1/A2 tests, legacy negated-label parsing, exact F1 debug output, immutable
+source/review binding, failed A2-gate rejection, semantic-review requirements,
+prior-history bridge exclusion, collateral-fact/length/redundancy checks,
+single-slot change, budget preservation, control-failure stop, condition-matched
+E1 metrics and full mock CLI output. Python compilation, CLI help, shell syntax,
+JSON, documentation links and diff checks passed. Factory H800 A3 execution is
+pending; model/data/environment remain user-managed.

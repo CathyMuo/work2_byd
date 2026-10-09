@@ -9,7 +9,7 @@
     "max_generation_tokens_per_turn": 512,
     "max_search_turns": 4,
     "realized_checkpoint": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
-    "realized_checkpoint_revision_reported": "713cbe32"
+    "realized_checkpoint_revision_reported": "713cbe32f48a45a855da9cd09a0d980c2e3166e6"
   },
   "retrieval": {
     "encoder": "intfloat/e5-base-v2",
@@ -41,5 +41,5 @@
     "diagnostic_tensor_parallel_size": 1,
     "retriever_device": "existing_service"
   },
-  "status": "A1 factory completion reported; A2 replay implemented and awaiting factory validation; A3/B/C pending"
+  "status": "A1/A2 engineering completion reported; reviewed 10-question A3 E2–E4 engineering pilot implemented; full diagnostic expansion/B/C pending"
 }

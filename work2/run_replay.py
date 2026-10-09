@@ -5,6 +5,7 @@ import datetime
 import importlib.metadata
 import json
 import os
+import re
 from pathlib import Path
 
 from .common import file_hash, git_output, load_json, local_path, write_json
@@ -42,7 +43,8 @@ def load_source(source_run):
     recomputed = summarize(rows, rows)["overall"]
     for key in ("recorded_samples", "evaluable_samples", "infrastructure_errors", "em", "f1", "statuses"):
         if recorded.get(key) != recomputed[key]:
-            raise ValueError("Source baseline metrics disagree with raw rows: " + key)
+            raise ValueError("Source baseline metrics disagree with raw rows: {}: recorded={!r} ({}), recomputed={!r} ({})".format(
+                key, recorded.get(key), type(recorded.get(key)).__name__, recomputed[key], type(recomputed[key]).__name__))
     validate_design(manifest["design"])
     return manifest, rows
 
@@ -58,11 +60,15 @@ def select_rows(rows, limit):
 
 
 def index_family(value):
+    """Canonical enum or legacy declaration; exclude negations, reject ambiguity.
+
+    This normalizes a declaration, not an inspection of the running FAISS index.
+    Historical manifests and local descriptions must remain unchanged.
+    """
     text = str(value or "").casefold()
-    for name in ("hnsw", "flat"):
-        if name in text:
-            return name
-    return None
+    text = re.sub(r"\b(?:not|no|non)[\s-]+(?:hnsw|flat)(?![a-z])", "", text)
+    found = set(re.findall(r"(?<![a-z])(hnsw|flat)(?![a-z])", text))
+    return next(iter(found)) if len(found) == 1 else None
 
 
 def check_runtime(source, local):

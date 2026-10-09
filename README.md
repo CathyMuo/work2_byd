@@ -4,10 +4,11 @@
 实验服务器：厂内 **4×H800**。A1 的 200 题 clean baseline 已由厂内报告完成，
 实际 cohort 是官方 Search-R1 **7B + FAISS Flat**，EM 0.335、多轮率 0.975。
 详见 [A1 报告分析](research/A1_REPORTED_RESULTS.md)；原始数据尚未在开发服务器核验。
-当前新增 A2 同前缀 E0/E0 与 E0/E1 入口，待厂内运行；E2–E4、恢复基线和 RL 尚未实现。
+厂内报告 A2 的 20/20 精确控制通过，见 [A2 分析](research/A2_REPORTED_RESULTS.md)。
+当前已实现独立审查后执行的 E2–E4 **10 题工程 Pilot**；完整诊断扩展、恢复基线和 RL 待后续。
 
-**本轮请执行 [A2 实施文档](docs/A2_EXECUTION_GUIDE.md)，保持原模型/索引/题目，
-不要重新准备数据或重跑 A1。**
+**本轮请执行 [A3 实施文档](docs/A3_EXECUTION_GUIDE.md)：生成审查表、独立核验并冻结，
+再跑单轮干预。保持原模型/索引/题目，保留 A1/A2 历史文件。**
 
 详细步骤见 [工作二实验实施文档](docs/EXECUTION_GUIDE.md)：资源清单、路径填写、
 Retriever 启动、10 题小样本、200 题基线、结果含义及反馈方式均有命令和说明。
@@ -34,18 +35,24 @@ cp configs/local.example.json configs/local.json
 `check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
 不属于必跑步骤。
 
-## 当前实验入口：A2
+## 当前实验入口：A3 工程 Pilot
 
 沿用现有 `configs/local.json`、常驻 Retriever 和 A1 产物：
 
 ```bash
-python -m work2.run_replay --source-run outputs/a1_clean_200 --check-only
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_a2.sh
+python -m work2.prepare_interventions
+cp outputs/a3_review/proposals.json outputs/a3_review/reviewed.json
+# 按 A3 文档逐条完成 reviews，不能保留 pending 或直接全部勾选：
+python -m work2.prepare_interventions --validate outputs/a3_review/reviewed.json
+python -m work2.run_interventions --check-only
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_a3.sh
 ```
 
-默认选择 A1 冻结顺序中每个数据集前 5 题，目标轮 1/2。第二轮不可达单列，
-不筛掉答错题。源记录、资源或服务不一致会停止；E0/E0 不一致时不继续 E1。
-通过仅表示可提交 A3 工程审查，不能视为检索偏移已证实或 RL GO。
+选择 A1 冻结顺序中每个数据集前 5 题，目标轮 1/2；资格不足保留 skip 和分母。
+原始 Top-3 只替换一篇，使用同 Query 原始 rank 4–20 的真实候选。先跑精确
+控制，失败整批停止。旧 A2 的 Flat→hnsw 标签误判只在新产物中勘误，不改历史。
+语义 OffTarget/Recovery 和正式统计仍需下一轮协议；此轮不是研究/RL GO。
+A2 入口仍保留在 [A2 文档](docs/A2_EXECUTION_GUIDE.md)，本 cohort 无需重跑。
 
 ## A1 入口：保留供独立新 cohort 使用
 
@@ -89,7 +96,8 @@ bash scripts/update.sh
 | `work2/` | 本地数据读取、A1 rollout、推理适配、指标与案例导出 |
 | `tests/` | CPU 协议、边界和运行产物测试 |
 | `docs/EXECUTION_GUIDE.md` | 详细厂内实施步骤与后续研究路线 |
-| `docs/A2_EXECUTION_GUIDE.md` | 当前 A2 的重放步骤、控制与反馈要求 |
+| `docs/A2_EXECUTION_GUIDE.md` | A2 的重放步骤、控制与反馈要求 |
+| `docs/A3_EXECUTION_GUIDE.md` | 当前 E2–E4 资格审查、冻结和单轮干预执行步骤 |
 | `outputs/` | 本机环境报告与未来实验产物，不提交 |
 
 上游以 Git submodule 固定版本，均使用公开 HTTPS URL。不要在厂内执行

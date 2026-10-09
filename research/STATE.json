@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-09",
-  "current_stage": "A2_paired_replay_sanity",
-  "status": "awaiting_factory_replay_execution",
-  "next_action": "User runs work2.run_replay --check-only then scripts/run_a2.sh on the existing A1 artifacts and unchanged official 7B/Flat cohort; returns replay metrics, manifest, retrieval audit and cases. Developer audits A2 before implementing A3. Do not restart the unrelated training.",
+  "current_stage": "A3_reviewed_intervention_engineering",
+  "status": "awaiting_factory_annotation_and_engineering_pilot",
+  "next_action": "Pull bug fixes; prepare outcome-free A3 review packet from unchanged A1 and passed A2, independently review/freeze E2–E4 eligibility and replacements, validate then run 10-question engineering pilot. Return eligibility, controls, paired metrics and cases before any 200-question expansion; no training restart or RL GO.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -26,19 +26,37 @@
       "checkpoint": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
       "checkpoint_revision_reported": "713cbe32",
       "index_type": "Flat",
-      "decision": "A1 engineering prerequisites accepted from report; A2 validation pending; no scientific/RL GO"
+      "decision": "A1 engineering prerequisites accepted from report; reported A2 exact controls accepted for A3 engineering implementation; no scientific/RL GO",
+      "f1": 0.4340773393273393
+    },
+    {
+      "stage": "A2",
+      "evidence_source": "user-supplied factory A1+A2 completion report; developer does not possess raw factory artifacts",
+      "repository_commit": "a17f1f39c0aac5b83fbf6c7f0e17d6711084802f",
+      "selected_questions": 10,
+      "target_states": 20,
+      "clean_controls_exact": 20,
+      "source_history_exact": 20,
+      "permutation_pairs": 20,
+      "retrieval_audit_calls": 150,
+      "retrieval_had_reference_calls": 133,
+      "retrieval_drift": 0,
+      "infrastructure_errors": 0,
+      "reported_ready_for_a3_engineering_review": true,
+      "decision": "Accept engineering prerequisites for reviewed E2–E4 pilot; no significance, semantic drift/recovery or RL GO",
+      "metadata_erratum": "Legacy parser labeled Flat description containing NOT HNSW as hnsw; leave historical manifests immutable; normalize declaration in new derivative artifacts."
     }
   ],
   "rl_go_decision": "not_evaluated",
   "remaining": [
-    "Run and audit implemented A2 same-prefix E0/E0 and E0/E1 sanity checks",
-    "Implement and audit E2–E4 only after A2 engineering gates pass",
-    "Run paired diagnostic pilot and independent confirmation",
+    "Independently review and freeze E2–E4 substitutions; run and audit 10-question A3 engineering pilot",
+    "Review eligibility/length and semantic judging protocol before 200-question diagnostic expansion",
+    "Run independent confirmation and paired uncertainty grouped by question",
     "Evaluate recovery baselines and decide research GO/NO-GO"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
-    "revision_reported": "713cbe32",
+    "revision_reported": "713cbe32f48a45a855da9cd09a0d980c2e3166e6",
     "retriever": "E5-base-v2 + Wiki-18",
     "index_type": "Flat",
     "backend": "vllm 0.6.3",
@@ -46,6 +64,7 @@
     "temperature": 0,
     "seed": 42,
     "tensor_parallel_size": 1,
-    "basis": "user factory report; A2 verifies source artifacts at runtime"
+    "basis": "user factory report; A2 verifies source artifacts at runtime",
+    "gpu_memory_utilization": 0.75
   }
 }

@@ -128,18 +128,31 @@ def replay_branch(source, turn, branch, generator, retriever, agent, retrieval):
     order = list(range(len(visible)))
     if branch == "permuted_a":
         visible, order = permute_documents(visible)
+    return replay_observation(source, turn, branch, visible,
+                              "E1_permutation" if branch == "permuted_a" else "E0_clean",
+                              {"type": "permutation" if branch == "permuted_a" else "none",
+                               "order": order, "document_multiset_preserved": True},
+                              generator, retriever, agent, retrieval)
+
+
+def replay_observation(source, turn, branch, documents, condition, metadata,
+                       generator, retriever, agent, retrieval):
+    """Shared continuation; callers validate the intervention before injection."""
+    prefix = validate_prefix(source, turn, agent, retrieval, generator)
+    visible = copy.deepcopy(documents)
+    if len(visible) != retrieval["visible_top_k"]:
+        raise ValueError("Intervention must preserve visible document count")
     obs = observation(visible)
     record = {key: copy.deepcopy(source[key]) for key in
               ("sample_id", "dataset", "question", "gold_answer", "gold_supporting_facts", "initial_prompt")}
-    record.update({"condition": "E1_permutation" if branch == "permuted_a" else "E0_clean",
+    record.update({"condition": condition,
                    "prompt_version": PROMPT_VERSION, "branch": branch, "target_turn": turn,
                    "status": None, "final_answer": "", "search_calls": turn,
                    "generated_tokens": prefix["generated_tokens_before_observation"],
                    "model_input_tokens": sum(s["input_tokens"] for s in source["steps"][:turn]),
                    "steps": copy.deepcopy(source["steps"][:turn]),
                    "prefixes": copy.deepcopy(source["prefixes"][:turn]),
-                   "intervention_metadata": {"type": "permutation" if branch == "permuted_a" else "none",
-                                             "order": order, "document_multiset_preserved": True,
+                   "intervention_metadata": {**copy.deepcopy(metadata),
                                              "target_observation_changed": obs != prefix["observation_text"]}})
     target = record["prefixes"][-1]
     target.update({"visible_documents": visible, "observed_document_ids": [d["document_id"] for d in visible],

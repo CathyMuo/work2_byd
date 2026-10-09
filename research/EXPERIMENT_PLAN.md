@@ -55,7 +55,7 @@ pilot questions. Dependencies/resources are user-managed; no model or dataset
 download is performed. A1 emits E0 only. A2/A3 code and their scientific gates
 are not passed by this implementation update.
 
-## Stage A2 — paired replay sanity (current; implementation complete, factory execution pending)
+## Stage A2 — paired replay sanity (factory engineering completion reported)
 
 - Save the exact question, full token/prompt prefix, and emitted search query
   immediately before injecting the target retrieval observation.
@@ -78,9 +78,27 @@ spent global budget. Verify source/model/tokenizer/resource identity and live
 same-query visible retrieval; do not hide drift with response caching. A
 nonidentical E0/E0 stops permutation and requires engineering diagnosis, not
 a scientific NO-GO. No significance/effect threshold is inferred from A1.
-A3 waits for returned A2 artifacts and an explicit engineering audit decision.
+The user reports 20/20 exact controls and unchanged retrieval; the engineering
+decision is recorded in `A2_REPORTED_RESULTS.md` and the decision log. Raw A2
+artifacts remain on the factory server and are revalidated there before A3.
 
 ## Stage A3 — diagnostic pilot
+
+Current substage: **reviewed 10-question engineering pilot**, implemented in
+`prepare_interventions` and `run_interventions`; see `docs/A3_EXECUTION_GUIDE.md`.
+Keep first five A1 IDs per dataset and turns 1/2. Independently review all
+condition eligibilities and freeze real rank-4–20 replacements before inference.
+Exact controls and all invariants are required again. This initial implementation
+uses conservative lexical screens plus semantic reviewer attestations, a fixed
+0.5–2.0 replacement-character ratio, condition-matched E1 descriptive metrics,
+and explicit skip/partial denominators. It is not the full diagnostic protocol:
+semantic OffTarget/Recovery, question-clustered intervals, 200-question expansion
+and independent confirmation still require review and implementation. Semantic
+truth is not established merely by checking a review field. No RL GO is implied.
+
+The old A2 Flat-to-hnsw label bug is corrected only in new derivative provenance;
+historical A1/A2 files remain immutable. The transient source F1 error has an
+unknown cause; keep exact equality and show both values/types on future failures.
 
 HotpotQA 100 and 2WikiMultiHopQA 100 development questions. Freeze sample IDs
 and selection before observing outcomes. Future confirmation: 300+300, and
