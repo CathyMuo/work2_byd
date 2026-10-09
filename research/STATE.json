@@ -3,14 +3,14 @@
   "project": "work2_byd",
   "updated_at": "2026-10-09",
   "current_stage": "A1_clean_baseline",
-  "status": "ready_for_implementation",
-  "next_action": "Implement the clean baseline collector using the existing Search-R1 interfaces and configurable local asset paths; the user runs it in the already-configured factory environment. No environment report is required before development.",
+  "status": "awaiting_factory_baseline_execution",
+  "next_action": "User follows docs/EXECUTION_GUIDE.md to run the 10-question A1 smoke test, then the frozen 200-question clean baseline if the smoke outputs are valid; developer audits real metrics and cases before implementing A2 paired replay. No environment report, model download, or data supplementation is required.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [],
   "rl_go_decision": "not_evaluated",
   "remaining": [
     "Validate configured model/checkpoint, corpus, index, and dataset assets at experiment runtime",
-    "Implement and run clean Search-R1 baseline",
+    "Run and audit implemented clean Search-R1 baseline on factory resources",
     "Implement same-prefix E0/E0 and E0/E1 replay sanity checks",
     "Run and audit E0–E4 pilot",
     "Evaluate recovery baselines and decide GO/NO-GO"

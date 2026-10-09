@@ -19,7 +19,10 @@ def main():
                         help="specific aggregate/log file under outputs/ (repeatable)")
     args = parser.parse_args()
     output_root = (ROOT / "outputs").resolve()
-    files = [output_root / "environment/environment.json"] + args.include
+    # Existing Search-R1 environment needs no inventory report to send results.
+    files = list(args.include)
+    if not files:
+        files = [output_root / "environment/environment.json"]
     selected = []
     for item in files:
         path = (ROOT / item).resolve() if not item.is_absolute() else item.resolve()
@@ -28,7 +31,7 @@ def main():
         except ValueError:
             parser.error("Only files inside outputs/ can be included")
         if not path.is_file():
-            parser.error("Missing {}. Run check_environment.py first.".format(relative))
+            parser.error("Missing feedback file: {}. Select existing results with --include.".format(relative))
         if path.suffix.lower() not in ALLOWED_SUFFIXES or path.name.startswith("."):
             parser.error("Unsupported feedback file: {}".format(relative))
         if path.stat().st_size > MAX_FILE_BYTES:

@@ -1,8 +1,12 @@
 # Work 2: Search Feedback Drift and Recovery
 
 工作二独立研究仓库：多轮搜索智能体中的检索反馈偏移与自适应恢复。
-实验服务器：厂内 **4×H800**。当前版本完成仓库、依赖与协作流程初始化；
-尚未实现正式诊断实验，也没有实验结果。
+实验服务器：厂内 **4×H800**。当前已实现 A1 clean baseline 的运行入口，
+可以在已有本地资源上执行；尚未在厂内运行，也没有实验结果。
+E0/E1 重放、E2–E4 干预、恢复基线及 RL 尚未实现。
+
+详细步骤见 [工作二实验实施文档](docs/EXECUTION_GUIDE.md)：资源清单、路径填写、
+Retriever 启动、10 题小样本、200 题基线、结果含义及反馈方式均有命令和说明。
 
 ## 厂内首次拉取
 
@@ -25,6 +29,21 @@ cp configs/local.example.json configs/local.json
 结果和日志直接反馈到对话，不需要厂内 git push。仓库中保留的
 `check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
 不属于必跑步骤。
+
+## 当前实验入口
+
+填好已有资源路径后，按实施文档复用或启动检索服务，再执行：
+
+```bash
+python -m work2.prepare_pilot --local configs/local.json
+python -m work2.run_baseline --check-only --per-dataset-limit 5
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_a1.sh smoke
+# 检查小样本结果后执行：
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_a1.sh pilot
+```
+
+这两批运行都是 E0 clean，不包含干预。正式判断多轮搜索偏移与恢复需要后续
+阶段的同前缀配对实验；普通 clean baseline 分数不能替代这些证据。
 
 ## 后续更新
 
@@ -50,6 +69,9 @@ bash scripts/update.sh
 | `configs/local.example.json` | 厂内路径模板 |
 | `research/` | 实验计划、状态、决策记录 |
 | `scripts/` | 环境检查、更新和反馈打包工具 |
+| `work2/` | 本地数据读取、A1 rollout、推理适配、指标与案例导出 |
+| `tests/` | CPU 协议、边界和运行产物测试 |
+| `docs/EXECUTION_GUIDE.md` | 详细厂内实施步骤与后续研究路线 |
 | `outputs/` | 本机环境报告与未来实验产物，不提交 |
 
 上游以 Git submodule 固定版本，均使用公开 HTTPS URL。不要在厂内执行

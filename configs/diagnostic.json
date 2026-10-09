@@ -30,5 +30,5 @@
     "diagnostic_tensor_parallel_size": 1,
     "retriever_device": "cpu"
   },
-  "status": "design only; experiment runner not implemented in bootstrap"
+  "status": "A1 E0 clean baseline implemented; A2 replay and A3 interventions pending"
 }

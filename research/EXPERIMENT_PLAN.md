@@ -31,7 +31,7 @@ Exit condition: the public repository and dependencies are pinned, and the user
 confirms an existing Search-R1 execution environment. This bootstrap condition
 is satisfied. Model/corpus/index readiness has not been empirically verified.
 
-## Stage A1 — clean baseline (current; implementation next)
+## Stage A1 — clean baseline (current; runner implemented, factory execution pending)
 
 - Prefer a Search-R1-trained Qwen2.5-3B checkpoint. Compare to untrained
   Qwen2.5-3B-Instruct later; do not assume the two have equivalent tool behavior.
@@ -45,6 +45,13 @@ is satisfied. Model/corpus/index readiness has not been empirically verified.
 
 Required output: `baseline_metrics.json`, clean trajectories, and immutable run
 metadata. No baseline result exists at initialization.
+
+Implementation and factory commands are documented in `docs/EXECUTION_GUIDE.md`.
+Use `work2.prepare_pilot`, `work2.launch_retriever` (or an existing service),
+and `work2.run_baseline`. Run a 10-question smoke subset before all 200 frozen
+pilot questions. Dependencies/resources are user-managed; no model or dataset
+download is performed. A1 emits E0 only. A2/A3 code and their scientific gates
+are not passed by this implementation update.
 
 ## Stage A2 — paired replay sanity
 
