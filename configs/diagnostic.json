@@ -1,26 +1,37 @@
 {
   "stage": "A",
   "agent": {
-    "base_model": "Qwen/Qwen2.5-3B-Instruct",
-    "checkpoint_policy": "prefer a Search-R1-trained checkpoint",
+    "base_model": "Qwen/Qwen2.5-7B-Instruct",
+    "checkpoint_policy": "Preserve the realized A1 official 7B checkpoint; A2 inherits the immutable A1 manifest, not this default file.",
     "temperature": 0.0,
     "seed": 42,
     "max_context_tokens": 8192,
     "max_generation_tokens_per_turn": 512,
-    "max_search_turns": 4
+    "max_search_turns": 4,
+    "realized_checkpoint": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
+    "realized_checkpoint_revision_reported": "713cbe32"
   },
   "retrieval": {
     "encoder": "intfloat/e5-base-v2",
     "corpus": "Wiki-18",
-    "index_type": "FAISS HNSW",
+    "index_type": "FAISS Flat",
     "visible_top_k": 3,
     "candidate_top_k": 20
   },
   "pilot": {
     "hotpotqa_samples": 100,
     "two_wiki_samples": 100,
-    "target_turns": [1, 2],
-    "conditions": ["E0_clean", "E1_permutation", "E2_distractor", "E3_bridge_removal", "E4_redundancy"],
+    "target_turns": [
+      1,
+      2
+    ],
+    "conditions": [
+      "E0_clean",
+      "E1_permutation",
+      "E2_distractor",
+      "E3_bridge_removal",
+      "E4_redundancy"
+    ],
     "sanity_questions": 10,
     "require_clean_vs_clean_replay": true
   },
@@ -28,7 +39,7 @@
     "target_gpu_count": 4,
     "target_gpu_family": "H800",
     "diagnostic_tensor_parallel_size": 1,
-    "retriever_device": "cpu"
+    "retriever_device": "existing_service"
   },
-  "status": "A1 E0 clean baseline implemented; A2 replay and A3 interventions pending"
+  "status": "A1 factory completion reported; A2 replay implemented and awaiting factory validation; A3/B/C pending"
 }

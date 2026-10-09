@@ -31,11 +31,12 @@ Exit condition: the public repository and dependencies are pinned, and the user
 confirms an existing Search-R1 execution environment. This bootstrap condition
 is satisfied. Model/corpus/index readiness has not been empirically verified.
 
-## Stage A1 — clean baseline (current; runner implemented, factory execution pending)
+## Stage A1 — clean baseline (factory completion reported)
 
-- Prefer a Search-R1-trained Qwen2.5-3B checkpoint. Compare to untrained
-  Qwen2.5-3B-Instruct later; do not assume the two have equivalent tool behavior.
-- Freeze E5-base-v2, Wiki-18, FAISS HNSW, Top-3 visible passages, maximum 4
+- Original proposal: trained Qwen2.5-3B and HNSW. The realized A1 used the
+  official Search-R1 **7B** PPO checkpoint (reported `713cbe32`) and **Flat**.
+  Keep this cohort for A2; do not relabel it as 3B/HNSW or mix new-resource runs.
+- Freeze E5-base-v2, Wiki-18, the realized FAISS Flat index, Top-3 visible passages, maximum 4
   search turns, 8192 context tokens, 512 generated tokens per turn initially.
 - Verify tool-call validity, multi-turn frequency, EM/F1, context truncation,
   search counts, and termination. A lack of usable multi-turn traces must be
@@ -44,7 +45,8 @@ is satisfied. Model/corpus/index readiness has not been empirically verified.
   separately. Title equality alone cannot establish supporting-fact recall.
 
 Required output: `baseline_metrics.json`, clean trajectories, and immutable run
-metadata. No baseline result exists at initialization.
+metadata. User-reported completion and analysis are recorded in
+`A1_REPORTED_RESULTS.md`; raw artifacts are not available on the developer server.
 
 Implementation and factory commands are documented in `docs/EXECUTION_GUIDE.md`.
 Use `work2.prepare_pilot`, `work2.launch_retriever` (or an existing service),
@@ -53,7 +55,7 @@ pilot questions. Dependencies/resources are user-managed; no model or dataset
 download is performed. A1 emits E0 only. A2/A3 code and their scientific gates
 are not passed by this implementation update.
 
-## Stage A2 — paired replay sanity
+## Stage A2 — paired replay sanity (current; implementation complete, factory execution pending)
 
 - Save the exact question, full token/prompt prefix, and emitted search query
   immediately before injecting the target retrieval observation.
@@ -68,6 +70,15 @@ are not passed by this implementation update.
 
 Required output: `replay_sanity.jsonl` with prefix identity and intervention
 audit metadata. Advance only after these invariants are checked.
+
+Run `work2.run_replay` / `scripts/run_a2.sh` as documented in
+`docs/A2_EXECUTION_GUIDE.md`. Use the fixed first five A1 IDs per dataset,
+then condition on target-turn reachability. Restore raw generated tokens and
+spent global budget. Verify source/model/tokenizer/resource identity and live
+same-query visible retrieval; do not hide drift with response caching. A
+nonidentical E0/E0 stops permutation and requires engineering diagnosis, not
+a scientific NO-GO. No significance/effect threshold is inferred from A1.
+A3 waits for returned A2 artifacts and an explicit engineering audit decision.
 
 ## Stage A3 — diagnostic pilot
 

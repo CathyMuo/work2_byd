@@ -39,9 +39,16 @@ def run_sample(sample, generator, retriever, agent, retrieval):
     text = generator.initial_prompt(question_prompt(sample["question"], agent["max_search_turns"]))
     tokens = generator.encode(text)
     record["initial_prompt"] = text
+    return continue_record(record, generator, retriever, agent, retrieval, text, tokens, start)
+
+
+def continue_record(record, generator, retriever, agent, retrieval, text, tokens, start=None):
+    """Shared A1/A2 continuation; preserves the already-spent global search budget."""
+    start = time.monotonic() if start is None else start
+    tokens = list(tokens)
     try:
         # Four successful calls permit a fifth generation to answer; a fifth call is refused.
-        for _ in range(agent["max_search_turns"] + 1):
+        for _ in range(agent["max_search_turns"] - record["search_calls"] + 1):
             if len(tokens) >= agent["max_context_tokens"]:
                 record["status"] = "context_limit"
                 break
@@ -64,7 +71,7 @@ def run_sample(sample, generator, retriever, agent, retrieval):
                 record["status"] = "search_budget_exhausted"
                 break
             turn = record["search_calls"] + 1
-            prefix = {"sample_id": sample["sample_id"], "search_turn": turn,
+            prefix = {"sample_id": record["sample_id"], "search_turn": turn,
                       "search_query": value, "prefix_text": text, "prefix_token_ids": list(tokens),
                       "prefix_token_sha256": digest(
                           (",".join(map(str, tokens))).encode()),
@@ -81,8 +88,8 @@ def run_sample(sample, generator, retriever, agent, retrieval):
                            "original_document_ids": [d["document_id"] for d in visible],
                            "observed_document_ids": [d["document_id"] for d in visible],
                            "observation_text": observation,
-                           "visible_lexical_fact_ids": lexical_fact_hits(visible, sample["gold_supporting_facts"]),
-                           "candidate_lexical_fact_ids": lexical_fact_hits(candidates, sample["gold_supporting_facts"])})
+                           "visible_lexical_fact_ids": lexical_fact_hits(visible, record["gold_supporting_facts"]),
+                           "candidate_lexical_fact_ids": lexical_fact_hits(candidates, record["gold_supporting_facts"])})
             text += observation
             tokens += generator.encode(observation)
         record["status"] = record["status"] or "search_budget_exhausted"
@@ -96,7 +103,7 @@ def run_sample(sample, generator, retriever, agent, retrieval):
     if record["status"] == "infrastructure_error":
         record.update({"em": None, "f1": None})
     elif record["status"] == "answered":
-        record.update(answer_scores(record["final_answer"], sample["gold_answer"]))
+        record.update(answer_scores(record["final_answer"], record["gold_answer"]))
     else:
         record.update({"em": 0, "f1": 0.0})
     return record

@@ -2,17 +2,50 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-09",
-  "current_stage": "A1_clean_baseline",
-  "status": "awaiting_factory_baseline_execution",
-  "next_action": "User follows docs/EXECUTION_GUIDE.md to run the 10-question A1 smoke test, then the frozen 200-question clean baseline if the smoke outputs are valid; developer audits real metrics and cases before implementing A2 paired replay. No environment report, model download, or data supplementation is required.",
+  "current_stage": "A2_paired_replay_sanity",
+  "status": "awaiting_factory_replay_execution",
+  "next_action": "User runs work2.run_replay --check-only then scripts/run_a2.sh on the existing A1 artifacts and unchanged official 7B/Flat cohort; returns replay metrics, manifest, retrieval audit and cases. Developer audits A2 before implementing A3. Do not restart the unrelated training.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
-  "experiment_results": [],
+  "experiment_results": [
+    {
+      "stage": "A1",
+      "evidence_source": "user-supplied factory completion report; raw feedback archive not present on developer server",
+      "source_commit": "aed1adc4194c02010c4c7be46872fed46fe49d40",
+      "samples": 200,
+      "em": 0.335,
+      "f1_rounded": 0.434,
+      "multi_turn_rate": 0.975,
+      "search_calls": 586,
+      "statuses": {
+        "answered": 189,
+        "search_budget_exhausted": 10,
+        "generation_limit": 1
+      },
+      "infrastructure_errors": 0,
+      "context_limit_rate": 0.0,
+      "checkpoint": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
+      "checkpoint_revision_reported": "713cbe32",
+      "index_type": "Flat",
+      "decision": "A1 engineering prerequisites accepted from report; A2 validation pending; no scientific/RL GO"
+    }
+  ],
   "rl_go_decision": "not_evaluated",
   "remaining": [
-    "Validate configured model/checkpoint, corpus, index, and dataset assets at experiment runtime",
-    "Run and audit implemented clean Search-R1 baseline on factory resources",
-    "Implement same-prefix E0/E0 and E0/E1 replay sanity checks",
-    "Run and audit E0–E4 pilot",
-    "Evaluate recovery baselines and decide GO/NO-GO"
-  ]
+    "Run and audit implemented A2 same-prefix E0/E0 and E0/E1 sanity checks",
+    "Implement and audit E2–E4 only after A2 engineering gates pass",
+    "Run paired diagnostic pilot and independent confirmation",
+    "Evaluate recovery baselines and decide research GO/NO-GO"
+  ],
+  "realized_cohort": {
+    "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
+    "revision_reported": "713cbe32",
+    "retriever": "E5-base-v2 + Wiki-18",
+    "index_type": "Flat",
+    "backend": "vllm 0.6.3",
+    "dtype": "BF16",
+    "temperature": 0,
+    "seed": 42,
+    "tensor_parallel_size": 1,
+    "basis": "user factory report; A2 verifies source artifacts at runtime"
+  }
 }

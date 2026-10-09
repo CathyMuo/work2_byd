@@ -1,9 +1,13 @@
 # Work 2: Search Feedback Drift and Recovery
 
 工作二独立研究仓库：多轮搜索智能体中的检索反馈偏移与自适应恢复。
-实验服务器：厂内 **4×H800**。当前已实现 A1 clean baseline 的运行入口，
-可以在已有本地资源上执行；尚未在厂内运行，也没有实验结果。
-E0/E1 重放、E2–E4 干预、恢复基线及 RL 尚未实现。
+实验服务器：厂内 **4×H800**。A1 的 200 题 clean baseline 已由厂内报告完成，
+实际 cohort 是官方 Search-R1 **7B + FAISS Flat**，EM 0.335、多轮率 0.975。
+详见 [A1 报告分析](research/A1_REPORTED_RESULTS.md)；原始数据尚未在开发服务器核验。
+当前新增 A2 同前缀 E0/E0 与 E0/E1 入口，待厂内运行；E2–E4、恢复基线和 RL 尚未实现。
+
+**本轮请执行 [A2 实施文档](docs/A2_EXECUTION_GUIDE.md)，保持原模型/索引/题目，
+不要重新准备数据或重跑 A1。**
 
 详细步骤见 [工作二实验实施文档](docs/EXECUTION_GUIDE.md)：资源清单、路径填写、
 Retriever 启动、10 题小样本、200 题基线、结果含义及反馈方式均有命令和说明。
@@ -30,7 +34,20 @@ cp configs/local.example.json configs/local.json
 `check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
 不属于必跑步骤。
 
-## 当前实验入口
+## 当前实验入口：A2
+
+沿用现有 `configs/local.json`、常驻 Retriever 和 A1 产物：
+
+```bash
+python -m work2.run_replay --source-run outputs/a1_clean_200 --check-only
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_a2.sh
+```
+
+默认选择 A1 冻结顺序中每个数据集前 5 题，目标轮 1/2。第二轮不可达单列，
+不筛掉答错题。源记录、资源或服务不一致会停止；E0/E0 不一致时不继续 E1。
+通过仅表示可提交 A3 工程审查，不能视为检索偏移已证实或 RL GO。
+
+## A1 入口：保留供独立新 cohort 使用
 
 填好已有资源路径后，按实施文档复用或启动检索服务，再执行：
 
@@ -72,6 +89,7 @@ bash scripts/update.sh
 | `work2/` | 本地数据读取、A1 rollout、推理适配、指标与案例导出 |
 | `tests/` | CPU 协议、边界和运行产物测试 |
 | `docs/EXECUTION_GUIDE.md` | 详细厂内实施步骤与后续研究路线 |
+| `docs/A2_EXECUTION_GUIDE.md` | 当前 A2 的重放步骤、控制与反馈要求 |
 | `outputs/` | 本机环境报告与未来实验产物，不提交 |
 
 上游以 Git submodule 固定版本，均使用公开 HTTPS URL。不要在厂内执行

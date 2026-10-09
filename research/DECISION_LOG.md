@@ -55,3 +55,55 @@ scores are not presented as an exact reproduction of the official evaluation.
 Validation before publication: 12 CPU unittest cases passed; Python compilation,
 shell syntax, all four module CLI help entries, and diff whitespace checks passed.
 No factory inference or end-to-end H800 validation ran on the developer server.
+
+## 2026-10-09 — Accept reported A1 engineering completion; advance to A2
+
+The user returned a factory A1 completion report at source commit `aed1adc`.
+Reported counts are internally consistent: 67/200 EM-correct, 195/200 multi-turn,
+586 searches (2.93 mean), 189 answered, 10 budget-exhausted, one generation-limit,
+zero infrastructure errors, zero context-limit terminations. Raw feedback and
+trajectories are not available on this development server; record the figures
+as user-reported, not independently artifact-verified.
+
+The realized cohort is the official **7B** Search-R1 PPO checkpoint at reported
+revision `713cbe32`, E5-base-v2, Wiki-18, and **FAISS Flat**, with vLLM 0.6.3/BF16,
+temperature 0, seed 42, TP=1. Keep this cohort for A2, without changing model,
+index, questions, or budgets. The original 3B/HNSW design remains historical;
+it must not be used to label these results.
+
+Accept A1 tool/multi-turn/prefix readiness from the report and implement A2.
+Select the first five frozen question IDs per dataset before turn eligibility;
+include all outcomes, and report turn-2 conditional denominators and skips.
+Run two clean continuations and one permutation from each identical token
+prefix, with unchanged later normal retrieval and explicit drift auditing.
+Do not interpret the lexical-hit EM association as causal evidence or enter
+E2–E4/B/C before the relevant gates. No numeric effect threshold is invented.
+
+Factory adaptations (reported): corrupt checkpoint index JSON repaired from
+the official source while preserving weights; Hotpot HF dict-of-arrays converted
+to original pairs without changing content; 2Wiki source matched schema. Preserve
+the existing frozen pilot rather than rerunning selection/conversion for A2.
+No model/data download or factory environment provisioning is requested.
+The interrupted 7B GRPO training is separate from this diagnostic cohort and
+is not restarted by this update; any recovery remains factory-user managed.
+
+## 2026-10-09 — A2 implementation and factory handoff
+
+Implemented A1 raw-token prefix validation/reconstruction, current model and
+resource identity checks, live retriever drift audit without caching, two clean
+continuations followed by one Top-3 cyclic permutation, unchanged later
+retrieval, and preservation of the spent global budget. Controls compare token
+IDs/text, queries, observations, status and answer. Same-answer/different-token
+controls fail and stop before E1. Source historical continuation agreement is
+reported separately; it is not silently used as the fresh control. Unreachable
+turns, identical permutations, partial runs and conditional denominators remain
+explicit. Query text equality is never called semantic OffTarget or Recovery.
+
+The new default design labels the realized 7B/Flat cohort. A2 inherits the old
+A1 manifest's numerical configuration without modifying that source artifact.
+A1/A2 share the same continuation implementation; all A1 regression tests pass.
+Validation: 24 CPU tests pass, including true-token restoration, one-observation
+change, budget accounting, service drift, resource identity, failed controls
+and preservation of planned denominators on partial runs. No A2 factory GPU
+inference has run here. Current stage remains A2, awaiting the real handoff
+metrics/audit/cases; A3/B/C and the unrelated stopped training are not executed.
