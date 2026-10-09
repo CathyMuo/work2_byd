@@ -1,0 +1,34 @@
+{
+  "stage": "A",
+  "agent": {
+    "base_model": "Qwen/Qwen2.5-3B-Instruct",
+    "checkpoint_policy": "prefer a Search-R1-trained checkpoint",
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4
+  },
+  "retrieval": {
+    "encoder": "intfloat/e5-base-v2",
+    "corpus": "Wiki-18",
+    "index_type": "FAISS HNSW",
+    "visible_top_k": 3,
+    "candidate_top_k": 20
+  },
+  "pilot": {
+    "hotpotqa_samples": 100,
+    "two_wiki_samples": 100,
+    "target_turns": [1, 2],
+    "conditions": ["E0_clean", "E1_permutation", "E2_distractor", "E3_bridge_removal", "E4_redundancy"],
+    "sanity_questions": 10,
+    "require_clean_vs_clean_replay": true
+  },
+  "hardware": {
+    "target_gpu_count": 4,
+    "target_gpu_family": "H800",
+    "diagnostic_tensor_parallel_size": 1,
+    "retriever_device": "cpu"
+  },
+  "status": "design only; experiment runner not implemented in bootstrap"
+}

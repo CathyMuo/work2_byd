@@ -1,0 +1,12 @@
+[submodule "third_party/Search-R1"]
+	path = third_party/Search-R1
+	url = https://github.com/PeterGriffinJin/Search-R1.git
+[submodule "third_party/Stable-RAG"]
+	path = third_party/Stable-RAG
+	url = https://github.com/zqc1023/Stable-RAG.git
+[submodule "third_party/Harness-G"]
+	path = third_party/Harness-G
+	url = https://github.com/7HHHHH/Harness-G.git
+[submodule "third_party/SearchAtlas"]
+	path = third_party/SearchAtlas
+	url = https://github.com/DukeNLP/SearchAtlas.git

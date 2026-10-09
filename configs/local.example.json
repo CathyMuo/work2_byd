@@ -1,0 +1,11 @@
+{
+  "agent_checkpoint": "/replace/with/local/search-r1-checkpoint",
+  "base_model": "/replace/with/local/Qwen2.5-3B-Instruct",
+  "retriever_model": "/replace/with/local/e5-base-v2",
+  "corpus_file": "/replace/with/local/wiki-18.jsonl",
+  "index_file": "/replace/with/local/e5_HNSW.index",
+  "hotpotqa_file": "/replace/with/local/hotpot_dev_distractor_v1.json",
+  "two_wiki_file": "/replace/with/local/2wiki/dev.json",
+  "retrieval_url": "http://127.0.0.1:8000/retrieve",
+  "inference_url": "http://127.0.0.1:8001/v1"
+}

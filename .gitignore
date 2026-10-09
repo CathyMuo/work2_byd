@@ -1,0 +1,33 @@
+# Credentials and machine-local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+configs/local.json
+configs/local.*.json
+!configs/local.example.json
+# Data, models, experiment products, and feedback stay local
+/data/
+/models/
+/checkpoints/
+/indexes/
+/outputs/
+/feedback/
+/logs/
+/wandb/
+/runs/
+*.pt
+*.pth
+*.safetensors
+*.faiss
+*.index
+# Python and editor artifacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.DS_Store
+.idea/
+.vscode/

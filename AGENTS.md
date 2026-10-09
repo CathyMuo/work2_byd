@@ -1,0 +1,30 @@
+# Work 2 development rules
+
+This is an independent project rooted at this directory. The user explicitly
+requested that Work 2 contain no GMST methods, training, experiments, or selected
+artifacts. Do not modify the stopped research projects elsewhere in the workspace.
+
+Read `research/EXPERIMENT_PLAN.md`, `research/STATE.json`, and
+`research/DECISION_LOG.md` before changing research code or proposing experiments.
+Continue the recorded stage. Stage C requires evidence from stages A and B and
+an explicit recorded GO decision; repository setup is not a research GO decision.
+
+## Collaboration
+
+- Develop, check, commit, and push code on the development server. The user has
+  authorized pushing this public repository as part of the continuing workflow.
+- The user pulls public HTTPS repositories and runs experiments on a 4×H800
+  factory server. Never require the factory server to push, store GitHub write
+  credentials, or run Codex.
+- Keep paths configurable. Models, Wikipedia, indexes, outputs, and credentials
+  are machine-local and must never be committed.
+- Record the main repository commit, pinned dependency commits, configuration,
+  and model/index versions with each future run. Do not invent results.
+- Keep `third_party/` submodules pinned and unmodified by default. New experiment
+  code belongs to this repository; any required dependency patch must be tracked
+  here and documented so a fresh public clone reproduces the change.
+- Preserve upstream notices and licenses. Do not assume all dependencies can be
+  installed in one Python environment.
+- Update state and decision log when a stage or research decision changes.
+- Prefer CPU/static checks here; report H800 execution as pending until the user
+  provides real results.
