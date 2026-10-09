@@ -16,6 +16,10 @@ an explicit recorded GO decision; repository setup is not a research GO decision
 - The user pulls public HTTPS repositories and runs experiments on a 4×H800
   factory server. Never require the factory server to push, store GitHub write
   credentials, or run Codex.
+- The factory already has a working Search-R1 environment, managed by the user.
+  Provide a recommended configuration list only; do not configure/rebuild it or
+  require an environment report before development. Environment inspection and
+  feedback-packaging scripts are optional troubleshooting utilities.
 - Keep paths configurable. Models, Wikipedia, indexes, outputs, and credentials
   are machine-local and must never be committed.
 - Record the main repository commit, pinned dependency commits, configuration,

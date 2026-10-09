@@ -15,22 +15,23 @@ Agents*. Work 2 must stand alone: no GMST method, training, experimental output,
 or outcome-selected artifacts are imported. Existing stopped projects remain
 stopped. This repository is the independent root explicitly requested by the user.
 
-## Stage A0 — repository and environment (current)
+## Stage A0 — repository and environment (completed bootstrap)
 
 1. Initialize the public repository and pin the four discussed upstreams:
    Search-R1, Stable-RAG, Harness-G, SearchAtlas.
 2. Provide public-clone/update instructions, local asset configuration, and a
    standard-library environment/feedback workflow for the factory's 4×H800.
-3. Obtain Python, CUDA/driver, package versions, checkpoint, Wiki-18, index,
-   E5 model, and dataset availability from the factory.
-4. Select an environment consistent with that evidence. Do not install all
-   upstream packages into a single environment during bootstrap.
+3. The user confirmed that the factory already has a configured Search-R1
+   environment. Reuse it; environment management belongs to the user.
+4. Supply a recommended configuration list. Environment reports and setup are
+   not prerequisites for implementing experiment code. Keep asset paths
+   configurable and verify their validity when actually executing experiments.
 
-Exit condition: the factory environment and asset inventory are known, and the
-next baseline implementation has a documented compatible interface. GPU
-availability alone does not satisfy this condition.
+Exit condition: the public repository and dependencies are pinned, and the user
+confirms an existing Search-R1 execution environment. This bootstrap condition
+is satisfied. Model/corpus/index readiness has not been empirically verified.
 
-## Stage A1 — clean baseline
+## Stage A1 — clean baseline (current; implementation next)
 
 - Prefer a Search-R1-trained Qwen2.5-3B checkpoint. Compare to untrained
   Qwen2.5-3B-Instruct later; do not assume the two have equivalent tool behavior.
@@ -130,7 +131,7 @@ No formal RL training is authorized by passing repository initialization.
 
 Developer checks and pushes on this server; user pulls and runs on the factory
 4×H800, then returns reports. Stage A need not occupy all four GPUs. Final
-parallelism and memory settings follow the factory inventory, not assumptions.
+parallelism and memory settings are configurable for the user's existing setup.
 Record main/dependency commits, checkpoint identity, tokenizer/prompt version,
 retriever/index/corpus identity, decoding settings, config, sample manifests,
 prefixes, original/visible documents, and per-run outputs. Never publish

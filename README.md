@@ -9,25 +9,22 @@
 ```bash
 git clone --recurse-submodules https://github.com/CathyMuo/work2_byd.git
 cd work2_byd
-python3 scripts/check_environment.py
 ```
 
-上述检查只依赖 Python 标准库，不安装包、不下载模型、不启动 GPU 实验。
-把 `outputs/environment/environment.json` 和终端中的检查结论反馈给我。
-缺少依赖时也会生成报告。先根据报告确定版本，再安装实验依赖。
+厂内已经配好 Search-R1 环境，直接沿用。环境由你维护，我负责实验代码、
+运行说明与推荐配置清单，见 [推荐环境配置](docs/RECOMMENDED_ENVIRONMENT.md)。
+后续代码开发不以环境检查或报告回传为前置条件。
 
-如已有模型和语料，请填写本机路径后再检查：
+运行实验时填写本机模型、语料和索引路径：
 
 ```bash
 cp configs/local.example.json configs/local.json
 # 编辑 configs/local.json 的真实路径；该文件不会提交
-python3 scripts/check_environment.py --config configs/local.json
-python3 scripts/pack_feedback.py
 ```
 
-`feedback/` 中的压缩包可以直接交回当前对话，不需要厂内 git push。
-默认只包含环境报告；实验结果生成后可通过 `--include` 指定汇总 JSON 或日志。
-原始数据、模型、凭据和本地配置不打包。
+结果和日志直接反馈到对话，不需要厂内 git push。仓库中保留的
+`check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
+不属于必跑步骤。
 
 ## 后续更新
 
