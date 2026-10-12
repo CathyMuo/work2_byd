@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-12",
-  "current_stage": "E_v2_stratified_development_probe",
-  "status": "public_E_v2_CPU_verified_awaiting_factory_prefix_reaffirmation_and_smoke",
-  "next_action": "Preserve immutable E v1 all-skip reviews; factory aligns public main with local backup, prepares v2 from that file, reaffirms sufficient primary and explicit missing-constraint/alternative-derivation secondary reviews, freezes all case run/skip decisions, runs one group control-first smoke then at most four fixed groups. Primary can run without secondary, with harm explicitly unmeasured. No pool expansion, parametric-knowledge/B3 causality, pooled NetEM, F or RL GO.",
+  "current_stage": "E_v2_closeout_CPU_only",
+  "status": "reported_engineering_passed_constraint_method_NO_GO_no_new_GPU",
+  "next_action": "Record E v2 report and close the current constraint-review method branch. Implement/run a read-only CPU receipt audit of existing engineering output: source/plan/control/metric consistency, per-case gains/harm categories, final refused-search action and pending initial-versus-later evidence explanation. No new prompt variant, answer-only ablation, sharding, F or RL. Any future budget/action-selection project requires a separate hypothesis/novelty/observable-selection protocol and explicit reopening decision.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -223,15 +223,59 @@
       "gpu_run_executed": false,
       "reported_factory_test_count": 113,
       "decision": "Preserve strict v1 all-skip; limited candidate pool does not establish structural absence or knowledge source. Define separate v2 within-state action comparisons and prefix-insufficient harm stratum; no F or RL GO."
+    },
+    {
+      "stage": "E_v2_engineering_factory_report",
+      "reported_head": "82fa3d5",
+      "public_source_merged_reported": "755340e",
+      "evidence_source": "user message; original outputs not available on developer server",
+      "smoke_groups": 1,
+      "engineering_groups": 4,
+      "cases": 8,
+      "primary_cases": 4,
+      "secondary_cases": 4,
+      "reported_engineering_gates": {
+        "all_planned_cases_completed": true,
+        "all_original_controls_and_history_exact": true
+      },
+      "primary_general_repaired": 3,
+      "primary_constraint_repaired": 2,
+      "primary_paired_outcomes": {
+        "general_only": 2,
+        "constraint_only": 1,
+        "both": 1,
+        "neither": 0
+      },
+      "secondary_general_harms": 0,
+      "secondary_constraint_harms": 1,
+      "secondary_constraint_harm_reported_status": "search_budget_exhausted",
+      "secondary_constraint_harm_pair": "pair_3",
+      "constraint_minus_general": {
+        "failed_sufficient": {
+          "em": -0.25,
+          "f1": -0.25,
+          "generated_tokens": -23.5,
+          "model_input_tokens": -381,
+          "search_calls": -0.25
+        },
+        "stable_insufficient": {
+          "em": -0.25,
+          "f1": -0.25,
+          "generated_tokens": 12,
+          "model_input_tokens": 633.8,
+          "search_calls": 0.25
+        }
+      },
+      "decision": "Engineering accepted from report; no special constraint advantage in these selected cases. Stop scaling/tuning this method; CPU closeout only. No population inferiority/equivalence or structural missing-control conclusion.",
+      "primary_repair_union_reported": 4
     }
   ],
   "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence",
   "remaining": [
-    "Freeze v2 primary sufficient and secondary insufficient prefix-only judgments; preserve v1 zero-pair result and all skipped-case receipts",
-    "Run one v2 group smoke with every original control/history exact before review actions; extend to at most four groups on the same plan",
-    "Reconcile 46 nonoracle versus prior 52 union and 3 B5 successes using baseline event IDs/eligibility",
-    "Preserve partial-calibration and nonentity uncertainty; use explicit relation/number derivations for future semantic coverage",
-    "After v2 descriptive repair/harm/cost review, decide further mechanism controls or stopping; any F unseen-question/trigger protocol requires separate freezing, no RL GO"
+    "CPU-only closure audit of existing 8-case E v2 artifacts; inspect final refused search and initial-versus-later evidence paths",
+    "Archive current constraint-review method as NO-GO, preserve immutable v1/v2 sources and generic baseline; no new GPU/F/RL",
+    "Reconcile historical 46/52/3 state IDs if available; do not retrofit with the four current witnesses",
+    "Budget/evidence/action choice is a not-started candidate requiring a separate observable-selection, representative-population, baseline/novelty and independent-confirmation protocol before reopening"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -247,9 +291,9 @@
     "gpu_memory_utilization": 0.75
   },
   "code_alignment": {
-    "public_base_commit": "c0a1e8bb6145436e0c696421b76e4e3f9d60630e",
+    "public_base_commit": "755340ee68410f3fabd11c9ec2e9232a064eca5c",
     "reported_factory_base": "a17f1f3",
-    "reported_factory_head": "faf8494",
+    "reported_factory_head": "82fa3d5",
     "factory_source_available": false,
     "user_instruction": "No factory source provided; public developer repository is authoritative, factory will replace code from it. Preserve old commits/artifacts locally.",
     "implemented_alignment": "V1 strict paired validator and actual post-observation core retained; explicit v2 preparation/stratified metrics reuse the SAME run_e control-first continuation engine; CPU verified, factory inference pending.",

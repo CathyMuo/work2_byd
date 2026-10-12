@@ -3,13 +3,11 @@
 工作二独立研究仓库：多轮搜索智能体中的检索反馈偏移与自适应恢复。
 实验服务器：厂内 **4×H800**。厂内已报告 1000 题 A1、2000 个 A3 目标状态及 B
 基线结果；新实验与代码分支 `f4a4bb5` 尚未提供原始源码/轨迹。
-厂内最新 `faf8494` 已报告 E v1 四组全 skip：4 个充分致错案例、12 个不足稳定
-候选，零个充分配对；GPU 未跑。旧协议结果保留，研究与 RL 仍未 GO。
-当前实现独立版本 **E v2 分层开发探针**：充分致错层看修复，不足稳定层单列
-harm；每个案例从相同实际 token 状态对照，不合并总体净收益、不推断知识来源。
-详见 [E v2 实施文档](docs/E_V2_STRATIFIED_PROBE.md)。原
-[E v1 文档](docs/E_EXECUTION_GUIDE.md) 和 [C/D 协议](docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md)
-保留历史；资产与环境沿用，先备份厂内分叉再对齐公开主线。
+厂内最新 `82fa3d5` 报告 E v2 工程通过：primary 一般回顾修复 3/4、约束核对
+2/4；secondary 约束核对引入 1 例空答案/预算失败。当前决定：**停止扩展与调参
+约束核对方法，研究/RL 未 GO，不进入 F，不新增 GPU 实验。**
+详见 [结果深度分析与方向决策](research/E_V2_RESULTS_AND_DIRECTION.md)。
+下一步只对已有 8 案例执行 CPU 收尾审计；v1 全 skip 和 v2 数据原样保留。
 
 A1 的原 200 题 clean baseline 已由厂内报告完成，
 实际 cohort 是官方 Search-R1 **7B + FAISS Flat**，EM 0.335、多轮率 0.975。
@@ -17,7 +15,7 @@ A1 的原 200 题 clean baseline 已由厂内报告完成，
 厂内报告 A2 的 20/20 精确控制通过，见 [A2 分析](research/A2_REPORTED_RESULTS.md)。
 当前已实现独立审查后执行的 E2–E4 **10 题工程 Pilot**；完整诊断扩展、恢复基线和 RL 待后续。
 
-**本轮先保存厂内分叉再对齐主线，准备/核验 E 配对；不重跑规模实验。**
+**本轮先保存厂内分叉并对齐公开主线，只审计已有产物，不重跑实验。**
 原 [A3 工程文档](docs/A3_EXECUTION_GUIDE.md) 保留为历史工程入口。
 
 详细步骤见 [工作二实验实施文档](docs/EXECUTION_GUIDE.md)：资源清单、路径填写、
@@ -45,22 +43,20 @@ cp configs/local.example.json configs/local.json
 `check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
 不属于必跑步骤。
 
-## 当前入口：E v2 分层探针
+## 当前入口：E v2 CPU 收尾
 
-按 [E v2 文档](docs/E_V2_STRATIFIED_PROBE.md) 对齐主线，保留旧全 skip 文件：
+按 [收尾与决策文档](research/E_V2_RESULTS_AND_DIRECTION.md) 对齐主线后：
 
 ```bash
-python -m work2.prepare_e_probe --parent-plan outputs/e_review/reviewed.json
-cp outputs/e_probe_review/proposals.json outputs/e_probe_review/reviewed.json
-# 明确缺失约束与替代推导，复核 prefix-only，冻结每个 case 的 run/skip：
-python -m work2.prepare_e_probe --validate outputs/e_probe_review/reviewed.json
-python -m work2.run_e_probe --group-limit 1 --check-only
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_e_probe.sh --group-limit 1 --run-dir outputs/e_probe_smoke
+python -m work2.audit_e_probe \
+  --run-dir outputs/e_probe_engineering \
+  --output outputs/e_probe_closeout/receipt.json
 ```
 
-最多 4 个充分致错 primary 和 4 个不足稳定 secondary，分别统计；全部原样控制
-与历史后缀一致后才跑固定的两种回顾动作。secondary 复核不确定则 skip，
-primary 可以独立运行，但不能宣称已测 stable harm。不改变旧 v1 的充分配对条件。
+复算 raw 指标、实际起点/原样控制与成本，分开答错和预算/终止 harm，核对最后
+被拒的搜索动作；输出未来证据路径的 pending 人工解释项。程序不加载模型、
+不访问 Retriever，也不改旧文件。smoke 不并入独立样本。
+当前 GPU 入口保留为历史能力，按 STATE 不继续扩展或调参。
 
 ## CPU 配对与语义审查入口
 
@@ -143,7 +139,8 @@ bash scripts/update.sh
 | `docs/A2_EXECUTION_GUIDE.md` | A2 的重放步骤、控制与反馈要求 |
 | `docs/A3_EXECUTION_GUIDE.md` | 原 E2–E4 工程资格审查、冻结和单轮干预步骤 |
 | `docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md` | 当前厂内分叉备份/对齐、CPU 审计与后续机制协议 |
-| `docs/E_V2_STRATIFIED_PROBE.md` | 当前 v2 两层问题、来源/前缀审查、共用执行引擎和分开反馈 |
+| `research/E_V2_RESULTS_AND_DIRECTION.md` | 当前方法 NO-GO、结果分析、CPU 收尾与未来候选立项边界 |
+| `docs/E_V2_STRATIFIED_PROBE.md` | 历史 v2 两层问题、来源/前缀审查与共用执行引擎 |
 | `docs/E_EXECUTION_GUIDE.md` | 历史 v1 充分配对、实际扰动起点与成本口径 |
 | `docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md` | 最新 C/D 正文诊断、审查/机制收据与 E/F 的范围 |
 | `outputs/` | 本机环境报告与未来实验产物，不提交 |

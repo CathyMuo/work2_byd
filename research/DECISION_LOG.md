@@ -420,3 +420,79 @@ source files and no-model/service check-only mode. Compilation, CLI help, shell
 syntax, JSON, local documentation links and diff checks pass. No factory raw
 counts or H800 inference were executed here; reported 113 factory tests remain
 separate. No models/data/env changes or training.
+
+
+## 2026-10-12 — E v2 report: engineering accepted, constraint-review method NO-GO
+
+Factory 82fa3d5 reportedly merges public 755340e, completed smoke and all four
+frozen groups (8 cases), with exact originals/history and complete engineering
+coverage. Developer raw artifacts unavailable: supplied aggregates are recorded,
+not independently recomputed. Smoke duplicates engineering pair_1, not a fifth
+primary observation. Primary general repairs 3/4, constraint 2/4; paired general
+only 2, constraint only 1, both 1, neither 0. Secondary general harms 0/4,
+constraint harms 1/4, pair_3 with empty final answer/search_budget_exhausted.
+No statistical superiority/inferiority conclusion from these selected four
+questions per stratum; zero observed general harms is not established safety.
+
+Decision BEFORE implementation: stop scaling and tuning the CURRENT constraint
+review method, retain no research/RL GO, do not advance F, and do not introduce a
+no-search prompt or four-GPU sharding to salvage this dev set. Original retrieval
+content-specific and semantic off-target gates remain unestablished. The v1
+12-candidate all-skip observation is not structural absence, nor an independent
+population-level disproof. E v2 repairs do witness some budget-feasible recovery
+at these same post-evidence states, but generic repair competes effectively and
+no identifiable deployable selection/novel special-method advantage is shown.
+This is a resource-allocation NO-GO for the method, not proof recovery is useless.
+
+Cost interpretation: constraint saves primary tokens/search at lower primary
+accuracy, so a tradeoff, not a blanket “no cost advantage.” Secondary is worse
+in observed EM and cost, but only one harm case. Never pool selected strata into
+population NetEM. Verify whether general repairs require later retrieval versus
+reconsideration of the initial evidence; reviewer sufficiency at the anchor is
+not proof that the model's eventual repair used those facts.
+
+Confirm harm as EM loss due to budget/action-terminal failure, not an answered
+wrong prediction or parametric-knowledge disruption. Budget was ALREADY fixed at
+four total successful searches. Public rollout permits a generation after search
+four and sets search_budget_exhausted when a further search is requested and
+refused (normal non-error path). Audit the final generated action and spent
+calls; two future successful searches alone cannot establish the terminal path.
+A zero-additional-search intervention would change action space, and requires
+matched generic/original controls; one post-hoc harm does not justify its launch.
+The repeated old 32-empty split is corrected to 21 budget / 11 termination;
+nonentity six is a cross-axis subset, not a third exclusive cause.
+
+Continue only CPU closeout of EXISTING results: immutable source/plan/controls,
+raw metric recomputation, paired outcomes, terminal attempts, and a small pending
+manual evidence-use explanation packet. A budget/answer/search action-selection
+question is only a future scoping possibility, requiring an observable state
+rule, representative held-out development population, proper action controls,
+full net benefit/cost/safety and novelty review. Not initiated here. No F/new
+questions/GPU/RL. Hardware TP=1 source inheritance is an engineering fact;
+parallel workers plus a global original-control barrier could preserve protocol,
+so single-process absence of shards is not a scientific prohibition. At eight
+cases no sharding investment is justified.
+
+
+Additional paired insight: reported primary general-only 2 / constraint-only 1 /
+both 1 implies a 4/4 union of these tested actions, so recovery is witnessed locally.
+An oracle choosing the better action is not deployable, and no selector follows;
+in particular, a post-hoc t2 rule is invalid and shares t2 secondary harm. V1 and
+v2 share selected source data, not independent population disproofs. Preserve
+these distinctions in E_V2_RESULTS_AND_DIRECTION.md.
+
+Implementation: new audit_e_probe ONLY reads existing completed v2 JSON artifacts,
+revalidates immutable plan/parent/A1/A3 bindings, actual past/identity, raw controls,
+score/cost/metric sums and global search cap. It checks the final refused search
+when terminal status is search_budget_exhausted, emits separate harm categories
+and paired primary outcomes, and packages actual later Queries/observations and
+pending human explanations; no automatic evidence-path mechanism judgment.
+CPU SHA comparison is explicitly distinguished from runtime tokenizer verification.
+No prompts, source metrics, continuation logic or GPU protocol changed.
+
+Validation: **81 public CPU tests pass**. Four new synthetic closeout checks cover
+source immutability/recomputed paired receipt, two successful later searches plus
+actual refused fifth search, distinction of terminal harm, and rejected missing
+last action, corrupted cost/metrics, controls or frozen plan. CLI help, Python
+compilation, JSON, documentation links and diff checks pass. No developer GPU,
+factory raw recomputation or additional semantic reviews executed.

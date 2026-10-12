@@ -233,7 +233,7 @@ independent confirmation and deployable prefix-only selection. Existing research
 gates are unchanged and remain unestablished; passing E controls is not GO.
 
 
-## Current audit task E v2 — stratified development probe after v1 all-skip
+## Audit task E v2 — completed engineering reported, sources preserved
 
 Factory faf8494 reports four sufficiently evidenced failed cases and twelve
 insufficient stable candidates, zero runnable v1 pairs, no GPU. Preserve this
@@ -259,3 +259,33 @@ causal contrast, knowledge-source inference or statistical conclusion follows
 from these outcome-selected engineering cases. One frozen group smoke then up
 to four on engineering controls, not recovery success. F unseen questions,
 selection/cost/confirmation and any research GO remain separately unapproved.
+
+
+## Current action — E v2 CPU closeout; constraint-review method NO-GO
+
+Factory 82fa3d5 reports complete/exact smoke and four groups; primary general
+3/4 versus constraint 2/4 (general only 2, constraint only 1, both 1); secondary
+constraint one empty budget-terminal harm versus general zero. Accept engineering
+from report, not developer raw verification. Primary tested-action repair union
+4/4 is a local recovery witness, not a deployable oracle selector. Existing
+research gates remain unestablished. V1 limited candidate all-skip is not structural
+absence and shares data with v2, not independent population disproof.
+
+Stop current constraint-method prompt tuning/scaling. No new no-search ablation,
+sharding, F/new questions or RL. CPU audit ONLY existing engineering artifacts
+using `work2.audit_e_probe`; full decision and commands are in
+`research/E_V2_RESULTS_AND_DIRECTION.md`. Recompute original controls/scores/costs,
+separate answered-wrong harm from refused-over-budget-search terminal harm, and
+review a small set of initial versus later retrieval evidence paths. The existing
+four-call budget already permits generation after search four; do not describe
+this result as increasing the total budget or being automatically truncated at
+observation four. Preserve 21/11 old empty terminal partition and unresolved
+46/52/3 witness reconciliation.
+
+Budget/evidence-aware answer/search/leave-unchanged action choice remains only
+an uninitiated candidate. Reopening requires a separately recorded observable
+(non-gold, non-future) selection hypothesis, representative development population,
+strong controls/baselines/novelty check and frozen unseen confirmation protocol.
+Do not resume the stopped method by relabeling an E prompt or training on its four
+seen cases. Platform assets remain reusable; no methods/artifacts from stopped
+projects elsewhere in the workspace are imported.
