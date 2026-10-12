@@ -4,6 +4,9 @@
 实验服务器：厂内 **4×H800**。厂内已报告 1000 题 A1、2000 个 A3 目标状态及 B
 基线结果；新实验与代码分支 `f4a4bb5` 尚未提供原始源码/轨迹。
 当前先做 **CPU 原始配对与语义机制审计**，以公开主线为后续代码依据。
+最新 C/D 报告已登记：全 175 事件的正文重叠筛选是进展，但语义与机制计数仍需
+校验。当前使用 [C/D 收据与 E/F 协议](docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md)，
+新增 `work2.semantic_review`；它不自动把 60% 重叠判为充分证据。
 详见 [扩大结果审查](research/FACTORY_SCALE_REVIEW.md) 与
 [本轮对齐/执行步骤](docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md)。研究仍未 GO。
 
@@ -122,6 +125,7 @@ bash scripts/update.sh
 | `docs/A2_EXECUTION_GUIDE.md` | A2 的重放步骤、控制与反馈要求 |
 | `docs/A3_EXECUTION_GUIDE.md` | 原 E2–E4 工程资格审查、冻结和单轮干预步骤 |
 | `docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md` | 当前厂内分叉备份/对齐、CPU 审计与后续机制协议 |
+| `docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md` | 最新 C/D 正文诊断、审查/机制收据与 E/F 的范围 |
 | `outputs/` | 本机环境报告与未来实验产物，不提交 |
 
 上游以 Git submodule 固定版本，均使用公开 HTTPS URL。不要在厂内执行

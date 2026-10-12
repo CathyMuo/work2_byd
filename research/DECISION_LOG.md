@@ -210,3 +210,65 @@ backup commits/ignored results and refusal to discard uncommitted edits. Python
 compilation, CLI help, shell syntax, JSON, documentation links and diff checks
 passed. No actual factory raw audit or H800 inference was executed here; the
 reported factory 77-test suite remains separately unverified.
+
+## 2026-10-12 — Matched-E1 correction reported; content-specific claim remains unestablished
+
+The user reports unpublished factory commit `839431d` found matched E3 excess
+“+3, CI crossing zero.” The unit, interval bounds, matched question count and
+raw output were not supplied. Record the literal finding rather than inventing
+3 percentage points or an exact interval. It weakens the earlier unmatched
+content-specific degradation story; it does not establish equivalence or prove
+that no state can fail. Preserve original gate 1 and the not-GO decision. The
+latest E1/E2 evidence-use candidate memberships (38/39) alone do not establish
+weak association without exposure denominators and question/state dependence.
+
+## 2026-10-12 — Reported C/D screening; separate semantic receipts and recovery witnesses
+
+The user reports factory commit `113ca69`: all 175 degradation condition events
+across 134 states screened; event labels 110/21/44 sufficient/insufficient/uncertain,
+state labels 86/32/16; 72 evidence-use states; 32 empty-answer events split into
+16 budget, 10 termination and 6 nonentity-answer cases. The Jonker example was
+reported with 100% support-text overlap; `2wiki:75a44681` t1 was corrected to
+budget exhaustion. These are supplied results, not locally recalculated raw
+receipts. The user says code should follow the public implementation, without
+providing factory source or clarification of counts/units.
+
+Accept full-event coverage and terminal-status separation as reported progress,
+but >=60% support-sentence body overlap remains a lexical proxy. Removing the
+title reduces false positives; missing negation/date/role/comparison constraints
+can still change the answer. Two manual examples do not validate full semantic
+precision. The mechanism counts 72+29+15+12+9+4=141 do not form an exclusive
+134-state partition; multilabel or cross-condition overlap remains unresolved.
+Answer type is a separate axis from the reason for an empty terminal answer.
+Condition memberships total 91 across 72 states and may overlap. Do not relabel
+the 72 as true semantic L3 or as 72 witnessed-recoverable states. Link independently
+confirmed evidence-use IDs with nonoracle recovery witnesses at the same prefix
+and remaining budget; the earlier 52-witness union does not establish that link.
+
+Public `semantic_review.py` independently implements versioned body-only token
+recall diagnostics WITHOUT assigning semantic decisions, frozen-context/body-quote
+review validation, explicit pending calibration coverage, and event-level primary
+versus secondary mechanism receipts checked against original A3 status/content
+and file hash. A state with different condition-specific primary labels becomes
+an explicit mixed state; evidence-use requires actual post-evidence generation
+and a nonempty wrong answer. Reviewer constraint/derivation attestations are not
+automatic entailment proofs. Gold supporting facts are offline audit information,
+never deployable trigger features. Do not claim reproduction of unavailable code.
+
+Current next action: validate/calibrate C/D receipts and freeze small mechanism
+controls E on existing development cases plus stable controls. Pin the actual
+post-evidence token state; later evidence cannot label earlier triggers. A future
+runner must validate the perturbed history, not bypass the clean A1 validator.
+Only F requires new unseen questions after method/selection/cost freezing. These
+audit-task letters do not authorize Stage C RL. No GPU runner/inference, new data
+download, environment provisioning or RL work occurs in this update.
+
+Validation before publication: **58 public CPU tests pass**. New checks cover
+title-only false matches, high overlap despite missing negation, unchanged
+semantic decisions, independent reviewer/body-quote requirements, frozen-context
+and duplicate-event rejection, explicit pending calibration coverage, mixed-state
+aggregation, budget/answer-type separation, empty-answer exclusion, generation
+opportunity after evidence, nonentity uncertainty retention, and an end-to-end
+native A3 receipt with hash/source preservation. Compilation, CLI help, shell,
+JSON, document links and diff checks passed. No factory C/D count reproduction
+or mechanism GPU experiment was run on the developer server.

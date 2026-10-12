@@ -84,7 +84,18 @@ artifacts remain on the factory server and are revalidated there before A3.
 
 ## Stage A3 — diagnostic pilot
 
-Current substage (2026-10-12): **factory-scale raw and semantic mechanism audit**.
+2026-10-12 C/D update: factory reports full 175-event body-overlap screening,
+but 60% lexical overlap is not semantic certification, and mechanism memberships
+sum to 141 rather than 134 exclusive states. Current substage is receipt validation/
+calibration and small mechanism-protocol E freezing, documented in
+`docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md`. Keep not-GO. Audit letters C/D/E/F
+are distinct from research Stage C (RL). Mechanism development E may reuse existing
+verified cases; independent confirmation F alone needs unseen questions. Do not
+use gold-support overlap or future trajectory evidence as a deployable trigger.
+72 evidence-use candidates are not automatically the nonoracle witnessed-recovery
+subset; same prefix/remaining-budget links are required.
+
+Earlier recorded substage (2026-10-12): **factory-scale raw and semantic mechanism audit**.
 The factory reports A1 1000 questions, A3 2000 planned/1972 reachable states and
 B recovery experiments on an unpublished fork. The user authorizes public main
 as the code authority; preserve factory commits and raw artifacts locally.

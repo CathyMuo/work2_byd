@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-12",
-  "current_stage": "A_B_factory_alignment_and_semantic_mechanism_audit",
-  "status": "awaiting_factory_cpu_raw_audit_and_evidence_review",
-  "next_action": "Use the public mainline as authorized by the user; preserve factory HEAD in a local backup branch before switching. Audit existing A1/A3 raw coverage, scores, exact controls and condition-matched question-clustered effects; review all degraded condition events, including nonentity/alias/empty-answer cases; export B transitions to quantify full gains/harms and condition selection. Do not rerun scaleup or start RL before audit and a frozen mechanism protocol.",
+  "current_stage": "audit_CD_receipt_validation_and_E_protocol_freeze",
+  "status": "factory_body_overlap_screening_reported_semantic_calibration_and_counts_pending",
+  "next_action": "Accept coverage of all 175 degraded condition events as reported. Reconcile 141 mechanism memberships versus 134 states; calibrate body-overlap screening with independent visible-body quotes and original-question constraints, keeping answer type and terminal status separate. Freeze small mechanism controls on existing verified post-evidence states with matched stable controls; reserve unseen questions for independent confirmation F. No GPU experiment or RL starts automatically.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -102,16 +102,65 @@
         "both_unseen_unknown": 13
       },
       "decision": "Continue CPU evidence and mechanism audit; no acceptance of semantic gate 2 from query strings, no E3-beyond-E1 claim from unmatched cohorts, no irrecoverability inference from failed baselines."
+    },
+    {
+      "stage": "audit_CD_factory_report",
+      "report_date": "2026-10-12",
+      "evidence_source": "user message; unavailable factory code/raw reviews; public implementation is authoritative per user",
+      "reported_commits": [
+        "839431d",
+        "113ca69"
+      ],
+      "event_sufficiency_proxy_counts": {
+        "sufficient": 110,
+        "insufficient": 21,
+        "uncertain": 44
+      },
+      "state_sufficiency_proxy_counts": {
+        "sufficient": 86,
+        "uncertain": 32,
+        "insufficient": 16
+      },
+      "reported_evidence_use_states": 72,
+      "reported_mechanism_memberships": {
+        "evidence_use": 72,
+        "nonentity_uncertain": 29,
+        "budget_exhaustion": 15,
+        "retrieval_action": 12,
+        "termination_failure": 9,
+        "other": 4
+      },
+      "mechanism_membership_sum": 141,
+      "distinct_states_reported": 134,
+      "exclusive_or_multilabel_definition": "unresolved; no clarification or source supplied",
+      "empty_answer_event_classification": {
+        "budget_exhaustion": 16,
+        "termination_failure": 10,
+        "nonentity_answer_type": 6
+      },
+      "reported_evidence_use_condition_memberships": {
+        "E1": 38,
+        "E2": 39,
+        "E3": 9,
+        "E4": 5
+      },
+      "matched_e1_report": {
+        "e3_excess_verbatim": "+3",
+        "units": "not_supplied",
+        "ci_covers_zero": true,
+        "ci_bounds": "not_supplied"
+      },
+      "decision": "Coverage and terminal-status separation are useful progress; >=60% overlap is still lexical screening, 72 remain evidence-use candidates, and sufficiency does not establish witnessed recovery. Mechanism table cannot be accepted as an exclusive 134-state partition."
     }
   ],
   "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence",
   "remaining": [
-    "Safely align factory code to public mainline and preserve all old runs/commits",
-    "Reaudit native raw A1/A3 coverage, condition eligibility and same-subset E1 effects with question-clustered intervals",
-    "Independently review ALL degraded states and condition events, including the 42 excluded proxy cases and 14 empty answers; add matched stable controls",
-    "Audit B0 condition assignment, full B3 gains/harms and oracle/gold/budget/cost isolation",
-    "Freeze falsifiable evidence-selection versus search-action versus termination mechanism tests before new GPU work",
-    "Freeze an independent confirmation split excluding all observed questions; no RL without the research gate decision"
+    "Validate reported C/D context, count units and mutually exclusive versus multi-label mechanism receipts; do not discard nonentity/uncertain events",
+    "Independently calibrate high-overlap evidence-use candidates and matched stable controls; preserve quotes, question constraints and earliest sufficient round",
+    "Link evidence-use candidate IDs to nonoracle recovery witness IDs at the same starting state and remaining budget; 72 and 52 are not automatically the same set",
+    "Freeze a small existing-state mechanism protocol E, including post-evidence replay validation, generic-review control and matched incremental cost accounting",
+    "Audit B condition assignment and complete gains/harms/costs; do not use future evidence, clean/gold labels or final answers as deployable triggers",
+    "Only after development controls, freeze disjoint question-level confirmation F; no RL without the original research gate review"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -129,15 +178,19 @@
   "code_alignment": {
     "public_base_commit": "c4d95212797bfba6bf2b33a415937124e79dd66c",
     "reported_factory_base": "a17f1f3",
-    "reported_factory_head": "f4a4bb5",
+    "reported_factory_head": "113ca69",
     "factory_source_available": false,
     "user_instruction": "No factory source provided; public developer repository is authoritative, factory will replace code from it. Preserve old commits/artifacts locally.",
-    "implemented_alignment": "Reported replay_intervention signature reconstructed as a compatibility wrapper; existing public reviewed-intervention code retained; unavailable factory modules are not claimed imported."
+    "implemented_alignment": "Public replay_intervention wrapper retained; semantic_review is an independent body-only lexical diagnostic and reviewer/mechanism receipt validator, not the unavailable factory classifier.",
+    "additional_reported_commits": [
+      "839431d",
+      "113ca69"
+    ]
   },
   "gate_review": {
-    "gate_1": "not_established: E3 descriptive adverse signal on a lexical subset; matched E1 contrast and semantic bridge review missing; E2 aggregate net improvement is not proof of equivalence",
-    "gate_2": "not_established: query string change is not semantic off-target behavior",
+    "gate_1": "not_established: factory reports matched E3 excess +3 with CI crossing zero, but units/bounds and raw audit not supplied; no equivalence claim",
+    "gate_2": "not_established: body-overlap screening and terminal-status separation do not certify semantic off-target queries or causal mechanisms",
     "gate_3": "partial_reported: B1/B2 limited and B3 partial repair with stable harm; full transition/cost audit pending",
-    "gate_4": "reported_witnessed_subset: 52/134 recovered by union including restricted oracle; verify same starting state, remaining budget, gold isolation and nonoracle witnesses"
+    "gate_4": "witnessed subset reported, not the 72 evidence-use candidates; intersection, nonoracle status, exact starting prefix and remaining budget require verification"
   }
 }
