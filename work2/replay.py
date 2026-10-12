@@ -167,6 +167,17 @@ def replay_observation(source, turn, branch, documents, condition, metadata,
     return record
 
 
+def replay_intervention(source, turn, branch, visible, intervention_metadata,
+                        generator, retriever, agent, retrieval, condition="E0_clean"):
+    """Compatibility with the API described in the factory f4a4bb5 report.
+
+    Reconstructed from the supplied signature, not imported factory source.
+    Intervention eligibility remains the caller's responsibility.
+    """
+    return replay_observation(source, turn, branch, visible, condition,
+                              intervention_metadata, generator, retriever, agent, retrieval)
+
+
 def continuation_signature(row):
     turn = row["target_turn"]
     content = {"tokens": [s["token_ids"] for s in row["steps"][turn:]],

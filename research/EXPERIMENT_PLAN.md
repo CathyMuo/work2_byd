@@ -84,7 +84,20 @@ artifacts remain on the factory server and are revalidated there before A3.
 
 ## Stage A3 — diagnostic pilot
 
-Current substage: **reviewed 10-question engineering pilot**, implemented in
+Current substage (2026-10-12): **factory-scale raw and semantic mechanism audit**.
+The factory reports A1 1000 questions, A3 2000 planned/1972 reachable states and
+B recovery experiments on an unpublished fork. The user authorizes public main
+as the code authority; preserve factory commits and raw artifacts locally.
+Reported evidence is reviewed in `FACTORY_SCALE_REVIEW.md`; this is not a full
+code import, independent confirmation or acceptance of the scientific gates.
+Run CPU `audit_pairs` on original traces, independent evidence sufficiency review
+on ALL degraded condition events, and compact B transition audit before new GPU
+experiments. Query differences are not semantic drift, entity mentions are not
+sufficient evidence, and baseline failures are not irrecoverability proofs.
+No scale rerun or RL is the next action. The original engineering implementation
+and stricter eligibility protocol below remain historical public capabilities.
+
+Previous substage: **reviewed 10-question engineering pilot**, implemented in
 `prepare_interventions` and `run_interventions`; see `docs/A3_EXECUTION_GUIDE.md`.
 Keep first five A1 IDs per dataset and turns 1/2. Independently review all
 condition eligibilities and freeze real rank-4–20 replacements before inference.
@@ -131,6 +144,15 @@ Retain paired confidence intervals and case audits, not just point estimates.
 Required outputs: `paired_rollouts.jsonl`, aggregate metrics, and failure audit.
 
 ## Stage B — recovery baselines and gate
+
+The factory reports B1/B2/B3 and an E3-restricted B5 oracle on the exploratory
+scale cohort; its source implementation is unavailable and not claimed imported.
+Audit same-start-state/global-budget/cost/gold isolation and actual B0 condition
+assignment. B3 reportedly repairs 44 degraded states while harming 53 stable
+states; full-cohort net benefit is unknown without the clean-wrong transitions.
+The union 52/134 witnesses includes oracle and defines a subset, not universal
+recoverability. Current gate review in STATE records semantic gate 2 and the
+condition-matched gate 1 as unestablished; original gate definitions stay intact.
 
 Compare original Search-R1, budget 4→6, dedup/filtering, a missing-subgoal review
 prompt, Harness-G where feasible, and an explicitly labeled oracle diagnostic

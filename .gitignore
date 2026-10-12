@@ -17,6 +17,7 @@ configs/local.*.json
 /logs/
 /wandb/
 /runs/
+/tmp/
 *.pt
 *.pth
 *.safetensors

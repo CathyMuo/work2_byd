@@ -1,14 +1,20 @@
 # Work 2: Search Feedback Drift and Recovery
 
 工作二独立研究仓库：多轮搜索智能体中的检索反馈偏移与自适应恢复。
-实验服务器：厂内 **4×H800**。A1 的 200 题 clean baseline 已由厂内报告完成，
+实验服务器：厂内 **4×H800**。厂内已报告 1000 题 A1、2000 个 A3 目标状态及 B
+基线结果；新实验与代码分支 `f4a4bb5` 尚未提供原始源码/轨迹。
+当前先做 **CPU 原始配对与语义机制审计**，以公开主线为后续代码依据。
+详见 [扩大结果审查](research/FACTORY_SCALE_REVIEW.md) 与
+[本轮对齐/执行步骤](docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md)。研究仍未 GO。
+
+A1 的原 200 题 clean baseline 已由厂内报告完成，
 实际 cohort 是官方 Search-R1 **7B + FAISS Flat**，EM 0.335、多轮率 0.975。
 详见 [A1 报告分析](research/A1_REPORTED_RESULTS.md)；原始数据尚未在开发服务器核验。
 厂内报告 A2 的 20/20 精确控制通过，见 [A2 分析](research/A2_REPORTED_RESULTS.md)。
 当前已实现独立审查后执行的 E2–E4 **10 题工程 Pilot**；完整诊断扩展、恢复基线和 RL 待后续。
 
-**本轮请执行 [A3 实施文档](docs/A3_EXECUTION_GUIDE.md)：生成审查表、独立核验并冻结，
-再跑单轮干预。保持原模型/索引/题目，保留 A1/A2 历史文件。**
+**本轮请先保存厂内分叉代码再对齐公开主线，审计已有产物；不重跑规模实验。**
+原 [A3 工程文档](docs/A3_EXECUTION_GUIDE.md) 保留为历史工程入口。
 
 详细步骤见 [工作二实验实施文档](docs/EXECUTION_GUIDE.md)：资源清单、路径填写、
 Retriever 启动、10 题小样本、200 题基线、结果含义及反馈方式均有命令和说明。
@@ -35,7 +41,24 @@ cp configs/local.example.json configs/local.json
 `check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
 不属于必跑步骤。
 
-## 当前实验入口：A3 工程 Pilot
+## 当前入口：CPU 配对与语义审查
+
+首次从厂内分叉切换主线需按 [对齐步骤](docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md)，
+普通 git pull 无法快进覆盖已提交分支。之后使用实际 raw 文件：
+
+```bash
+python -m work2.audit_pairs \
+  --a1-rollouts outputs/a1_clean_scale500/clean_rollouts.jsonl \
+  --a3-rollouts outputs/a3_scale500_merged/paired_rollouts.jsonl \
+  --output-dir outputs/semantic_audit
+```
+
+A3 实际文件名/字段以厂内为准，先用 `--schema-only` 核对。格式不一致明确停止，
+不猜字段、不伪造控制。新程序给同资格状态 E1 配对、整题聚类区间、全部退化
+事件的证据审查表；语义判断仍由独立审查完成。B 使用显式 compact 转移格式
+核对完整 gain/harm/net，不自动读取未知旧 schema。
+
+## 原 A3 工程 Pilot 入口
 
 沿用现有 `configs/local.json`、常驻 Retriever 和 A1 产物：
 
@@ -97,7 +120,8 @@ bash scripts/update.sh
 | `tests/` | CPU 协议、边界和运行产物测试 |
 | `docs/EXECUTION_GUIDE.md` | 详细厂内实施步骤与后续研究路线 |
 | `docs/A2_EXECUTION_GUIDE.md` | A2 的重放步骤、控制与反馈要求 |
-| `docs/A3_EXECUTION_GUIDE.md` | 当前 E2–E4 资格审查、冻结和单轮干预执行步骤 |
+| `docs/A3_EXECUTION_GUIDE.md` | 原 E2–E4 工程资格审查、冻结和单轮干预步骤 |
+| `docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md` | 当前厂内分叉备份/对齐、CPU 审计与后续机制协议 |
 | `outputs/` | 本机环境报告与未来实验产物，不提交 |
 
 上游以 Git submodule 固定版本，均使用公开 HTTPS URL。不要在厂内执行

@@ -155,3 +155,58 @@ single-slot change, budget preservation, control-failure stop, condition-matched
 E1 metrics and full mock CLI output. Python compilation, CLI help, shell syntax,
 JSON, documentation links and diff checks passed. Factory H800 A3 execution is
 pending; model/data/environment remain user-managed.
+
+## 2026-10-12 — Public main is authoritative; audit reported factory scale results
+
+The user supplied a 2026-10-10 report from factory fork `f4a4bb5`, based on
+`a17f1f3`, claiming 17 unpublished commits/35 changed files, A1 1000 questions,
+A3 2000 states (1972 completed/28 unreachable), B baselines, 134 degraded states
+and L3/recoverability proxy audits. Factory source and raw traces are unavailable
+here. Public HEAD is `c4d9521`; no full fork import or factory-test verification
+is claimed. The user explicitly answered that no code is available and public
+developer main should be primary, with factory code replaced from it. Preserve
+the old HEAD in a local backup branch before switching; preserve all outputs
+and local configuration. Later ordinary pulls follow the public mainline.
+
+Accept the reported runs as **legacy exploratory progress**, not as completed
+semantic gates or independent confirmation. Continue CPU raw coverage/paired
+integrity/score audits, question-clustered effects against E1 on the SAME eligible
+states, and independent evidence sufficiency review of ALL degraded condition
+events. Retain original gate definitions. E3's −10/178 signal does not establish
+beyond-ordering degradation without the matched E1 contrast and semantic bridge
+qualification; E2's aggregate gain does not establish equivalence. ~60% query
+string change does not establish semantic off-target search, so gate 2 remains
+unestablished. No RL GO or further scale rerun.
+
+74/134=55.2% are answer-entity/no-answer L3 candidates. 74/92=80.4% is conditional
+on proxy judgment coverage after excluding 42 states; not an all-state semantic
+prevalence estimate. Review nonentity/alias cases and split the 14 empty answers
+from 60 wrong answers. Resolve the different S1 133/134 evidence proxy instead
+of asserting universal corpus accessibility. The 82 not repaired by tested
+baselines are not proven irrecoverable; 52 witnessed repairs include restricted
+oracle. A recovery ratio of 1 on a selected B0-failed witnessed subset is
+constructional, not a new result. B3's 44 gains and 53 stable harms imply −9 on
+those 583 states if B0 definitions agree; full-cohort net is unknown without all
+1389 clean-wrong transitions. Check budget, prompts, gold isolation, action
+starting points, oracle and outcome-selected condition assignment before method
+claims. Mechanism/novelty hypotheses remain exploratory pending frozen controls
+and disjoint confirmation; existing related papers are linked in the review.
+
+Implementation: reconstruct the supplied `replay_intervention` signature as a
+compatibility wrapper over the public shared continuation, add a local-branch
+backup alignment script and tmp ignore, strict CPU raw paired audit with explicit
+schema mappings, whole-question/dataset-stratified bootstrap and condition-matched
+E1 contrast, pending semantic-review packets and compact B gain/harm/net audit.
+Unknown schemas fail rather than invent missing controls or source fields. No
+automatic semantic certification, old-score rewriting or GPU execution. Detailed
+protocol and factory migration steps are in FACTORY_ALIGNMENT_AND_NEXT_STEPS.md.
+
+Validation before publication: **46 CPU tests pass**, covering all public A1/A2/A3
+regressions plus the compatibility API, duplicate/missing coverage, false
+unreachability, raw control/score/history corruption, condition-matched E1,
+question-cluster resampling, sparse-stratum interval abstention, B gain/harm and
+partial coverage, source-file immutability/schema-only probing, preserved factory
+backup commits/ignored results and refusal to discard uncommitted edits. Python
+compilation, CLI help, shell syntax, JSON, documentation links and diff checks
+passed. No actual factory raw audit or H800 inference was executed here; the
+reported factory 77-test suite remains separately unverified.

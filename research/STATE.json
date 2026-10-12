@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-10-09",
-  "current_stage": "A3_reviewed_intervention_engineering",
-  "status": "awaiting_factory_annotation_and_engineering_pilot",
-  "next_action": "Pull bug fixes; prepare outcome-free A3 review packet from unchanged A1 and passed A2, independently review/freeze E2–E4 eligibility and replacements, validate then run 10-question engineering pilot. Return eligibility, controls, paired metrics and cases before any 200-question expansion; no training restart or RL GO.",
+  "updated_at": "2026-10-12",
+  "current_stage": "A_B_factory_alignment_and_semantic_mechanism_audit",
+  "status": "awaiting_factory_cpu_raw_audit_and_evidence_review",
+  "next_action": "Use the public mainline as authorized by the user; preserve factory HEAD in a local backup branch before switching. Audit existing A1/A3 raw coverage, scores, exact controls and condition-matched question-clustered effects; review all degraded condition events, including nonentity/alias/empty-answer cases; export B transitions to quantify full gains/harms and condition selection. Do not rerun scaleup or start RL before audit and a frozen mechanism protocol.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -45,14 +45,73 @@
       "reported_ready_for_a3_engineering_review": true,
       "decision": "Accept engineering prerequisites for reviewed E2–E4 pilot; no significance, semantic drift/recovery or RL GO",
       "metadata_erratum": "Legacy parser labeled Flat description containing NOT HNSW as hnsw; leave historical manifests immutable; normalize declaration in new derivative artifacts."
+    },
+    {
+      "stage": "A1_A3_B_scale_factory_report",
+      "report_date": "2026-10-10",
+      "evidence_source": "user-pasted factory report; raw traces and factory code not available on developer server",
+      "report_sha256": "f5518f9b712a373fd5820243cb45a2d7f8e43fbf9932a2e77c8d4bb26c6b2b66",
+      "reported_head": "f4a4bb5",
+      "status": "legacy_exploratory_report_not_independently_verified",
+      "a1_questions": 1000,
+      "a1_em": 0.297,
+      "a1_f1_rounded": 0.3808,
+      "a3_planned_states": 2000,
+      "a3_completed_states": 1972,
+      "a3_unreachable_states": 28,
+      "a3_reported_control_mismatches": 0,
+      "condition_counts": {
+        "E1": {
+          "ran": 1972,
+          "degraded": 75,
+          "improved": 96
+        },
+        "E2": {
+          "ran": 1960,
+          "degraded": 81,
+          "improved": 112
+        },
+        "E3": {
+          "ran": 178,
+          "degraded": 14,
+          "improved": 4
+        },
+        "E4": {
+          "ran": 88,
+          "degraded": 5,
+          "improved": 7
+        }
+      },
+      "b_reported_strata": {
+        "degraded": 134,
+        "stable": 449,
+        "clean_wrong": 1389
+      },
+      "b_reported_recovery": {
+        "B1": 10,
+        "B2": 0,
+        "B3": 44,
+        "any_including_oracle": 52,
+        "B3_stable_harms": 53
+      },
+      "l3_proxy_categories": {
+        "seen_answer_entity_wrong": 60,
+        "nonentity_unknown": 29,
+        "retrieval_action_candidate": 18,
+        "seen_entity_no_final_answer": 14,
+        "both_unseen_unknown": 13
+      },
+      "decision": "Continue CPU evidence and mechanism audit; no acceptance of semantic gate 2 from query strings, no E3-beyond-E1 claim from unmatched cohorts, no irrecoverability inference from failed baselines."
     }
   ],
-  "rl_go_decision": "not_evaluated",
+  "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence",
   "remaining": [
-    "Independently review and freeze E2–E4 substitutions; run and audit 10-question A3 engineering pilot",
-    "Review eligibility/length and semantic judging protocol before 200-question diagnostic expansion",
-    "Run independent confirmation and paired uncertainty grouped by question",
-    "Evaluate recovery baselines and decide research GO/NO-GO"
+    "Safely align factory code to public mainline and preserve all old runs/commits",
+    "Reaudit native raw A1/A3 coverage, condition eligibility and same-subset E1 effects with question-clustered intervals",
+    "Independently review ALL degraded states and condition events, including the 42 excluded proxy cases and 14 empty answers; add matched stable controls",
+    "Audit B0 condition assignment, full B3 gains/harms and oracle/gold/budget/cost isolation",
+    "Freeze falsifiable evidence-selection versus search-action versus termination mechanism tests before new GPU work",
+    "Freeze an independent confirmation split excluding all observed questions; no RL without the research gate decision"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -66,5 +125,19 @@
     "tensor_parallel_size": 1,
     "basis": "user factory report; A2 verifies source artifacts at runtime",
     "gpu_memory_utilization": 0.75
+  },
+  "code_alignment": {
+    "public_base_commit": "c4d95212797bfba6bf2b33a415937124e79dd66c",
+    "reported_factory_base": "a17f1f3",
+    "reported_factory_head": "f4a4bb5",
+    "factory_source_available": false,
+    "user_instruction": "No factory source provided; public developer repository is authoritative, factory will replace code from it. Preserve old commits/artifacts locally.",
+    "implemented_alignment": "Reported replay_intervention signature reconstructed as a compatibility wrapper; existing public reviewed-intervention code retained; unavailable factory modules are not claimed imported."
+  },
+  "gate_review": {
+    "gate_1": "not_established: E3 descriptive adverse signal on a lexical subset; matched E1 contrast and semantic bridge review missing; E2 aggregate net improvement is not proof of equivalence",
+    "gate_2": "not_established: query string change is not semantic off-target behavior",
+    "gate_3": "partial_reported: B1/B2 limited and B3 partial repair with stable harm; full transition/cost audit pending",
+    "gate_4": "reported_witnessed_subset: 52/134 recovered by union including restricted oracle; verify same starting state, remaining budget, gold isolation and nonoracle witnesses"
   }
 }
