@@ -205,3 +205,29 @@ Record main/dependency commits, checkpoint identity, tokenizer/prompt version,
 retriever/index/corpus identity, decoding settings, config, sample manifests,
 prefixes, original/visible documents, and per-run outputs. Never publish
 credentials or factory-local data by default.
+
+
+## Current audit task E — post-observation engineering, not Stage C RL
+
+Factory step-0 partial calibration (8/175 reviewed, four sufficient HotpotQA
+cases) is accepted for preparation only. Implemented public protocol and commands
+are in `docs/E_EXECUTION_GUIDE.md`. Use existing development sources; independently
+verify both failed and stable members at their displayed actual prefix. One
+complete reviewed pair suffices for smoke; at most four pairs initially. Freeze
+run/skip decisions and stable candidate order before inference. Preserve pending
+semantic coverage and nonentity uncertainty; no population prevalence claim.
+
+Start after max(parent intervention turn, earliest sufficient turn), retaining
+actual perturbed history/raw generated token IDs and all spent budget. Do not
+start before a later parent intervention. All selected original controls must
+match each other and the historical suffix before any review arms. Compare
+original, general review and original-question-constraint review with inherited
+4-search/global-context caps and 512-token PER SEGMENT cap, reporting actual
+incremental costs and stable harms. No historical compression, gold-input,
+post-outcome reselection, new F evaluation, or RL is included. E matching is a
+cross-question engineering control; matched E1 for content-specific inference
+remains same-state/pre-intervention, not rematching on downstream mediators.
+
+After E engineering and cost review, separately freeze F unseen question IDs,
+independent confirmation and deployable prefix-only selection. Existing research
+gates are unchanged and remain unestablished; passing E controls is not GO.

@@ -3,12 +3,14 @@
 工作二独立研究仓库：多轮搜索智能体中的检索反馈偏移与自适应恢复。
 实验服务器：厂内 **4×H800**。厂内已报告 1000 题 A1、2000 个 A3 目标状态及 B
 基线结果；新实验与代码分支 `f4a4bb5` 尚未提供原始源码/轨迹。
-当前先做 **CPU 原始配对与语义机制审计**，以公开主线为后续代码依据。
-最新 C/D 报告已登记：全 175 事件的正文重叠筛选是进展，但语义与机制计数仍需
-校验。当前使用 [C/D 收据与 E/F 协议](docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md)，
-新增 `work2.semantic_review`；它不自动把 60% 重叠判为充分证据。
+当前已接受厂内 `0ea168a` 的 **8/175 事件部分校准**，保留 167 pending，
+已实现唯一公开的 **E 实际扰动历史续写入口**。先独立审查至少 1 对失败/稳定
+案例，跑精确控制优先的 smoke，再最多 4 对工程扩展。
+完整命令、起点规则与最新计数修正见 [E 实施文档](docs/E_EXECUTION_GUIDE.md)。
+[C/D 审查协议](docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md) 保留为审计入口，
+正文重叠不自动证明充分性；研究与 RL 仍未 GO。
 详见 [扩大结果审查](research/FACTORY_SCALE_REVIEW.md) 与
-[本轮对齐/执行步骤](docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md)。研究仍未 GO。
+[厂内代码对齐步骤](docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md)。
 
 A1 的原 200 题 clean baseline 已由厂内报告完成，
 实际 cohort 是官方 Search-R1 **7B + FAISS Flat**，EM 0.335、多轮率 0.975。
@@ -16,7 +18,7 @@ A1 的原 200 题 clean baseline 已由厂内报告完成，
 厂内报告 A2 的 20/20 精确控制通过，见 [A2 分析](research/A2_REPORTED_RESULTS.md)。
 当前已实现独立审查后执行的 E2–E4 **10 题工程 Pilot**；完整诊断扩展、恢复基线和 RL 待后续。
 
-**本轮请先保存厂内分叉代码再对齐公开主线，审计已有产物；不重跑规模实验。**
+**本轮先保存厂内分叉再对齐主线，准备/核验 E 配对；不重跑规模实验。**
 原 [A3 工程文档](docs/A3_EXECUTION_GUIDE.md) 保留为历史工程入口。
 
 详细步骤见 [工作二实验实施文档](docs/EXECUTION_GUIDE.md)：资源清单、路径填写、
@@ -44,7 +46,23 @@ cp configs/local.example.json configs/local.json
 `check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
 不属于必跑步骤。
 
-## 当前入口：CPU 配对与语义审查
+## 当前入口：E 配对与工程 smoke
+
+按 [E 实施文档](docs/E_EXECUTION_GUIDE.md) 对齐公开主线后：
+
+```bash
+python -m work2.prepare_e
+cp outputs/e_review/proposals.json outputs/e_review/reviewed.json
+# 独立核验实际截断前缀，填写所有组的 run/skip 与必要 reviews：
+python -m work2.prepare_e --validate outputs/e_review/reviewed.json
+python -m work2.run_e --pair-limit 1 --check-only
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_e.sh --pair-limit 1 --run-dir outputs/e_smoke
+```
+
+至少一组完整失败/稳定配对，保留原干预和已用预算；全批原样控制与历史后缀
+一致后才运行一般回顾/原问题约束核对。现有校准不能替代稳定控制的独立审查。
+
+## CPU 配对与语义审查入口
 
 首次从厂内分叉切换主线需按 [对齐步骤](docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md)，
 普通 git pull 无法快进覆盖已提交分支。之后使用实际 raw 文件：
@@ -125,6 +143,7 @@ bash scripts/update.sh
 | `docs/A2_EXECUTION_GUIDE.md` | A2 的重放步骤、控制与反馈要求 |
 | `docs/A3_EXECUTION_GUIDE.md` | 原 E2–E4 工程资格审查、冻结和单轮干预步骤 |
 | `docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md` | 当前厂内分叉备份/对齐、CPU 审计与后续机制协议 |
+| `docs/E_EXECUTION_GUIDE.md` | 当前 E 候选审查、实际扰动起点、全批控制优先和成本/结果反馈 |
 | `docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md` | 最新 C/D 正文诊断、审查/机制收据与 E/F 的范围 |
 | `outputs/` | 本机环境报告与未来实验产物，不提交 |
 

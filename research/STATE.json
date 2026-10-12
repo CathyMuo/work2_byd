@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-12",
-  "current_stage": "audit_CD_receipt_validation_and_E_protocol_freeze",
-  "status": "factory_body_overlap_screening_reported_semantic_calibration_and_counts_pending",
-  "next_action": "Accept coverage of all 175 degraded condition events as reported. Reconcile 141 mechanism memberships versus 134 states; calibrate body-overlap screening with independent visible-body quotes and original-question constraints, keeping answer type and terminal status separate. Freeze small mechanism controls on existing verified post-evidence states with matched stable controls; reserve unseen questions for independent confirmation F. No GPU experiment or RL starts automatically.",
+  "current_stage": "E_post_observation_engineering",
+  "status": "public_E_implemented_CPU_verified_awaiting_factory_prefix_reviews_and_one_pair_smoke",
+  "next_action": "Factory backs up its local branch and aligns public main; prepares E from immutable A1/A3/partial calibration; independently reviews actual prefix-only failed/stable evidence; freezes all run/skip groups; runs one pair with all original controls/history exact before review arms, then at most four pairs on the same plan. Do not start F/RL or claim full C/D coverage.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -151,16 +151,70 @@
         "ci_bounds": "not_supplied"
       },
       "decision": "Coverage and terminal-status separation are useful progress; >=60% overlap is still lexical screening, 72 remain evidence-use candidates, and sufficiency does not establish witnessed recovery. Mechanism table cannot be accepted as an exclusive 134-state partition."
+    },
+    {
+      "stage": "audit_step0_factory_report",
+      "reported_head": "0ea168a",
+      "public_source_merged_reported": "6be41d4",
+      "evidence_source": "user pasted report; raw calibration artifacts unavailable here",
+      "diagnostic_high_proxy_events": 144,
+      "total_events": 175,
+      "reviewed_events": 8,
+      "manual_decisions_reported": {
+        "sufficient": 4,
+        "insufficient": 2,
+        "uncertain": 2
+      },
+      "pending_events": 167,
+      "states_with_pending_events": 130,
+      "state_decisions_reported": {
+        "sufficient_any_event": 4,
+        "pending_without_sufficient": 128,
+        "all_insufficient": 2
+      },
+      "retired_claims": [
+        "automatic semantic labeling from overlap",
+        "72 true semantic L3 states",
+        "exclusive 141-state mechanism distribution"
+      ],
+      "raw_terminal_event_counts": {
+        "answered": 143,
+        "search_budget_exhausted": 21,
+        "generation_limit": 8,
+        "malformed_action": 3
+      },
+      "matched_e3": {
+        "states": 178,
+        "questions": 151,
+        "sum_delta_em": -10,
+        "same_state_e1_sum_delta_em": -13,
+        "excess_em_count": 3,
+        "reported_ci95_excess_em_count": [
+          -4,
+          10
+        ],
+        "resamples": 2000,
+        "seed": 42
+      },
+      "nonoracle_witness_states_reported": 46,
+      "withdrawn_proxy_candidate_witness_intersection": 25,
+      "same_post_evidence_start_verified": false,
+      "decision": "Accept partial calibration as engineering input, not full C/D completion or semantic certification. All eligible E cases and stable controls require independent sufficiency at the actual post-intervention start. New witness count conflicts with prior 52-union/3-oracle counts.",
+      "corrected_empty_answer_terminal_partition": {
+        "budget_exhaustion": 21,
+        "termination_failure": 11
+      },
+      "reviewed_sufficient_scope": "Four reported events, all HotpotQA; no 2Wiki/nonentity generality implied",
+      "report_sha256": "b4120af727fa0e4c9a12be2370f669dda3030845be909ad8bb72f655a49ab19c"
     }
   ],
   "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence",
   "remaining": [
-    "Validate reported C/D context, count units and mutually exclusive versus multi-label mechanism receipts; do not discard nonentity/uncertain events",
-    "Independently calibrate high-overlap evidence-use candidates and matched stable controls; preserve quotes, question constraints and earliest sufficient round",
-    "Link evidence-use candidate IDs to nonoracle recovery witness IDs at the same starting state and remaining budget; 72 and 52 are not automatically the same set",
-    "Freeze a small existing-state mechanism protocol E, including post-evidence replay validation, generic-review control and matched incremental cost accounting",
-    "Audit B condition assignment and complete gains/harms/costs; do not use future evidence, clean/gold labels or final answers as deployable triggers",
-    "Only after development controls, freeze disjoint question-level confirmation F; no RL without the original research gate review"
+    "Independently verify sufficient evidence at each actual failed/stable E anchor using the frozen preparation packet",
+    "Run one paired engineering smoke with all original controls passing before either review method, then at most four pairs if eligible",
+    "Reconcile 46 nonoracle versus prior 52 union and 3 B5 successes using baseline event IDs/eligibility",
+    "Preserve partial-calibration and nonentity uncertainty; use explicit relation/number derivations for future semantic coverage",
+    "After E development controls and full cost audit, freeze disjoint F confirmation and deployable triggering protocol; no RL GO"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -176,21 +230,21 @@
     "gpu_memory_utilization": 0.75
   },
   "code_alignment": {
-    "public_base_commit": "c4d95212797bfba6bf2b33a415937124e79dd66c",
+    "public_base_commit": "6be41d4ae065d78469324cf92a97ac25873469dc",
     "reported_factory_base": "a17f1f3",
-    "reported_factory_head": "113ca69",
+    "reported_factory_head": "0ea168a",
     "factory_source_available": false,
     "user_instruction": "No factory source provided; public developer repository is authoritative, factory will replace code from it. Preserve old commits/artifacts locally.",
-    "implemented_alignment": "Public replay_intervention wrapper retained; semantic_review is an independent body-only lexical diagnostic and reviewer/mechanism receipt validator, not the unavailable factory classifier.",
+    "implemented_alignment": "Public replay_intervention compatibility and semantic_review retained; prepare_e/post_evidence/run_e provide the sole perturbed post-observation E implementation, CPU verified; factory execution pending.",
     "additional_reported_commits": [
       "839431d",
       "113ca69"
     ]
   },
   "gate_review": {
-    "gate_1": "not_established: factory reports matched E3 excess +3 with CI crossing zero, but units/bounds and raw audit not supplied; no equivalence claim",
+    "gate_1": "not_established: on 178 E3 states/151 questions, E3 delta -10 versus matched E1 -13 gives excess +3 counts, reported cluster CI [-4,+10]; no equivalence claim",
     "gate_2": "not_established: body-overlap screening and terminal-status separation do not certify semantic off-target queries or causal mechanisms",
     "gate_3": "partial_reported: B1/B2 limited and B3 partial repair with stable harm; full transition/cost audit pending",
-    "gate_4": "witnessed subset reported, not the 72 evidence-use candidates; intersection, nonoracle status, exact starting prefix and remaining budget require verification"
+    "gate_4": "reported nonoracle subset 46 conflicts with earlier union 52 and B5 count 3 under same universe; retired proxy intersection 25 not semantic or verified at same post-evidence start; reconcile IDs"
   }
 }

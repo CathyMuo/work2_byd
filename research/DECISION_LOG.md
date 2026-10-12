@@ -272,3 +272,89 @@ opportunity after evidence, nonentity uncertainty retention, and an end-to-end
 native A3 receipt with hash/source preservation. Compilation, CLI help, shell,
 JSON, document links and diff checks passed. No factory C/D count reproduction
 or mechanism GPU experiment was run on the developer server.
+
+
+## 2026-10-12 — Factory step-0 calibration accepted only for E engineering preparation
+
+The latest supplied report is factory `0ea168a`, reportedly merging public
+`6be41d4`. Raw artifacts and local source remain unavailable here. Factory adopts
+the public lexical-only implementation and retracts automatic semantic labels,
+including “72 true L3.” Reported diagnostics: 144/175 have at least one body
+support-token recall >=0.6; eight independent reviews are 4 sufficient, 2
+insufficient, 2 uncertain, 167 pending. Four sufficient cases are HotpotQA only.
+Quote presence validation is progress, not automatic semantic entailment; this
+is not full C/D coverage or measured precision across all strata.
+
+Accept these cases as engineering seeds without requiring all 175 reviews.
+Minimum GPU entry is one independently sufficient failed/stable pair, each
+reviewed using ONLY information displayed at its actual start; maximum four
+pairs initially. Stable sufficiency was not supplied and must be reviewed. The
+fixed protocol uses existing development questions, not new F questions, and
+cannot authorize triggering, a population mechanism prevalence, research GO or
+RL. Numeric/comparison cases require explicit entity resolution and derivation;
+uncertain is appropriate for missing proof, not an automatic permanent category.
+
+Matched E3 now has supplied units: 178 states/151 questions; net delta sums E3
+-10 and same-state E1 -13, excess +3 EM counts, reported question-cluster 95%
+bootstrap count CI [-4,+10], 2000 draws, seed 42. Point mean is +3/178, not three
+percentage points. Resampled cluster sizes can vary, so do not divide this count
+interval by 178 and relabel it a mean interval. Same-state pre-intervention
+prefix/budget equality is the required check; matching on post-intervention
+length/search mediators would change the estimand. Gate 1 remains unestablished,
+not evidence of equivalence. Separate cross-question E engineering matches use
+fixed dataset/condition/turn/budget and length rules.
+
+Correct two supplied explanations: the old six-category table literally totals
+141 including the 29 uncertain; without them it is 112. Retire that distribution,
+do not call it a nonuncertain partition. New raw status table is answered 143,
+budget_exhausted 21, generation_limit 8, malformed_action 3. The 32 empty answers
+therefore split 21 budget / 11 termination, with six nonentity answers being a
+cross-axis subset, not a third exclusive cause. No motive of choosing not to
+answer follows from terminal status. Reported 46 nonoracle witnesses versus old
+union 52 and B5 successes 3 cannot all hold under identical units/eligibility;
+the old union would require >=49 nonoracle. Retain this discrepancy for ID-level
+reconciliation. The 25-state intersection uses a withdrawn lexical candidate
+set and has no verified common post-evidence start.
+
+## 2026-10-12 — Single public E runner implemented; actual perturbation and spent budget preserved
+
+Record E engineering implementation as the next stage; original four research
+gates and the not-granted RL decision remain unchanged. Public post_evidence
+validates A1 identity/pre-intervention history, the actual one-observation change,
+and the full perturbed token/observation history. Restore after
+max(parent intervention turn, earliest reviewed sufficient turn). The reported
+hotpotqa:5a83ed9b t2/E2 sufficient at t1 MUST start after t2, otherwise it would
+skip the treatment. Generated raw token IDs are retained; observation IDs use
+the frozen tokenizer as in the original rollout, next input length is checked,
+and the subsequent saved prefix is checked when available. New post-observation
+SHA is recorded with its reconstruction basis; do not invent a historical saved
+post-observation SHA. Perturbed branches are never relabeled clean.
+
+Preparation binds immutable source hashes and re-audits A1/A3. It selects at
+most four independently reviewed answered-error questions in frozen A1 order,
+then proposes at most three stable matches per case with the same dataset,
+condition, parent/start turn and remaining budget, input length ratio 0.75–1.25.
+Review truncated prefixes, select first sufficient stable proposal in frozen
+order, and finalize all run/skip groups before GPU. These outcome-selected
+cases are engineering inputs, not deployable selection features.
+
+The runner inherits source manifest settings and asset/service identity. ALL
+selected original A/B controls must match each other and historical continuation
+before ANY general-review or original-question-constraint arm runs. Original
+four-search budget is never reset; 512 remains a per-generation-segment cap,
+not a whole-branch cap. The fourth observation still permits final generation.
+No gold/review labels are inserted into policy input. Fixed instruction hashes,
+real incremental instruction/input/generated/search costs, failures, full
+planned denominators, and normal live retrieval audits are persisted atomically.
+A changed parent observation is never used as a normal retrieval reference.
+Unknown factory schemas fail explicitly rather than inventing fields. Existing
+output directories are not overwritten. Detailed steps: E_EXECUTION_GUIDE.md.
+
+Validation before publication: **71 public CPU tests pass**, including all
+previous regressions and actual E1/E2/E3/E4 perturbed reconstruction, retained context-limit failures, t1 sufficiency/t2
+intervention anchoring, raw token preservation, immutable source/context binding,
+stable prefix-only review and frozen order, original budget/fourth-observation
+answer opportunity, all-case control-first stopping, recorded partial
+infrastructure failure, source-inherited backend settings, costs and gold/review
+isolation. H800 runs and actual factory schema/count reproduction are pending;
+no downloads, environment changes or training were performed.
