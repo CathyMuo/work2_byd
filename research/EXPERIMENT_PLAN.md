@@ -1,5 +1,11 @@
 # Work 2 experiment plan — bootstrap snapshot
 
+2026-10-12 current update: the user explicitly authorizes an independent implemented
+direction on `feat/selective-intervention`. Current protocol is [SI1_PROTOCOL.md](SI1_PROTOCOL.md)
+and execution guide is [SI1_FACTORY_GUIDE.md](../docs/SI1_FACTORY_GUIDE.md).
+This file preserves the OLD experiment tree and gates. Archived constraint review
+remains NO-GO; SI1 does not resume E/F, and no RL GO is granted by implementation.
+
 Date: 2026-10-09. Source: the user's shared discussion,
 [工作二方向收敛](https://chatgpt.com/share/6ac84bc4-3cd4-83ea-8a65-ec7b03c325c5),
 specifically its final “正式实验方案 V1.0” and independence constraint.

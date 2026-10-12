@@ -32,3 +32,7 @@ venv/
 .DS_Store
 .idea/
 .vscode/
+
+# Local planning analyses; experiment protocol/guide are published separately.
+/report/NEXT_PROTOCOL_PROPOSAL_20261012.md
+/report/REASSESSMENT_AND_NEXT_EXPLORATION_20261012.md

@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-12",
-  "current_stage": "E_constraint_review_method_archived",
-  "status": "NO_GO_archived_factory_closeout_complete_no_pending_E_runs",
-  "next_action": "No mandatory E tasks remain. Preserve immutable artifacts and the generic/replay baseline assets. Optional one-pass historical 46/52/3 ID reconciliation using original B records, with unresolved if unavailable. Any subsequent research starts with a separate literature/hypothesis/observable-state protocol review, not old E optimization; no new GPU, F, prompt variant, sharding or RL.",
+  "current_stage": "SI1_factory_smoke_ready",
+  "status": "CPU_verified_factory_execution_pending",
+  "next_action": "Factory: pull feat/selective-intervention, freeze new samples excluding all observed cohorts, check service, run 20 train-only smoke + audit, run 240-question development + audit, fit/select/evaluate on 160/80 question-disjoint splits, return aggregate package. No RL or independent confirmation yet.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -314,10 +314,11 @@
       "decision": "Closeout completed from factory report; current method archived NO-GO. Non-event explanation pending is not unfinished eligibility review or a required new task."
     }
   ],
-  "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence",
+  "rl_go_decision": "SI1_RL_not_authorized_until_new_independent_evidence",
   "remaining": [
-    "Historical 46/52/3 B witness ID reconciliation remains optional/unresolved; no retrofitting with the four E cases",
-    "A future independent budget/evidence/action-selection direction is NOT initiated; first requires literature and falsifiable observable-state protocol assessment"
+    "Factory SI1 smoke and full development; real GPU/model results not executed by developer",
+    "Strong paper baseline adaptation and independent confirmation require SI1 evidence; RL deferred",
+    "Historical 46/52/3 optional and unresolved"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -349,5 +350,20 @@
     "gate_2": "not_established: body-overlap screening and terminal-status separation do not certify semantic off-target queries or causal mechanisms",
     "gate_3": "partial_reported: B1/B2 limited and B3 partial repair with stable harm; full transition/cost audit pending",
     "gate_4": "reported nonoracle subset 46 conflicts with earlier union 52 and B5 count 3 under same universe; retired proxy intersection 25 not semantic or verified at same post-evidence start; reconcile IDs"
+  },
+  "historical_archived_method": {
+    "stage": "E_constraint_review_method_archived",
+    "status": "NO_GO_archived_factory_closeout_complete_no_pending_E_runs",
+    "next_action": "No mandatory E tasks remain. Preserve immutable artifacts and the generic/replay baseline assets. Optional one-pass historical 46/52/3 ID reconciliation using original B records, with unresolved if unavailable. Any subsequent research starts with a separate literature/hypothesis/observable-state protocol review, not old E optimization; no new GPU, F, prompt variant, sharding or RL.",
+    "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence"
+  },
+  "active_protocol": "SI1_natural_prefix_gain_harm_v1",
+  "active_implementation": {
+    "protocol": "SI1_natural_prefix_gain_harm_v1",
+    "branch": "feat/selective-intervention",
+    "CPU_test_count": 95,
+    "factory_results_available": false,
+    "new_external_runtime_dependencies": false,
+    "archived_constraint_preserved": true
   }
 }

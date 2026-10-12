@@ -1,0 +1,16 @@
+{
+  "protocol": "SI1_natural_prefix_gain_harm_v1",
+  "target_turn": 1,
+  "arms": ["keep", "budget", "review", "answer"],
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "selector": {"ridge": 5.0, "risk_weight": 2.0, "margin": 0.02, "call_penalty": 0.01},
+  "scope": "Natural first-observation states; 160 fit + 80 held-out validation; original 7B PPO / E5 / Wiki18 / Flat assets; no old E cases, no perturbation/RL/confirmation.",
+  "threshold_note": "Selector scores/settings are frozen exploratory implementation choices, not calibrated safety guarantees or evidence of novelty."
+}

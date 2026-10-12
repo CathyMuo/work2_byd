@@ -531,3 +531,19 @@ resumption. No existing stopped-project controllers/artifacts are imported.
 This update changes research records/documentation only; JSON/link/diff checks
 are sufficient. Existing 81-test code validation remains unchanged; no code or
 experiments modified.
+
+
+## 2026-10-12 — User authorizes an independent implemented direction, SI1
+
+The user explicitly asks the developer to read the adjacent papers, choose one actionable direction, implement it, publish runnable code and a factory guide, and use a new branch or repository if appropriate. This authorizes a NEW SI1 exploratory protocol and engineering implementation. It does not resume archived constraint review, old E/F, or RL.
+
+Selected scope: natural post-first-observation states, actual same-prefix K/V/G/A actions, gain/harm supervision relative to the frozen original policy, and a prefix-only lightweight selector evaluated on question-disjoint validation. Literature already covers reflection, budget control and counterfactual branching; novelty remains a hypothesis, not a granted claim. Record literature reading and the exact fixed protocol before factory execution. Preserve historical artifacts and GMST independence.
+
+Implementation starts on feat/selective-intervention. Factory executes existing offline Search-R1 assets; no developer GPU experiments or environment provisioning. Keep source IDs and normalized question exclusions, training/validation isolation, controls, costs and real coverage auditable.
+
+
+## 2026-10-12 — SI1 implementation CPU-verified and ready for factory smoke
+
+Implemented natural-state four-arm collector, global exact-control barrier, raw-prefix and global-budget preservation, explicit answer-only refusal, source/sample/resource bindings and full raw audit. Added train-only lightweight gain/harm/call-cost ridge fitting, observable-state-only selection before evaluation, hash/recomputed decision receipts and fixed/random/risk-neutral controls. Frozen 160/80 question-disjoint development protocol and 20 train-only smoke. First-observation no-generation context-limit cases remain in the full denominator and keep the policy unchanged.
+
+95 CPU tests pass on the actual Linux development repository; shell syntax, compilation, CLI, links and diff checks pass. No real GPU, model, service, paper-baseline, independent confirmation or RL execution. Publish the branch with factory switching/backup and exact commands; user executes in existing factory environment and returns aggregates. Preserve all archived E conclusions.

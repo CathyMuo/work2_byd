@@ -1,5 +1,12 @@
 # Work 2: Search Feedback Drift and Recovery
 
+**2026-10-12 新分支 `feat/selective-intervention`：用户授权启动独立SI1开发探针。**
+方向为自然检索状态上的相对gain/harm学习与选择性干预，提供样本冻结、四臂续跑、
+CPU审计、轻量选择器拟合、先选择后评价和反馈打包。
+从[SI1厂内执行指导](docs/SI1_FACTORY_GUIDE.md)开始；
+方法阅读见[近邻阅读与取舍](research/SI1_LITERATURE_AND_DIRECTION.md)，
+协议见[SI1计划](research/SI1_PROTOCOL.md)。旧约束方法与E分支仍归档，下面为历史进度。
+
 工作二独立研究仓库：多轮搜索智能体中的检索反馈偏移与自适应恢复。
 实验服务器：厂内 **4×H800**。厂内已报告 1000 题 A1、2000 个 A3 目标状态及 B
 基线结果；新实验与代码分支 `f4a4bb5` 尚未提供原始源码/轨迹。
@@ -16,7 +23,7 @@ A1 的原 200 题 clean baseline 已由厂内报告完成，
 厂内报告 A2 的 20/20 精确控制通过，见 [A2 分析](research/A2_REPORTED_RESULTS.md)。
 当前已实现独立审查后执行的 E2–E4 **10 题工程 Pilot**；完整诊断扩展、恢复基线和 RL 待后续。
 
-**当前分支已归档；更新公开记录时保留厂内备份与所有原始产物，无需重跑实验。**
+**历史约束方法已归档；SI1不重跑其E实验，保留厂内备份与所有原始产物。**
 原 [A3 工程文档](docs/A3_EXECUTION_GUIDE.md) 保留为历史工程入口。
 
 详细步骤见 [工作二实验实施文档](docs/EXECUTION_GUIDE.md)：资源清单、路径填写、
