@@ -358,3 +358,65 @@ answer opportunity, all-case control-first stopping, recorded partial
 infrastructure failure, source-inherited backend settings, costs and gold/review
 isolation. H800 runs and actual factory schema/count reproduction are pending;
 no downloads, environment changes or training were performed.
+
+
+## 2026-10-12 — E v1 all-skip reported; revise scope explicitly before implementing v2
+
+Factory faf8494 reportedly merges c0a1e8b. Four sufficient failed cases were
+reaffirmed prefix-only; all twelve nearest stable proposals were judged
+insufficient; all four groups skipped, validation yielded zero pairs, runner
+refused, no GPU execution. Accept the recorded engineering refusal, not a
+population conclusion. Only twelve length-near proposals were reviewed, not
+all eligible stable states. Global candidate reservation and top-three caps
+also restrict coverage. Missing gold strings do not prove missing derivability:
+number/comparison/inferred relations need an explicit constraint audit. Correct
+final answers from a t1 start may rely on later retrieval, model knowledge or
+reasoning; earlier observations are already included in the prefix. No isolated
+parametric-knowledge or B3 harm mechanism follows. Factory reports 113 tests;
+public c0a1e8b had 71 verified tests, and no factory source is imported.
+
+Decision BEFORE code changes: retain immutable E v1 and strict sufficient-pair
+validator. Do not bypass it or claim its engineering gate passed. Introduce E
+v2 as a distinct outcome-selected development probe: primary sufficient failed
+cases evaluate within-actual-state original versus general/constraint review;
+secondary prefix-insufficient, historically stable cases evaluate sensitivity
+and harm separately. No cross-state matching is required for the within-state
+action contrast, and no pooled population NetEM is estimable from these selected
+strata. Keep the same original candidate pool and fixed nearest candidate order,
+anchor, prompts, asset/cost/global-budget protocol and all-case control-first
+checks. No search-loop expansion to find favorable results.
+
+V2 prepares at most four primary and four secondary cases (one frozen nearest
+reviewed insufficient stable proposal per former group). Independently reaffirm
+prefix-only review; an insufficient secondary case must identify missing question
+constraints and consideration of alternative derivations. Literal answer absence
+alone is inadequate. Uncertain reassessments are explicitly skipped rather than
+forced into insufficient. Freeze all run/skip choices before GPU. Primary cases
+can run without a secondary case, but then report that stable harm is unmeasured.
+Begin one frozen group; extend to at most four only on engineering controls, not
+repair success. Maintain E development/no-GO; F needs a separate method/trigger
+and unseen-question protocol after review, RL remains ungranted.
+
+
+Implementation completed: `prepare_e_probe` binds the immutable finalized v1
+plan and original A1/A3 hashes, revalidates even skipped groups' review fields,
+and freezes the first insufficient secondary and prefix-only case run/skip.
+`run_e_probe` passes its plan loader and stratified metric function into the
+existing `run_e` engine; token reconstruction, original-control gating, service
+identity, global budget, costs and atomic failure receipts remain shared.
+Manifest identifies v2, parent-plan hash, all frozen case decisions; metrics
+explicitly retain v1_sufficient_pair_gate_passed=false and absent secondary harm
+as unmeasured. General-versus-constraint EM/F1/token/search contrasts are separate
+for each stratum; no pooled NetEM is produced. V1 rejects insufficient stable
+pairs exactly as before.
+
+Validation before publication: **77 public CPU tests pass**, retaining 71 v1
+regressions and six synthetic v2 checks covering preserved all-skip v1 rejection,
+missing-constraint/alternative-derivation requirements, uncertain skips and
+primary-only coverage, immutable context/parent hashes, secondary-only refusal,
+shared control-first execution and stopping on secondary control mismatch,
+stratified gain/harm and EM/F1/cost contrasts, prompt-label isolation, untouched
+source files and no-model/service check-only mode. Compilation, CLI help, shell
+syntax, JSON, local documentation links and diff checks pass. No factory raw
+counts or H800 inference were executed here; reported 113 factory tests remain
+separate. No models/data/env changes or training.

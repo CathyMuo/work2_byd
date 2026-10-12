@@ -207,7 +207,7 @@ prefixes, original/visible documents, and per-run outputs. Never publish
 credentials or factory-local data by default.
 
 
-## Current audit task E — post-observation engineering, not Stage C RL
+## Audit task E v1 — preserved strict sufficient-pair protocol, not Stage C RL
 
 Factory step-0 partial calibration (8/175 reviewed, four sufficient HotpotQA
 cases) is accepted for preparation only. Implemented public protocol and commands
@@ -231,3 +231,31 @@ remains same-state/pre-intervention, not rematching on downstream mediators.
 After E engineering and cost review, separately freeze F unseen question IDs,
 independent confirmation and deployable prefix-only selection. Existing research
 gates are unchanged and remain unestablished; passing E controls is not GO.
+
+
+## Current audit task E v2 — stratified development probe after v1 all-skip
+
+Factory faf8494 reports four sufficiently evidenced failed cases and twelve
+insufficient stable candidates, zero runnable v1 pairs, no GPU. Preserve this
+result and strict v1 validator. Neither structural stable absence nor parametric
+knowledge/B3 harm causation follows from this limited candidate pool or missing
+gold strings. Introduce explicit v2 protocol, documented in
+`docs/E_V2_STRATIFIED_PROBE.md`, without resuming F or RL.
+
+Use the immutable finalized v1 file to propose up to four sufficient-failed
+primary cases plus one nearest already-reviewed insufficient-stable secondary
+per original group (up to four). No new candidate search or rule relaxation.
+Both get within-actual-state original A/B, general and constraint review with
+the same existing engine, anchor, prompts, assets and global budget. Freeze all
+case decisions before inference. Independently reaffirm only the displayed
+prefix; insufficiency needs missing question constraints and consideration of
+alternate relation/comparison/numeric derivations, not literal answer absence.
+Uncertain secondary cases skip; primary can run independently but no stable
+harm measurement is implied. All selected original controls/history pass first.
+
+Report primary repair and secondary harm separately and direct within-state
+constraint-minus-general EM/F1/cost contrasts. No representative NetEM, layer
+causal contrast, knowledge-source inference or statistical conclusion follows
+from these outcome-selected engineering cases. One frozen group smoke then up
+to four on engineering controls, not recovery success. F unseen questions,
+selection/cost/confirmation and any research GO remain separately unapproved.

@@ -3,14 +3,13 @@
 工作二独立研究仓库：多轮搜索智能体中的检索反馈偏移与自适应恢复。
 实验服务器：厂内 **4×H800**。厂内已报告 1000 题 A1、2000 个 A3 目标状态及 B
 基线结果；新实验与代码分支 `f4a4bb5` 尚未提供原始源码/轨迹。
-当前已接受厂内 `0ea168a` 的 **8/175 事件部分校准**，保留 167 pending，
-已实现唯一公开的 **E 实际扰动历史续写入口**。先独立审查至少 1 对失败/稳定
-案例，跑精确控制优先的 smoke，再最多 4 对工程扩展。
-完整命令、起点规则与最新计数修正见 [E 实施文档](docs/E_EXECUTION_GUIDE.md)。
-[C/D 审查协议](docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md) 保留为审计入口，
-正文重叠不自动证明充分性；研究与 RL 仍未 GO。
-详见 [扩大结果审查](research/FACTORY_SCALE_REVIEW.md) 与
-[厂内代码对齐步骤](docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md)。
+厂内最新 `faf8494` 已报告 E v1 四组全 skip：4 个充分致错案例、12 个不足稳定
+候选，零个充分配对；GPU 未跑。旧协议结果保留，研究与 RL 仍未 GO。
+当前实现独立版本 **E v2 分层开发探针**：充分致错层看修复，不足稳定层单列
+harm；每个案例从相同实际 token 状态对照，不合并总体净收益、不推断知识来源。
+详见 [E v2 实施文档](docs/E_V2_STRATIFIED_PROBE.md)。原
+[E v1 文档](docs/E_EXECUTION_GUIDE.md) 和 [C/D 协议](docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md)
+保留历史；资产与环境沿用，先备份厂内分叉再对齐公开主线。
 
 A1 的原 200 题 clean baseline 已由厂内报告完成，
 实际 cohort 是官方 Search-R1 **7B + FAISS Flat**，EM 0.335、多轮率 0.975。
@@ -46,21 +45,22 @@ cp configs/local.example.json configs/local.json
 `check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
 不属于必跑步骤。
 
-## 当前入口：E 配对与工程 smoke
+## 当前入口：E v2 分层探针
 
-按 [E 实施文档](docs/E_EXECUTION_GUIDE.md) 对齐公开主线后：
+按 [E v2 文档](docs/E_V2_STRATIFIED_PROBE.md) 对齐主线，保留旧全 skip 文件：
 
 ```bash
-python -m work2.prepare_e
-cp outputs/e_review/proposals.json outputs/e_review/reviewed.json
-# 独立核验实际截断前缀，填写所有组的 run/skip 与必要 reviews：
-python -m work2.prepare_e --validate outputs/e_review/reviewed.json
-python -m work2.run_e --pair-limit 1 --check-only
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_e.sh --pair-limit 1 --run-dir outputs/e_smoke
+python -m work2.prepare_e_probe --parent-plan outputs/e_review/reviewed.json
+cp outputs/e_probe_review/proposals.json outputs/e_probe_review/reviewed.json
+# 明确缺失约束与替代推导，复核 prefix-only，冻结每个 case 的 run/skip：
+python -m work2.prepare_e_probe --validate outputs/e_probe_review/reviewed.json
+python -m work2.run_e_probe --group-limit 1 --check-only
+CUDA_VISIBLE_DEVICES=0 bash scripts/run_e_probe.sh --group-limit 1 --run-dir outputs/e_probe_smoke
 ```
 
-至少一组完整失败/稳定配对，保留原干预和已用预算；全批原样控制与历史后缀
-一致后才运行一般回顾/原问题约束核对。现有校准不能替代稳定控制的独立审查。
+最多 4 个充分致错 primary 和 4 个不足稳定 secondary，分别统计；全部原样控制
+与历史后缀一致后才跑固定的两种回顾动作。secondary 复核不确定则 skip，
+primary 可以独立运行，但不能宣称已测 stable harm。不改变旧 v1 的充分配对条件。
 
 ## CPU 配对与语义审查入口
 
@@ -143,7 +143,8 @@ bash scripts/update.sh
 | `docs/A2_EXECUTION_GUIDE.md` | A2 的重放步骤、控制与反馈要求 |
 | `docs/A3_EXECUTION_GUIDE.md` | 原 E2–E4 工程资格审查、冻结和单轮干预步骤 |
 | `docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md` | 当前厂内分叉备份/对齐、CPU 审计与后续机制协议 |
-| `docs/E_EXECUTION_GUIDE.md` | 当前 E 候选审查、实际扰动起点、全批控制优先和成本/结果反馈 |
+| `docs/E_V2_STRATIFIED_PROBE.md` | 当前 v2 两层问题、来源/前缀审查、共用执行引擎和分开反馈 |
+| `docs/E_EXECUTION_GUIDE.md` | 历史 v1 充分配对、实际扰动起点与成本口径 |
 | `docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md` | 最新 C/D 正文诊断、审查/机制收据与 E/F 的范围 |
 | `outputs/` | 本机环境报告与未来实验产物，不提交 |
 

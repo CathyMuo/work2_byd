@@ -2,9 +2,9 @@
 
 日期：2026-10-12。用户已明确以开发服务器公开主线为准。
 
-最新：厂内 `0ea168a` 的 8/175 部分校准已登记，公开 E runner 已实现。
-当前按 [E 实施文档](E_EXECUTION_GUIDE.md) 准备失败/稳定配对并跑工程 smoke；
-[C/D 说明](CD_REVIEW_AND_MECHANISM_PROTOCOL.md) 保留审计协议，以下为前轮步骤。
+最新：厂内 `faf8494` 报告 E v1 四组全 skip；当前按
+[E v2 分层探针](E_V2_STRATIFIED_PROBE.md) 对齐并运行。v1 零配对结果保留，
+[C/D 说明](CD_REVIEW_AND_MECHANISM_PROTOCOL.md) 保留审计协议；以下为前轮步骤。
 
 厂内旧 `f4a4bb5` 源码未提供；前轮继承其**报告的实验进展**，并对齐已知 `replay_intervention()` API，
 不会声称合入全部 35 文件。未获得源码的 run_b/run_scaleup/merge/看板入口仍在

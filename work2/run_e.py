@@ -19,7 +19,7 @@ from .semantic_review import event_key
 def metrics(records, planned):
     complete = [r for r in records if r["status"] == "completed"]
     by_role = {}
-    for role in ("failed", "stable"):
+    for role in dict.fromkeys(case["role"] for case in planned):
         items = [r for r in complete if r["role"] == role]
         arms = {}
         for name in ("general_review", "constraint_review"):
@@ -55,26 +55,29 @@ def execute(case, context, name, generator, retriever):
     return result
 
 
-def main():
+def main(plan_loader=reload_plan, metric_fn=metrics, stage="E_engineering",
+         default_plan="outputs/e_review/reviewed.json", default_run_dir="outputs/e_smoke"):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--plan", type=Path, default=Path("outputs/e_review/reviewed.json"))
+    parser.add_argument("--plan", type=Path, default=Path(default_plan))
     parser.add_argument("--local", type=Path, default=Path("configs/local.json"))
-    parser.add_argument("--run-dir", type=Path, default=Path("outputs/e_smoke"))
-    parser.add_argument("--pair-limit", type=int, default=1, help="first N finalized pairs, chosen before new arm outcomes; 1 smoke then up to 4 engineering")
+    parser.add_argument("--run-dir", type=Path, default=Path(default_run_dir))
+    parser.add_argument("--pair-limit", "--group-limit", dest="pair_limit", type=int, default=1, help="first N frozen groups before new outcomes; v1 pairs or v2 case strata, up to 4")
     parser.add_argument("--request-timeout", type=float, default=120)
     parser.add_argument("--check-only", action="store_true", help="offline source/plan review; no model or service call")
     args = parser.parse_args()
     try:
         if not 1 <= args.pair_limit <= 4 or not math.isfinite(args.request_timeout) or args.request_timeout <= 0:
             raise ValueError("Invalid pair limit/timeout")
-        plan, all_cases, context = reload_plan(args.plan)
+        plan, all_cases, context = plan_loader(args.plan)
         pair_ids = list(dict.fromkeys(c["pair_id"] for c in all_cases))[:args.pair_limit]
         planned = [c for c in all_cases if c["pair_id"] in pair_ids]
+        if stage != "E_engineering" and planned and not any(c["role"] == "failed_sufficient" for c in planned):
+            raise ValueError("Selected groups contain no primary case; do not execute secondary-only")
         if not planned:
-            raise ValueError("No complete reviewed failed/stable pairs")
+            raise ValueError("No complete reviewed failed/stable pairs" if stage=="E_engineering" else "No reviewed runnable v2 primary cases")
     except (ValueError,OSError,KeyError,TypeError,IndexError) as exc:
         parser.error(str(exc))
-    print("E frozen plan: {} pairs, {} cases; protocol={}".format(len(pair_ids),len(planned),plan["protocol_sha256"]),flush=True)
+    print("{} frozen plan: {} groups, {} cases; protocol={}".format(stage,len(pair_ids),len(planned),plan["protocol_sha256"]),flush=True)
     if args.check_only:
         print("Offline source/plan checks passed. Runtime tokenizer, asset and live service validation remain required.")
         return 0
@@ -84,7 +87,7 @@ def main():
         parser.error("Current core tree is dirty; preserve changes and use a committed E implementation")
     args.run_dir.mkdir(parents=True)
     source = context["source"]
-    manifest = {"schema_version":1,"stage":"E_engineering","status":"initializing",
+    manifest = {"schema_version":1,"stage":stage,"status":"initializing",
         "repository_commit":git_output("rev-parse","HEAD"),"working_tree_dirty":False,
         "submodules":git_output("submodule","status","--recursive"),
         "timestamp_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -94,7 +97,10 @@ def main():
         "backend":source["backend"],"tensor_parallel_size":source["tensor_parallel_size"],
         "gpu_memory_utilization":source["gpu_memory_utilization"],"cuda_visible_devices":os.environ.get("CUDA_VISIBLE_DEVICES"),
         "selected_cases":[{"pair_id":c["pair_id"],"role":c["role"],"event_key":event_key(c["event"]),"resume_after_turn":c["resume_after_turn"]} for c in planned],
-        "requested_pair_limit":args.pair_limit,"request_timeout":args.request_timeout}
+        "requested_pair_limit":args.pair_limit,"request_timeout":args.request_timeout,
+        "parent_plan_sha256":plan.get("parent_plan_sha256"),
+        "frozen_v2_case_decisions":[{"pair_id":c["pair_id"],"role":c["role"],"decision":c["decision"],"reason":c["reason"]} for c in plan.get("cases",[])],
+        "selection_scope":plan["interpretation"]}
     records = [{"pair_id":c["pair_id"],"role":c["role"],"event_key":event_key(c["event"]),
                 "resume_after_turn":c["resume_after_turn"],"status":"planned","checks":{},"branches":{}} for c in planned]
     audited = None
@@ -107,7 +113,7 @@ def main():
         temporary.replace(path)
     def persist():
         atomic(args.run_dir/"run_manifest.json",manifest)
-        atomic(args.run_dir/"mechanism_metrics.json",metrics(records,planned))
+        atomic(args.run_dir/"mechanism_metrics.json",metric_fn(records,planned))
         atomic(args.run_dir/"mechanism_rollouts.jsonl",records,True)
         atomic(args.run_dir/"retrieval_audit.json",{"policy":"normal live retrieval, no cache; parent perturbed observations are NOT retrieval references","calls":audited.calls if audited else []})
     atomic(args.run_dir/"frozen_plan.json",plan)
