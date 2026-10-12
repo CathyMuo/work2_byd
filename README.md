@@ -8,6 +8,7 @@
 不重跑审计、不补无事件解释、不进入 F/RL，不新增提示变体或分片实验。
 详见 [归档后安排](docs/POST_ARCHIVE_NEXT_STEPS.md) 与
 [结果深度分析](research/E_V2_RESULTS_AND_DIRECTION.md)。
+全部尝试性试验和有效结论已汇总至 [report/](report/README.md)。
 
 A1 的原 200 题 clean baseline 已由厂内报告完成，
 实际 cohort 是官方 Search-R1 **7B + FAISS Flat**，EM 0.335、多轮率 0.975。
@@ -124,6 +125,7 @@ bash scripts/update.sh
 | `configs/diagnostic.json` | 阶段 A 的设计配置 |
 | `configs/local.example.json` | 厂内路径模板 |
 | `research/` | 实验计划、状态、决策记录 |
+| `report/` | 各轮试验结果、结论修正、NO-GO 与来源/产物总档案 |
 | `scripts/` | 环境检查、更新和反馈打包工具 |
 | `work2/` | 本地数据读取、A1 rollout、推理适配、指标与案例导出 |
 | `tests/` | CPU 协议、边界和运行产物测试 |
