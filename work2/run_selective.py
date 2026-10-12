@@ -160,6 +160,9 @@ def validated_cases(folder, allow_smoke=False):
     if m["smoke"] and not allow_smoke:raise ValueError("Smoke is engineering only; fit/evaluate requires full development run")
     if sha(m["protocol"])!=m["protocol_sha256"] or sha(PROMPTS)!=m["prompts_sha256"]:
         raise ValueError("Frozen protocol/prompts mismatch")
+    if m.get("execution") == "SI1_four_worker_global_barrier_v1":
+        from .parallel_selective import verify_merged_provenance
+        verify_merged_provenance(folder, m)
     for name,h in m["artifact_sha256"].items():
         if file_hash(folder/name)!=h:raise ValueError("Artifact changed: "+name)
     rows=read_rows(folder/"cases.jsonl");states=read_rows(folder/"states.jsonl")
@@ -305,7 +308,7 @@ def evaluate(args):
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest="command",required=True)
     q=sub.add_parser("prepare");q.add_argument("--local",type=Path,default=Path("configs/local.json"));q.add_argument("--output",type=Path,required=True)
-    q.add_argument("--exclude",type=Path,nargs="+",required=True);q.add_argument("--train-per-dataset",type=int,default=80);q.add_argument("--validation-per-dataset",type=int,default=40)
+    q.add_argument("--exclude",type=Path,nargs="+",required=True);q.add_argument("--train-per-dataset",type=int,default=600);q.add_argument("--validation-per-dataset",type=int,default=400)
     q=sub.add_parser("collect");q.add_argument("--local",type=Path,default=Path("configs/local.json"));q.add_argument("--protocol",type=Path,default=Path("configs/selective_v1.json"))
     q.add_argument("--samples-dir",type=Path,required=True);q.add_argument("--run-dir",type=Path,required=True);q.add_argument("--smoke",action="store_true");q.add_argument("--smoke-run-dir",type=Path);q.add_argument("--check-only",action="store_true")
     q.add_argument("--backend",choices=("vllm","hf"),default="vllm");q.add_argument("--tensor-parallel-size",type=int,default=1);q.add_argument("--gpu-memory-utilization",type=float,default=.75);q.add_argument("--request-timeout",type=float,default=120)

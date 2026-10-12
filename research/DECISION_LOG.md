@@ -547,3 +547,13 @@ Implementation starts on feat/selective-intervention. Factory executes existing 
 Implemented natural-state four-arm collector, global exact-control barrier, raw-prefix and global-budget preservation, explicit answer-only refusal, source/sample/resource bindings and full raw audit. Added train-only lightweight gain/harm/call-cost ridge fitting, observable-state-only selection before evaluation, hash/recomputed decision receipts and fixed/random/risk-neutral controls. Frozen 160/80 question-disjoint development protocol and 20 train-only smoke. First-observation no-generation context-limit cases remain in the full denominator and keep the policy unchanged.
 
 95 CPU tests pass on the actual Linux development repository; shell syntax, compilation, CLI, links and diff checks pass. No real GPU, model, service, paper-baseline, independent confirmation or RL execution. Publish the branch with factory switching/backup and exact commands; user executes in existing factory environment and returns aggregates. Preserve all archived E conclusions.
+
+
+## 2026-10-12 — User requires larger samples and four-card execution
+
+The user questions the 160/80 allocation and explicitly requires four GPUs to accelerate the factory experiments. Expand the default cohort to 1200 fit + 800 held-out validation (HotpotQA/2Wiki each 600/400), preserve previous frozen outputs, and exclude previously observed SI1 questions. Implement four independent TP=1 workers with immutable round-robin whole-question shards, a GLOBAL original-controls barrier, cross-worker same-query drift checks, failure cancellation and exact ordered merge. Keep research actions/budgets/selector unchanged. New four-card smoke is required before expanded development. Four GPUs are execution resources, not four independent sample replicates. CPU verification pending at this entry; no new GPU execution by developer.
+
+
+## 2026-10-12 — Four-worker implementation verified, default 1200/800 ready
+
+108 CPU tests pass (95 previous + 13 new). Implemented immutable plan/GPU/question binding, four subprocess dispatch, two phases with all-worker exact-control barrier, cross-worker retrieval signatures, process-group cancellation of own workers only, complete ordered merge and raw audits. Expanded default samples to 1200/800; new dp4 output directories preserve old results and old default SI1 samples are conservatively excluded. New 20-question four-card smoke gates the expanded run. Runtime logs/progress and measured coordinator phase/wall timing added; no fixed 4x speed or real GPU execution claimed. Publish to the already explicitly authorized public branch; factory commands documented in SI1_DP4_QUICKSTART.md.

@@ -1,5 +1,9 @@
 # Work 2: Search Feedback Drift and Recovery
 
+**四卡扩容更新：默认1200训练+800验证，四个独立TP=1 worker并行。**
+直接看[四卡2000题运行清单](docs/SI1_DP4_QUICKSTART.md)。
+全部原样控制通过后才启动干预，四卡完整核验后统一合并；旧结果保留。
+
 **2026-10-12 新分支 `feat/selective-intervention`：用户授权启动独立SI1开发探针。**
 方向为自然检索状态上的相对gain/harm学习与选择性干预，提供样本冻结、四臂续跑、
 CPU审计、轻量选择器拟合、先选择后评价和反馈打包。

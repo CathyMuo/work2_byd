@@ -27,7 +27,7 @@ python -m unittest discover -s tests -q
 
 沿用已经工作的Search-R1环境和检索服务。配置仍是`configs/local.json`，需要已有`agent_checkpoint/retriever_model/corpus_file/index_file/hotpotqa_file/two_wiki_file/retrieval_url`。不要求环境报告。模型使用历史7B PPO checkpoint，检索用E5-base-v2/Wiki18/Flat。厂内保持这些资源版本一致。
 
-## 3. 冻结新240题，明确排除历史题
+## 3. 冻结新2000题，明确排除历史题
 
 必须使用厂内真实旧样本文件：包含`sample_id/dataset/question`的canonical JSONL。可以直接用已有clean_rollouts.jsonl，它含有这些字段。**不要传只有ID的汇总或selection_manifest。** 程序按完整ID和归一化问题文本同时排除历史题。
 
@@ -39,30 +39,30 @@ bash scripts/run_si1.sh prepare \
 
 上面是档案中的常见路径。若厂内保存名称不同，用真实路径替换；若还有其他看过结果的题集，把对应JSONL一起追加。程序只能证明提供的历史文件被排除，不能自动猜出遗漏的实验集合。没有历史文件时先找回/导出现有记录，不重跑旧实验制造排除表。
 
-默认每数据集80题训练选择器、40题验证，共160+80。先固定ID再产生模型结果；第一轮启动点固定第一次观测后，一题一次。没有检索、或第一次观测后已到上下文上限而无生成机会的题，保留在全题分母，所有臂保持原样。`smoke.jsonl`为训练部分每数据集前10题，**不使用验证题做smoke**。
+默认每数据集600题训练选择器、400题验证，共1200+800=2000题。先固定ID再产生模型结果；第一轮启动点固定第一次观测后，一题一次。若上版240题已经生成或看过结果，应追加排除；脚本会保守地自动追加已有outputs/si1_samples/samples.jsonl，其他自定义路径请手动补充。没有检索、或第一次观测后已到上下文上限而无生成机会的题，保留在全题分母，所有臂保持原样。`smoke.jsonl`为训练部分每数据集前10题，**不使用验证题做smoke**。
 
-产物：`outputs/si1_samples/samples.jsonl`、`smoke.jsonl`、`selection_manifest.json`。目录已存在时拒绝覆盖。若资源/协议变更，为新版本设置新的SI1目录，不能删旧结果重新选成功题。
+产物：`outputs/si1_dp4_samples/samples.jsonl`、`smoke.jsonl`、`selection_manifest.json`。目录已存在时拒绝覆盖。若资源/协议变更，为新版本设置新的SI1目录，不能删旧结果重新选成功题。
 
 ## 4. 服务检查与20题工程smoke
 
-下面按单张空闲H800运行，TP=1；若0号正在做别的任务，替换成你安排的空闲卡。
+默认强制使用四张H800：四个独立模型进程，每卡一个7B实例、TP=1，按题轮转分片；不是TP=4。使用SI1_GPUS指定四个不同物理卡号，默认0,1,2,3。运行前会核验四张卡确实存在。
 
 ```bash
 bash scripts/run_si1.sh check
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_si1.sh smoke
+SI1_GPUS=0,1,2,3 bash scripts/run_si1.sh smoke
 ```
 
-check只验证输入和一次检索，不加载模型。smoke真实执行20题：完整baseline→全部题两次原样续跑与历史一致→全局控制通过→三个干预臂。任一基础设施/控制问题立即停止，不能把退出码0或目录存在当通过。成功后脚本自动做CPU审计，生成`outputs/si1_smoke/audit_receipt.json`。
+check只验证输入和一次检索，不加载模型。smoke真实执行20题：四卡并行baseline及双原样控制→四卡全局CPU核验与屏障→四卡并行三个干预臂→完整覆盖与跨卡检索一致核验→统一汇总。控制阶段退出后再启动动作阶段，模型每卡加载两次；这是为全局门槛安排的固定开销。任一基础设施/控制问题立即停止，不能把退出码0或目录存在当通过。成功后协调器自动合并并做CPU审计，生成`outputs/si1_dp4_smoke/audit_receipt.json`。
 
 必须看到run_manifest的`status=completed`、`all_original_controls_exact=true`、`all_planned_questions_completed=true`及receipt的`mechanical_checks_passed=true`。按工程通过决定是否跑全开发集，不按smoke修复多少题决定扩样，不根据结果改提示。smoke结果不训练选择器、不当独立确认数据。
 
-## 5. 全240题开发实验
+## 5. 全2000题开发实验
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/run_si1.sh dev
+SI1_GPUS=0,1,2,3 bash scripts/run_si1.sh dev
 ```
 
-默认在`outputs/si1_dev`运行。dev要求已完成的smoke收据。smoke和dev的样本/协议/资源一致性也由Python执行器核验；改变了样本或资源不能沿用旧smoke放行。
+默认在`outputs/si1_dp4_dev`运行。dev要求已完成的四卡smoke收据；旧单卡smoke不放行本次四卡运行。smoke和dev的样本/协议/资源/四卡映射一致性也由Python执行器核验；改变了样本或资源不能沿用旧smoke放行。
 
 全局四次成功搜索预算继承已用次数，第4次观测后仍可生成答案；再请求搜索记预算拒绝和任务失败。8192是上下文上限，512是每生成段上限，没有偷偷新增全程512 token预算。
 
@@ -75,7 +75,7 @@ CUDA_VISIBLE_DEVICES=0 bash scripts/run_si1.sh dev
 
 答案错误、空答案、预算/格式失败都计入EM/F1。检索服务same-query可见文档漂移会停止实验。baseline、控制及每臂原始tokens、正文、评分和全成本都在厂内JSONL保留。原始数据不git add，不发到公开仓库。
 
-首次不做四卡分片。20题实测后用吞吐估计240题费用；单张卡可满足7B开发探针。环境已经配置，不为本轮安装Slime/Megatron或重新建立veRL。没有完整RL或新确认集运行。
+已实现四卡分片。20题smoke也使用四卡，每卡约5题；2000题开发每卡500题。全部四个worker控制通过、跨worker相同query的可见结果一致，才允许任何worker进入干预。任一卡失败会终止本次协调器启动的其余worker，并拒绝部分汇总；不操作其他训练或检索服务。环境已经配置，不为本轮安装Slime/Megatron或重新建立veRL。没有完整RL或新确认集运行。
 
 ## 6. CPU学习与验证，一条命令
 
@@ -85,7 +85,7 @@ bash scripts/run_si1.sh analyze
 
 该命令依次：
 
-1. audit并加载已完成原始结果；只用train题拟合多输出ridge模型，分别预测gain、harm和相对调用成本。
+1. audit并加载已完成原始结果；只用1200个train题拟合多输出ridge模型，分别预测gain、harm和相对调用成本。
 2. `select`只读`states.jsonl`和冻结模型，不读cases/gold/验证分支结果，先写下选择。
 3. `evaluate`再加载验证结果，核对模型、状态和决定的哈希及可重现性，计算实际所选臂表现。
 
@@ -95,11 +95,17 @@ bash scripts/run_si1.sh analyze
 
 主要文件：
 
-- `metrics.json`：240题四臂完整转移与有限动作oracle诊断。
-- `selector.json`：只由160训练题得到的模型及训练ID/配置证明。
+- `metrics.json`：2000题四臂完整转移与有限动作oracle诊断。
+- `parallel_plan.json`、`global_control_barrier.json`：冻结分片与四卡全局控制证明。
+- `coordinator_status.json`：控制/干预/汇总状态、各阶段真实墙钟时间。
+- `logs/controls_worker_0.log`至`logs/actions_worker_3.log`：八份分阶段日志。
+- `workers/worker_0/`至`worker_3/`：各卡原始轨迹及不可变控制快照；必须保留，汇总审计依赖它们。
+- `selector.json`：只由1200训练题得到的模型及训练ID/配置证明。
 - `decisions.json`：验证题prefix-only的预先决定。
-- `validation_report.json`：80验证题实际gain/harm/net、EM/F1、费用、分数据集、随机/简单规则、风险权重消融。
+- `validation_report.json`：800验证题实际gain/harm/net、EM/F1、费用、分数据集、随机/简单规则、风险权重消融。
 - `audit_receipt.json`：原始分数/成本/控制/coverage及来源审计。
+
+四卡共享现有Retriever；推理、检索服务、磁盘或模型启动都可能成为瓶颈，不承诺固定4倍加速。coordinator_status记录实际墙钟时间，manifest另记各worker模型阶段累计小时；不能用总题数除四伪造GPU小时。协调器每30秒输出各卡阶段和进度。
 
 ## 7. 如何解读，避免再绕四个成功案例调参
 
@@ -107,7 +113,7 @@ bash scripts/run_si1.sh analyze
 
 `finite_action_oracle_em`是事后取四臂最好，绝不是部署恢复率。只有oracle提升而selector不提升时，说明当前可观察特征/学习器没有兑现机会，不能直接进入RL。若budget已解决主要差距，就按预算信息收益记录。若answer收益主要来自格式/终止，也应按该原因解释。
 
-80题仅用于方向筛选，置信区间会宽。首轮希望看到数个百分点量级的可利用机会、验证选择相对强简单方法的净改善及可接受harm；无明确证据则按未确认记录，不挑子集、不重写提示后继续用这80题验证。进一步强基线适配和独立确认由真实报告决定。
+800题比旧80题明显更稳定，但不保证识别1—2个百分点的改进。若配对方法不一致率约10%，800题的净EM差标准误约1.12个百分点，95%区间半宽约2.2个百分点；正式确认应根据实际差异率和事前最小重要效应另定规模。首轮希望看到数个百分点量级的可利用机会、验证选择相对强简单方法的净改善及可接受harm；无明确证据则按未确认记录，不挑子集、不重写提示后继续用这800题验证。进一步强基线适配和独立确认由真实报告决定。
 
 ## 8. 回传哪些结果
 
@@ -123,9 +129,9 @@ bash scripts/run_si1.sh pack
 
 ```bash
 export SI1_LOCAL=configs/local.json
-export SI1_SAMPLES=outputs/si1_samples
-export SI1_SMOKE=outputs/si1_smoke
-export SI1_DEV=outputs/si1_dev
+export SI1_SAMPLES=outputs/si1_dp4_samples
+export SI1_SMOKE=outputs/si1_dp4_smoke
+export SI1_DEV=outputs/si1_dp4_dev
 ```
 
 这里只是路径设置，不改变冻结数据与研究协议。

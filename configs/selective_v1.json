@@ -11,6 +11,6 @@
   },
   "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
   "selector": {"ridge": 5.0, "risk_weight": 2.0, "margin": 0.02, "call_penalty": 0.01},
-  "scope": "Natural first-observation states; 160 fit + 80 held-out validation; original 7B PPO / E5 / Wiki18 / Flat assets; no old E cases, no perturbation/RL/confirmation.",
+  "scope": "Natural first-observation states; default 1200 fit + 800 held-out validation, balanced HotpotQA/2Wiki; four independent TP=1 workers with a global original-control barrier; original 7B PPO / E5 / Wiki18 / Flat assets; no old E cases, no perturbation/RL/confirmation.",
   "threshold_note": "Selector scores/settings are frozen exploratory implementation choices, not calibrated safety guarantees or evidence of novelty."
 }
