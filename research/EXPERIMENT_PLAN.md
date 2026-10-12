@@ -261,7 +261,7 @@ to four on engineering controls, not recovery success. F unseen questions,
 selection/cost/confirmation and any research GO remain separately unapproved.
 
 
-## Current action — E v2 CPU closeout; constraint-review method NO-GO
+## Historical E v2 closeout protocol — completed from factory report
 
 Factory 82fa3d5 reports complete/exact smoke and four groups; primary general
 3/4 versus constraint 2/4 (general only 2, constraint only 1, both 1); secondary
@@ -289,3 +289,17 @@ strong controls/baselines/novelty check and frozen unseen confirmation protocol.
 Do not resume the stopped method by relabeling an E prompt or training on its four
 seen cases. Platform assets remain reusable; no methods/artifacts from stopped
 projects elsewhere in the workspace are imported.
+
+
+## Current status — E method archived, no mandatory next experiment
+
+Factory 8ceeda1 reports completed read-only closeout and five event-case human
+explanations, no GPU. Three pending non-event explanations are not unfinished
+eligibility reviews. Archive constraint-method NO-GO; preserve original traces,
+generic/replay assets and no RL/F GO. See docs/POST_ARCHIVE_NEXT_STEPS.md.
+Do not repeat closeout, run new variants or fill all 175 semantic labels merely
+to keep the experiment loop active. Optional historical B 46/52/3 set reconciliation
+uses original IDs/conditions/source locators once; unresolved if records absent.
+A possible future action-choice project starts with a separate literature and
+observable-state/falsifiable-hypothesis protocol assessment, not automatic E/F
+continuation. Current four selected questions cannot train/select/confirm it.

@@ -496,3 +496,38 @@ actual refused fifth search, distinction of terminal harm, and rejected missing
 last action, corrupted cost/metrics, controls or frozen plan. CLI help, Python
 compilation, JSON, documentation links and diff checks pass. No developer GPU,
 factory raw recomputation or additional semantic reviews executed.
+
+
+## 2026-10-12 — Factory closeout complete; archive current method, no pending E tasks
+
+User reports factory 8ceeda1 merging public 3664469: CPU closeout all eight cases
+passed source/plan/control/score/cost/metric/retrieval checks, five event-case human
+explanations completed, three non-event explanations pending. Developer does not
+possess those artifacts; accept the supplied completed receipt, do not claim a
+local rerun. Pending non-event explanations are not missing E eligibility review,
+no new audit or GPU pass is required. Archive current constraint-review method
+NO-GO, preserve generic baseline, immutable outputs and replay engineering assets;
+no F, RL, prompt variant, forced-answer ablation or sharding implementation.
+
+Reported general repairs pair_1/2/4 include 3/2/2 actual subsequent searches.
+Pair_3 constraint makes one additional retrieval with the original question as
+query and restates initial genus facts. Keep this as an evidence-restatement
+observation after retrieval, not proof that later retrieval contributes nothing;
+original question text need not equal an earlier actual query, and repeated
+exposure/position effects are not excluded. No new mechanism experiment follows.
+Pair_3 secondary spends two remaining successful calls then issues the refused
+next search; empty terminal harm is budget_search_refusal, confirmed by factory
+receipt. The spelling error in the refused query did not yield a retrieval result,
+so does not prove retriever failure. Costs reported 151 vs 96 generated and
+5404 vs 3027 input tokens. Preserve the local 4/4 repair union without selector
+or population claims; retain unresolved historical 46/52/3, not repaired by E.
+
+Next steps documented in POST_ARCHIVE_NEXT_STEPS.md: optional one-pass CPU set
+reconciliation from actual B IDs/conditions/locators, unresolved if records are
+missing; no mandatory experiment loop. Future work is a separately scoped
+literature/observable-state hypothesis/protocol review before any new direction
+is adopted. Budget answer/search/leave-unchanged remains uninitiated, not a renamed
+resumption. No existing stopped-project controllers/artifacts are imported.
+This update changes research records/documentation only; JSON/link/diff checks
+are sufficient. Existing 81-test code validation remains unchanged; no code or
+experiments modified.

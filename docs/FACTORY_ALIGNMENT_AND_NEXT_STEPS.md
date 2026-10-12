@@ -2,9 +2,9 @@
 
 日期：2026-10-12。用户已明确以开发服务器公开主线为准。
 
-最新：厂内 `82fa3d5` 报告 E v2 工程通过、专门约束方法未获支持。当前停止
-方法扩展，只做 [CPU 收尾与方向决策](../research/E_V2_RESULTS_AND_DIRECTION.md)。
-以下保留前轮历史步骤，不作为继续新 GPU/F/RL 的指令。
+最新：厂内 `8ceeda1` 报告 E v2 收尾完成，方法分支归档 NO-GO。
+当前没有必跑 E 任务；见 [归档后安排](POST_ARCHIVE_NEXT_STEPS.md)。
+以下为历史对齐/审计流程，不指示重跑已完成审计或启动新 GPU/F/RL。
 
 厂内旧 `f4a4bb5` 源码未提供；前轮继承其**报告的实验进展**，并对齐已知 `replay_intervention()` API，
 不会声称合入全部 35 文件。未获得源码的 run_b/run_scaleup/merge/看板入口仍在

@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-12",
-  "current_stage": "E_v2_closeout_CPU_only",
-  "status": "reported_engineering_passed_constraint_method_NO_GO_no_new_GPU",
-  "next_action": "Record E v2 report and close the current constraint-review method branch. Implement/run a read-only CPU receipt audit of existing engineering output: source/plan/control/metric consistency, per-case gains/harm categories, final refused-search action and pending initial-versus-later evidence explanation. No new prompt variant, answer-only ablation, sharding, F or RL. Any future budget/action-selection project requires a separate hypothesis/novelty/observable-selection protocol and explicit reopening decision.",
+  "current_stage": "E_constraint_review_method_archived",
+  "status": "NO_GO_archived_factory_closeout_complete_no_pending_E_runs",
+  "next_action": "No mandatory E tasks remain. Preserve immutable artifacts and the generic/replay baseline assets. Optional one-pass historical 46/52/3 ID reconciliation using original B records, with unresolved if unavailable. Any subsequent research starts with a separate literature/hypothesis/observable-state protocol review, not old E optimization; no new GPU, F, prompt variant, sharding or RL.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -268,14 +268,56 @@
       },
       "decision": "Engineering accepted from report; no special constraint advantage in these selected cases. Stop scaling/tuning this method; CPU closeout only. No population inferiority/equivalence or structural missing-control conclusion.",
       "primary_repair_union_reported": 4
+    },
+    {
+      "stage": "E_v2_CPU_closeout_factory_report",
+      "reported_head": "8ceeda1",
+      "public_source_merged_reported": "3664469",
+      "evidence_source": "user text; factory receipt/raw files not available on developer server",
+      "cases": 8,
+      "mechanical_checks_passed_reported": true,
+      "primary_paired_outcomes": {
+        "general_only": 2,
+        "constraint_only": 1,
+        "both": 1
+      },
+      "harm_categories": {
+        "stable_insufficient": {
+          "constraint_review": {
+            "budget_search_refusal": 1
+          }
+        }
+      },
+      "manual_explanation_case_reviews": 5,
+      "manual_explanation_pending_non_event_cases": 3,
+      "general_repair_search_calls_after_anchor": {
+        "pair_1": 3,
+        "pair_2": 2,
+        "pair_4": 2
+      },
+      "pair_3_constraint_primary": {
+        "search_calls_after_anchor": 1,
+        "query_is_original_question_reported": true,
+        "interpretation": "Additional retrieval followed by restatement overlapping initial facts; no independent exclusion of later retrieval contribution or internal-mechanism proof."
+      },
+      "pair_3_constraint_secondary": {
+        "spent_calls_at_anchor": 2,
+        "successful_searches_after_anchor": 2,
+        "final_action": "refused_over_budget_search",
+        "final_answer": "",
+        "generated_tokens_after_anchor": 151,
+        "model_input_tokens_after_anchor": 5404,
+        "general_generated_tokens_after_anchor": 96,
+        "general_model_input_tokens_after_anchor": 3027
+      },
+      "new_gpu_execution": false,
+      "decision": "Closeout completed from factory report; current method archived NO-GO. Non-event explanation pending is not unfinished eligibility review or a required new task."
     }
   ],
   "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence",
   "remaining": [
-    "CPU-only closure audit of existing 8-case E v2 artifacts; inspect final refused search and initial-versus-later evidence paths",
-    "Archive current constraint-review method as NO-GO, preserve immutable v1/v2 sources and generic baseline; no new GPU/F/RL",
-    "Reconcile historical 46/52/3 state IDs if available; do not retrofit with the four current witnesses",
-    "Budget/evidence/action choice is a not-started candidate requiring a separate observable-selection, representative-population, baseline/novelty and independent-confirmation protocol before reopening"
+    "Historical 46/52/3 B witness ID reconciliation remains optional/unresolved; no retrofitting with the four E cases",
+    "A future independent budget/evidence/action-selection direction is NOT initiated; first requires literature and falsifiable observable-state protocol assessment"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -291,12 +333,12 @@
     "gpu_memory_utilization": 0.75
   },
   "code_alignment": {
-    "public_base_commit": "755340ee68410f3fabd11c9ec2e9232a064eca5c",
+    "public_base_commit": "3664469791000f5df3ca289338c808bfd61e70f1",
     "reported_factory_base": "a17f1f3",
-    "reported_factory_head": "82fa3d5",
+    "reported_factory_head": "8ceeda1",
     "factory_source_available": false,
     "user_instruction": "No factory source provided; public developer repository is authoritative, factory will replace code from it. Preserve old commits/artifacts locally.",
-    "implemented_alignment": "V1 strict paired validator and actual post-observation core retained; explicit v2 preparation/stratified metrics reuse the SAME run_e control-first continuation engine; CPU verified, factory inference pending.",
+    "implemented_alignment": "Public replay, v1/v2 and CPU closeout capabilities retained. Factory reports completed engineering and CPU receipt validation; developer did not independently access those artifacts. Current method archived; no further experiment implementation.",
     "additional_reported_commits": [
       "839431d",
       "113ca69"

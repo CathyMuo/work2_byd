@@ -3,11 +3,11 @@
 工作二独立研究仓库：多轮搜索智能体中的检索反馈偏移与自适应恢复。
 实验服务器：厂内 **4×H800**。厂内已报告 1000 题 A1、2000 个 A3 目标状态及 B
 基线结果；新实验与代码分支 `f4a4bb5` 尚未提供原始源码/轨迹。
-厂内最新 `82fa3d5` 报告 E v2 工程通过：primary 一般回顾修复 3/4、约束核对
-2/4；secondary 约束核对引入 1 例空答案/预算失败。当前决定：**停止扩展与调参
-约束核对方法，研究/RL 未 GO，不进入 F，不新增 GPU 实验。**
-详见 [结果深度分析与方向决策](research/E_V2_RESULTS_AND_DIRECTION.md)。
-下一步只对已有 8 案例执行 CPU 收尾审计；v1 全 skip 和 v2 数据原样保留。
+厂内最新 `8ceeda1` 已报告 E v2 收尾全部通过：8 案例机械审计、5 个事件案例
+人工解释完成，无新 GPU。当前方法分支 **归档 NO-GO**，没有未完成的 E 必跑任务。
+不重跑审计、不补无事件解释、不进入 F/RL，不新增提示变体或分片实验。
+详见 [归档后安排](docs/POST_ARCHIVE_NEXT_STEPS.md) 与
+[结果深度分析](research/E_V2_RESULTS_AND_DIRECTION.md)。
 
 A1 的原 200 题 clean baseline 已由厂内报告完成，
 实际 cohort 是官方 Search-R1 **7B + FAISS Flat**，EM 0.335、多轮率 0.975。
@@ -15,7 +15,7 @@ A1 的原 200 题 clean baseline 已由厂内报告完成，
 厂内报告 A2 的 20/20 精确控制通过，见 [A2 分析](research/A2_REPORTED_RESULTS.md)。
 当前已实现独立审查后执行的 E2–E4 **10 题工程 Pilot**；完整诊断扩展、恢复基线和 RL 待后续。
 
-**本轮先保存厂内分叉并对齐公开主线，只审计已有产物，不重跑实验。**
+**当前分支已归档；更新公开记录时保留厂内备份与所有原始产物，无需重跑实验。**
 原 [A3 工程文档](docs/A3_EXECUTION_GUIDE.md) 保留为历史工程入口。
 
 详细步骤见 [工作二实验实施文档](docs/EXECUTION_GUIDE.md)：资源清单、路径填写、
@@ -43,22 +43,14 @@ cp configs/local.example.json configs/local.json
 `check_environment.py` 和 `pack_feedback.py` 仅供需要排障时自愿使用，
 不属于必跑步骤。
 
-## 当前入口：E v2 CPU 收尾
+## 当前状态：归档完成
 
-按 [收尾与决策文档](research/E_V2_RESULTS_AND_DIRECTION.md) 对齐主线后：
+没有必跑 E 命令。旧脚本保留作历史复核，勿将下面的历史入口视为新实验指令。
+下一步见 [归档后安排](docs/POST_ARCHIVE_NEXT_STEPS.md)：旧 B 记录可定位时做一次
+46/52/3 状态 ID 集合对账，否则保持 unresolved；新候选先做独立文献/假设/协议
+评审，不自动启动预算控制、F 或 RL。generic 与 replay 平台原样保留。
 
-```bash
-python -m work2.audit_e_probe \
-  --run-dir outputs/e_probe_engineering \
-  --output outputs/e_probe_closeout/receipt.json
-```
-
-复算 raw 指标、实际起点/原样控制与成本，分开答错和预算/终止 harm，核对最后
-被拒的搜索动作；输出未来证据路径的 pending 人工解释项。程序不加载模型、
-不访问 Retriever，也不改旧文件。smoke 不并入独立样本。
-当前 GPU 入口保留为历史能力，按 STATE 不继续扩展或调参。
-
-## CPU 配对与语义审查入口
+## 历史 CPU 配对与语义审查入口
 
 首次从厂内分叉切换主线需按 [对齐步骤](docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md)，
 普通 git pull 无法快进覆盖已提交分支。之后使用实际 raw 文件：
@@ -139,7 +131,8 @@ bash scripts/update.sh
 | `docs/A2_EXECUTION_GUIDE.md` | A2 的重放步骤、控制与反馈要求 |
 | `docs/A3_EXECUTION_GUIDE.md` | 原 E2–E4 工程资格审查、冻结和单轮干预步骤 |
 | `docs/FACTORY_ALIGNMENT_AND_NEXT_STEPS.md` | 当前厂内分叉备份/对齐、CPU 审计与后续机制协议 |
-| `research/E_V2_RESULTS_AND_DIRECTION.md` | 当前方法 NO-GO、结果分析、CPU 收尾与未来候选立项边界 |
+| `docs/POST_ARCHIVE_NEXT_STEPS.md` | 当前归档状态、一次性历史对账与独立立项评审 |
+| `research/E_V2_RESULTS_AND_DIRECTION.md` | 方法 NO-GO、结果分析与已完成的 CPU 收尾协议 |
 | `docs/E_V2_STRATIFIED_PROBE.md` | 历史 v2 两层问题、来源/前缀审查与共用执行引擎 |
 | `docs/E_EXECUTION_GUIDE.md` | 历史 v1 充分配对、实际扰动起点与成本口径 |
 | `docs/CD_REVIEW_AND_MECHANISM_PROTOCOL.md` | 最新 C/D 正文诊断、审查/机制收据与 E/F 的范围 |
