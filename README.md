@@ -1,5 +1,9 @@
 # Work 2: Search Feedback Drift and Recovery
 
+**2026-10-13 SI1 反馈：四卡工程已报告通过，选择器相对 keep 的净 EM 为 −.0025，
+收益尚未建立。当前只做已有产物的 CPU 诊断，不重新采样、调验证阈值或启动 RL。**
+详见 [SI1 结果分析](report/SI1_DP4_PILOT_ANALYSIS_20261013.md)。
+
 **四卡扩容更新：默认1200训练+800验证，四个独立TP=1 worker并行。**
 直接看[四卡2000题运行清单](docs/SI1_DP4_QUICKSTART.md)。
 全部原样控制通过后才启动干预，四卡完整核验后统一合并；旧结果保留。

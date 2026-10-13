@@ -11,7 +11,7 @@ from unittest import mock
 from test_a1 import FakeRetriever
 from test_selective import RoutingGenerator
 import test_selective as fixtures
-from work2.common import load_json, write_json
+from work2.common import ROOT, load_json, write_json
 from work2.replay import AuditedRetriever
 from work2 import parallel_selective as dp
 from work2.run_selective import validated_cases
@@ -22,7 +22,7 @@ class ParallelTests(unittest.TestCase):
         # Reuse data-only fixture, not the serial inference driver.
         fixture = fixtures.SelectiveTests()
         loc, samples = fixture.fixture(root)
-        args = argparse.Namespace(local=loc, protocol=Path("configs/selective_v1.json"), samples_dir=samples,
+        args = argparse.Namespace(local=loc, protocol=ROOT / "configs/selective_v1.json", samples_dir=samples,
                                   run_dir=root/"dp4", smoke=True, smoke_run_dir=None, gpus="0,1,2,3",
                                   backend="vllm", gpu_memory_utilization=.75, request_timeout=120, check_only=False)
         with mock.patch.object(dp,"git_output",return_value="fixture"):

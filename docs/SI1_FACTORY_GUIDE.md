@@ -1,5 +1,9 @@
 # SI1：选择性干预的厂内尝试性实验指导
 
+最新结果已报告，当前按 [SI1 分析与 CPU 诊断](../report/SI1_DP4_PILOT_ANALYSIS_20261013.md)
+继续；下面 GPU 命令为历史执行协议，不要求重跑。本次新增 `SI1_PYTHON` 支持：
+可设为现有 Search-R1 环境解释器绝对路径，四卡 worker 会继承该解释器。
+
 日期：2026-10-12。当前分支：`feat/selective-intervention`。用户已授权选定方向、开发和推送，厂内运行仍待执行。旧constraint/E方法继续归档，本实验是独立SI1协议。
 
 ## 1. 这次锁定什么

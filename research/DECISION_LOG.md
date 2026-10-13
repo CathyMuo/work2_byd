@@ -557,3 +557,65 @@ The user questions the 160/80 allocation and explicitly requires four GPUs to ac
 ## 2026-10-12 — Four-worker implementation verified, default 1200/800 ready
 
 108 CPU tests pass (95 previous + 13 new). Implemented immutable plan/GPU/question binding, four subprocess dispatch, two phases with all-worker exact-control barrier, cross-worker retrieval signatures, process-group cancellation of own workers only, complete ordered merge and raw audits. Expanded default samples to 1200/800; new dp4 output directories preserve old results and old default SI1 samples are conservatively excluded. New 20-question four-card smoke gates the expanded run. Runtime logs/progress and measured coordinator phase/wall timing added; no fixed 4x speed or real GPU execution claimed. Publish to the already explicitly authorized public branch; factory commands documented in SI1_DP4_QUICKSTART.md.
+
+
+## 2026-10-13 — SI1 four-card report: engineering accepted, learned benefit not established
+
+User reports 43473fc plus unpublished factory 285cac7 completed 1200-fit/800-validation
+SI1 on four workers with global originals exact; mechanical checks pass, 80.8 min
+development/134 s smoke. Raw artifacts and the named 27K feedback pack are not
+present here. Keep 800 validation rows/model/settings/arms immutable. Prior E NO-GO
+is unchanged; SI1 was separately authorized, not a resumed archived method.
+
+Validation keep 230/800; review 223 (27 gain,34 harm); budget 172 (24,82),170
+malformed; answer 21 (1,210),722 search refusals. Selector 228 (3 gain,5 harm),
+net -2/800, reported 95% CI [-.010,+.00375]; selects keep649/review135/budget14/answer2.
+Finite-action oracle271 gives 41 gain states beyond keep, not deployable labels
+or guaranteed prefix-observable signal. It does not by itself authorize a larger
+selector or RL. Current hypothesis of learned net benefit remains unestablished.
+
+Correct positive inference: conditional harm 5/230 includes skipped correct states;
+81.125% keep mechanically reduces exposure. Same-rate random and simple/risk-neutral
+predeclared controls exist in validation_report but were omitted from the summary.
+Need them before saying selection learned safe/beneﬁcial targeting, and no formal
+significance claim from rates alone. Among151 interventions, gain3/harm5/unchangedEM143;
+base-correct-trigger denominator must be measured separately. If all800 reachable,
+a same-mixture uniform random policy has expected gains4.97875, harms7.6975 and
+net -.0033984375; illustrative only, actual reachable/matched report is required.
+
+At the fixed first-observation anchor every reachable row has spent1/remaining3;
+there is no budget-stage variation or multi-query drift. The simplistic rule's
+remaining<=1 branch is never reachable. 19 numeric plus64 hashed word features
+cannot be assumed to detect semantic evidence sufficiency. Answer arm refuses
+search requests rather than forces an actual answer:722 failures demonstrate poor
+compatibility of this particular prompt/action-space contract, not proof answering
+from evidence generally cannot work. Budget likewise is just a budget reminder,
+not a full budget algorithm;170 malformed outputs require raw terminal-format
+classification before an algorithmic-mechanism conclusion.
+
+Continue only existing-artifact CPU diagnostics and reversible launcher/test-path
+fixes. No new GPU, validation parameter/action tuning, automatic unseen confirmation,
+new assets or RL. Any next learner/action protocol requires train-only model choice,
+new unseen evaluation and separately recorded scope. Eight hundred rows now observed
+cannot be recycled as fresh confirmation. Protocol/smoke uses20 current TRAIN
+questions; exclude earlier observed cohorts, not claim current smoke is disjoint
+from its own development training subset.
+
+
+Implementation: launcher now honors SI1_PYTHON/PY without configuring environments;
+all modes and spawned sys.executable inherit the same existing interpreter. Two
+selective test fixtures resolve protocol under ROOT. New diagnose_selective reads
+validated original/worker artifacts plus frozen selector/decision/report hashes,
+reproduces selected arms and predeclared control metrics, and outputs true triggered
+correct/wrong denominators, opportunity overlap/exclusive gains, train feature
+variation, cost-only score crossings, observed frozen utility and dataset results.
+It does not refit, change prompts/parameters or execute policies. Validation remains
+observed development data. The supplied report does not prove significant targeting
+or oracle reachability from available features.
+
+111 public CPU tests pass (108 existing plus3 diagnostic checks), including exact
+predeclared control recomputation, denominator separation, corruption rejection
+and artifact immutability.30 selective tests also pass from tests/ cwd with workspace
+on PYTHONPATH; a stub verifies interpreter override without service/GPU calls.
+Shell/compile/CLI/JSON/docs/diff checks pass. No actual factory artifacts or archive
+were received/read, no additional model/Retriever/GPU/NN/RL execution.

@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 from test_a1 import FakeGenerator, FakeRetriever
-from work2.common import load_json, write_json
+from work2.common import ROOT, load_json, write_json
 from work2.rollout import run_sample
 from work2.selective import (ARMS, VERSION, choose, continue_arm, exact, features, fit,
                             observable, prepare, sha, summarize)
@@ -122,7 +122,7 @@ class SelectiveTests(unittest.TestCase):
 
     def collect_fixture(self,root,fail=False,after_smoke=None):
         loc,frozen=self.fixture(root)
-        args=argparse.Namespace(local=loc,protocol=Path('configs/selective_v1.json'),samples_dir=frozen,smoke=False,
+        args=argparse.Namespace(local=loc,protocol=ROOT / 'configs/selective_v1.json',samples_dir=frozen,smoke=False,
                                 request_timeout=120,check_only=False,run_dir=root/'run',backend='vllm',tensor_parallel_size=1,gpu_memory_utilization=.75,smoke_run_dir=root/'smoke')
         smoke_args=copy.copy(args);smoke_args.smoke=True;smoke_args.run_dir=root/'smoke'
         with mock.patch('work2.backends.VLLMGenerator',return_value=RoutingGenerator()),mock.patch.object(cli,'SearchR1Retriever',return_value=FakeRetriever()),mock.patch.object(cli,'git_output',return_value='fixture'):

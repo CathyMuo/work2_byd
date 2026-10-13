@@ -1,5 +1,8 @@
 # Work 2 试验报告归档
 
+[SI1 四卡 Pilot 分析（2026-10-13）](SI1_DP4_PILOT_ANALYSIS_20261013.md)：
+独立新方向的 1200/800 试验、触发分母修正、有限 oracle 与 CPU 诊断步骤。
+
 [尝试性试验与结论总报告](EXPLORATORY_EXPERIMENTS_AND_CONCLUSIONS.md)
 按实际开展顺序汇总截至 2026-10-12 的研究尝试：
 

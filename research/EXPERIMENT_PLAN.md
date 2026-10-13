@@ -309,3 +309,20 @@ uses original IDs/conditions/source locators once; unresolved if records absent.
 A possible future action-choice project starts with a separate literature and
 observable-state/falsifiable-hypothesis protocol assessment, not automatic E/F
 continuation. Current four selected questions cannot train/select/confirm it.
+
+
+## SI1 current action — reported engineering complete, CPU diagnostics only
+
+2026-10-13 report: four-worker controls complete/exact;800 validation keep230,
+selector228 (gain3,harm5),CI[-.010,+.00375],81.125% keep;oracle271. No learned net
+benefit established. Do not infer selective safety from reduced exposure alone;
+predeclared random same-rate, simple-rule and risk-neutral comparisons are required.
+First-observation anchors have fixed spent1/remaining3 and one query. Answer-only
+refusals and budget reminder malformed outputs are action compatibility outcomes,
+not general answerability/budget-control proofs. Current best default remains keep.
+
+Next: read-only diagnose_selective of existing frozen artifacts plus raw terminal
+format inspection; no new GPU, validation threshold/action tuning, independent
+confirmation or RL. Detailed analysis and next conditions are in
+report/SI1_DP4_PILOT_ANALYSIS_20261013.md. Launcher/tests fixes preserve policies and
+results. Earlier E NO-GO remains intact; SI1 is separately authorized and scoped.

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-10-12",
-  "current_stage": "SI1_four_card_factory_smoke_ready",
-  "status": "CPU_verified_four_worker_factory_execution_pending",
-  "next_action": "Factory: pull feat/selective-intervention, prepare new 1200-train/800-validation samples excluding old cohorts, run four-card check and 20-question four-card smoke, then 2000-question four-worker development. ALL original controls pass globally before any intervention; audit complete merged coverage; fit/select/evaluate and return aggregates. No RL/independent confirmation.",
+  "updated_at": "2026-10-13",
+  "current_stage": "SI1_report_audit_and_CPU_diagnostics",
+  "status": "reported_dp4_engineering_passed_selector_net_benefit_unestablished",
+  "next_action": "Preserve frozen SI1 model, four arms, decisions and 800 validation questions. Accept reported four-worker engineering completion; do CPU-only analysis of predeclared matched-rate random/simple-rule/risk-neutral controls, trigger denominators, oracle gain overlap, format/refusal failure categories and train feature variation. Fix launcher interpreter selection and test fixture paths without changing policies. No validation tuning, new GPU, action redesign, independent confirmation or RL GO.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -312,13 +312,82 @@
       },
       "new_gpu_execution": false,
       "decision": "Closeout completed from factory report; current method archived NO-GO. Non-event explanation pending is not unfinished eligibility review or a required new task."
+    },
+    {
+      "stage": "SI1_dp4_factory_report",
+      "report_date": "2026-10-13",
+      "public_commit": "43473fc",
+      "factory_local_commit": "285cac7",
+      "evidence_source": "user supplied text; feedback archive and raw artifacts not present on developer server",
+      "train_questions": 1200,
+      "validation_questions": 800,
+      "development_questions": 2000,
+      "smoke_questions": 20,
+      "development_wall_minutes": 80.8,
+      "controls_minutes": 46.4,
+      "actions_minutes": 34.4,
+      "smoke_seconds": 134,
+      "mechanical_checks_passed_reported": true,
+      "global_original_controls_exact_reported": true,
+      "validation_arms": {
+        "keep": {
+          "correct": 230,
+          "em": 0.2875,
+          "gain": 0,
+          "harm": 0
+        },
+        "review": {
+          "correct": 223,
+          "em": 0.27875,
+          "gain": 27,
+          "harm": 34
+        },
+        "budget": {
+          "correct": 172,
+          "em": 0.215,
+          "gain": 24,
+          "harm": 82,
+          "malformed_action": 170
+        },
+        "answer": {
+          "correct": 21,
+          "em": 0.02625,
+          "gain": 1,
+          "harm": 210,
+          "answer_only_search_refused": 722
+        }
+      },
+      "selector": {
+        "em": 0.285,
+        "correct": 228,
+        "gain": 3,
+        "harm": 5,
+        "net_em": -0.0025,
+        "net_em_ci95": [
+          -0.01,
+          0.00375
+        ],
+        "selection_counts": {
+          "keep": 649,
+          "review": 135,
+          "budget": 14,
+          "answer": 2
+        }
+      },
+      "finite_action_oracle": {
+        "em": 0.33875,
+        "correct": 271,
+        "headroom_vs_keep": 0.05125,
+        "gain_states": 41
+      },
+      "decision": "Engineering reported successful. Low aggregate harm is confounded by 81.125% keep and must be compared at matched intervention rates; not proof of beneficial selection/significant harm control. Current ridge selector has no established net benefit. Retain SI1 as CPU-diagnostic candidate only; no F/RL."
     }
   ],
   "rl_go_decision": "SI1_RL_not_authorized_until_new_independent_evidence",
   "remaining": [
-    "Factory SI1 smoke and full development; real GPU/model results not executed by developer",
-    "Strong paper baseline adaptation and independent confirmation require SI1 evidence; RL deferred",
-    "Historical 46/52/3 optional and unresolved"
+    "Read predeclared random_matched_rate, simple_fixed_rule, risk_neutral_ablation, frozen_fixed_arm, by_dataset and costs from existing SI1 artifacts",
+    "CPU-only trigger/gain/harm/opportunity and train feature/format diagnostics; validation is observed development evidence, never a new tuning split",
+    "Historical E branch remains archived; original 46/52/3 reconciliation stays unresolved and separate from SI1"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -335,11 +404,11 @@
   },
   "code_alignment": {
     "public_base_commit": "3664469791000f5df3ca289338c808bfd61e70f1",
-    "reported_factory_base": "a17f1f3",
-    "reported_factory_head": "8ceeda1",
+    "reported_factory_base": "43473fc",
+    "reported_factory_head": "285cac7",
     "factory_source_available": false,
     "user_instruction": "No factory source provided; public developer repository is authoritative, factory will replace code from it. Preserve old commits/artifacts locally.",
-    "implemented_alignment": "Public replay, v1/v2 and CPU closeout capabilities retained. Factory reports completed engineering and CPU receipt validation; developer did not independently access those artifacts. Current method archived; no further experiment implementation.",
+    "implemented_alignment": "SI1 public branch source available at 43473fc; current edits preserve policy and add CPU-only reported-result diagnostics plus launcher/test-path fixes. Factory 285cac7 source/raw pack unavailable.",
     "additional_reported_commits": [
       "839431d",
       "113ca69"
@@ -361,13 +430,14 @@
   "active_implementation": {
     "protocol": "SI1_natural_prefix_gain_harm_v1",
     "branch": "feat/selective-intervention",
-    "CPU_test_count": 108,
-    "factory_results_available": false,
+    "CPU_test_count": 111,
+    "factory_results_available": true,
     "new_external_runtime_dependencies": false,
     "archived_constraint_preserved": true,
     "data_parallel_workers": 4,
     "default_train_questions": 1200,
     "default_validation_questions": 800,
-    "execution_protocol": "SI1_four_worker_global_barrier_v1"
+    "execution_protocol": "SI1_four_worker_global_barrier_v1",
+    "factory_raw_artifacts_available": false
   }
 }
