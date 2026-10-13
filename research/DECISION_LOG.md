@@ -619,3 +619,42 @@ and artifact immutability.30 selective tests also pass from tests/ cwd with work
 on PYTHONPATH; a stub verifies interpreter override without service/GPU calls.
 Shell/compile/CLI/JSON/docs/diff checks pass. No actual factory artifacts or archive
 were received/read, no additional model/Retriever/GPU/NN/RL execution.
+
+
+## 2026-10-13 — SI1 CPU diagnostics complete; archive current ridge prototype NO-GO
+
+Source: user factory report d6435e4, merged public bfd5aa7; raw diagnostic/worker
+artifacts unavailable here. Reported mechanical checks pass without fitting,
+models/services/GPU; launcher/test-path fixes effective. Accept reported completion,
+not developer raw verification. Current update is documentation/state only.
+
+Matched-rate random and selector both trigger151/800 with same action counts.
+Selector gain3/harm5/unchanged143 versus random gain4/harm5/unchanged142; EM .285
+versus .28625. Difference -1/800 is exploratory, not statistical inferiority or
+random equivalence. Trigger harm5/151 is3.31% for both; among triggered correct,
+reported14.29% versus13.89%. Retire learned avoidance/significant safety claims from
+5/230 aggregate harm. Risk-neutral gain9/harm11 has same net as3/5; simple rule's
+one gain among8 triggers is not method GO. Dataset keep values alone do not support
+dataset-specific selector direction. Train best fixed arm is keep; all train
+fixed intervention nets negative. No universal feature/selection impossibility.
+
+Oracle opportunity41, captured3, missed38 plus5 harms gives regret43; not proof
+of prefix-observable signal. Do not mine observed validation opportunities to
+choose features/actions. Four cost-term margin crossings concern predicted score,
+not zero predicted/actual gains. Preserve cost term and all frozen results; no
+posthoc deletion/refitting. Actual reported utility -.00859 and tiny mixed token/
+call changes establish no practical advantage. Future quality versus efficiency
+objectives must be separately specified in a new train-only protocol.
+
+Answer722 search refusals limit this prompt/action contract; do not claim all
+evidence-only answering impossible or all failures solely caused by compatibility.
+Budget170 malformed may receive optional one-pass CPU raw-format descriptions,
+without parser changes/retries/new prompts; not a prerequisite for archive.
+
+Decision: archive current SI1 ridge prototype NO-GO; no mandatory next run or
+additional feedback, no new GPU, SI2/confirmation/RL. Keep replay/DP4/barrier/random
+and diagnostic assets; keep old E NO-GO and unresolved historical46/52/3 separate.
+Any future project needs separately authorized scope, stable observable signal
+across train splits, same-rate/random/keep/simple controls, explicit objectives
+and new unseen confirmation. Record and report:
+report/SI1_CPU_DIAGNOSTICS_AND_NO_GO_20261013.md.

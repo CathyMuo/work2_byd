@@ -1,8 +1,10 @@
 # Work 2: Search Feedback Drift and Recovery
 
-**2026-10-13 SI1 反馈：四卡工程已报告通过，选择器相对 keep 的净 EM 为 −.0025，
-收益尚未建立。当前只做已有产物的 CPU 诊断，不重新采样、调验证阈值或启动 RL。**
-详见 [SI1 结果分析](report/SI1_DP4_PILOT_ANALYSIS_20261013.md)。
+**2026-10-13 SI1 CPU 诊断已报告完成：当前 ridge 原型归档 NO-GO。**
+选择器 gain 3 / harm 5，同触发率随机 gain 4 / harm 5；未建立选择优势。
+没有下一轮必跑任务，不调已观察验证集、不启动 SI2、确认或 RL。
+详见 [CPU 诊断与归档决策](report/SI1_CPU_DIAGNOSTICS_AND_NO_GO_20261013.md)。
+以下四卡命令和执行文档为历史协议，保留供复核，不要求重跑。
 
 **四卡扩容更新：默认1200训练+800验证，四个独立TP=1 worker并行。**
 直接看[四卡2000题运行清单](docs/SI1_DP4_QUICKSTART.md)。

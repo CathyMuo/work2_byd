@@ -297,7 +297,7 @@ seen cases. Platform assets remain reusable; no methods/artifacts from stopped
 projects elsewhere in the workspace are imported.
 
 
-## Current status — E method archived, no mandatory next experiment
+## Historical E status — method archived, no mandatory E experiment
 
 Factory 8ceeda1 reports completed read-only closeout and five event-case human
 explanations, no GPU. Three pending non-event explanations are not unfinished
@@ -311,7 +311,7 @@ observable-state/falsifiable-hypothesis protocol assessment, not automatic E/F
 continuation. Current four selected questions cannot train/select/confirm it.
 
 
-## SI1 current action — reported engineering complete, CPU diagnostics only
+## Historical SI1 action — engineering report to CPU diagnostics (now completed)
 
 2026-10-13 report: four-worker controls complete/exact;800 validation keep230,
 selector228 (gain3,harm5),CI[-.010,+.00375],81.125% keep;oracle271. No learned net
@@ -326,3 +326,25 @@ format inspection; no new GPU, validation threshold/action tuning, independent
 confirmation or RL. Detailed analysis and next conditions are in
 report/SI1_DP4_PILOT_ANALYSIS_20261013.md. Launcher/tests fixes preserve policies and
 results. Earlier E NO-GO remains intact; SI1 is separately authorized and scoped.
+
+
+## Current status — SI1 ridge prototype archived NO-GO
+
+2026-10-13 factory d6435e4 reports bfd5aa7 diagnostics completed read-only with
+mechanical_checks_passed=true. Selector and frozen matched-rate random both trigger
+151/800: selector gain3/harm5, random gain4/harm5. No selection advantage established;
+one-question difference and a single random realization do not establish statistical
+inferiority/equivalence. Earlier low aggregate harm includes skipped correct states
+and is not learned avoidance. Train-frozen best fixed arm is keep; all train fixed
+interventions also have negative net EM. Preserve frozen model, arms, decisions,
+validation and actual cost utility. Four cost-only margin crossings do not imply
+zero predicted or realized accuracy gains.
+
+Current ridge prototype NO-GO; no mandatory further audit, new GPU, refitting,
+validation action/threshold tuning, SI2, confirmation or RL. Optional terminal-format
+CPU classification is descriptive only and not an archive gate. Do not mine the
+41 observed validation oracle gains for a new selector. A future separately
+recorded protocol requires prefix-observable signals stable within train splits,
+strong same-rate/random/keep/simple controls, explicit gain/harm/net/cost objectives
+and a new unseen confirmation set. That project is not initiated. E archive remains
+unchanged. Full decision: report/SI1_CPU_DIAGNOSTICS_AND_NO_GO_20261013.md.

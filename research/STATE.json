@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-13",
-  "current_stage": "SI1_report_audit_and_CPU_diagnostics",
-  "status": "reported_dp4_engineering_passed_selector_net_benefit_unestablished",
-  "next_action": "Preserve frozen SI1 model, four arms, decisions and 800 validation questions. Accept reported four-worker engineering completion; do CPU-only analysis of predeclared matched-rate random/simple-rule/risk-neutral controls, trigger denominators, oracle gain overlap, format/refusal failure categories and train feature variation. Fix launcher interpreter selection and test fixture paths without changing policies. No validation tuning, new GPU, action redesign, independent confirmation or RL GO.",
+  "current_stage": "SI1_ridge_prototype_archived",
+  "status": "NO_GO_archived_reported_CPU_diagnostics_complete",
+  "next_action": "No mandatory next run. Preserve all frozen SI1 samples, policies, fitted selector, decisions, worker/barrier sources and observed validation outcomes. Current ridge prototype has no demonstrated advantage over keep or frozen same-rate random; archive NO-GO. No validation tuning, action redesign, new GPU, confirmation or RL. A future SI2 requires a separately recorded hypothesis, train-only stable observable signal and new unseen confirmation protocol; not initiated.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -381,13 +381,119 @@
         "gain_states": 41
       },
       "decision": "Engineering reported successful. Low aggregate harm is confounded by 81.125% keep and must be compared at matched intervention rates; not proof of beneficial selection/significant harm control. Current ridge selector has no established net benefit. Retain SI1 as CPU-diagnostic candidate only; no F/RL."
+    },
+    {
+      "stage": "SI1_CPU_diagnostics_factory_report",
+      "report_date": "2026-10-13",
+      "reported_factory_head": "d6435e4",
+      "public_source_merged_reported": "bfd5aa7",
+      "evidence_source": "user text; factory raw artifacts and diagnostic report not available on developer server",
+      "mechanical_checks_passed_reported": true,
+      "new_gpu_execution": false,
+      "model_refit": false,
+      "validation_questions": 800,
+      "train_questions": 1200,
+      "selector": {
+        "triggered": 151,
+        "gain": 3,
+        "harm": 5,
+        "unchanged_em_triggers": 143,
+        "em": 0.285,
+        "net_em": -0.0025,
+        "triggered_baseline_correct_harm_rate_rounded": 0.1429
+      },
+      "random_matched_rate": {
+        "triggered": 151,
+        "gain": 4,
+        "harm": 5,
+        "unchanged_em_triggers": 142,
+        "em": 0.28625,
+        "net_em": -0.00125,
+        "triggered_baseline_correct_harm_rate_rounded": 0.1389
+      },
+      "risk_neutral_ablation": {
+        "gain": 9,
+        "harm": 11,
+        "em": 0.285,
+        "net_em": -0.0025
+      },
+      "simple_fixed_rule": {
+        "triggered": 8,
+        "gain": 1,
+        "harm": 0,
+        "em": 0.28875,
+        "net_em": 0.00125
+      },
+      "frozen_fixed_arm": "keep",
+      "oracle_regret": {
+        "gain_opportunities": 41,
+        "captured": 3,
+        "missed": 38,
+        "avoidable_harms": 5,
+        "regret": 43
+      },
+      "observed_gain_harm_call_utility_rounded": -0.00859,
+      "cost_term_margin_crossings": 4,
+      "cost_term_interpretation": "Predicted quality-risk score does not clear margin until call-savings term is added; does not establish zero predicted or actual accuracy gain.",
+      "costs_rounded": {
+        "keep": {
+          "search_calls": 2.953,
+          "generated": 217.81,
+          "model_input": 4044.71
+        },
+        "selector": {
+          "search_calls": 2.936,
+          "generated": 218.66,
+          "model_input": 4032.22
+        },
+        "review": {
+          "search_calls": 2.879,
+          "generated": 223.93,
+          "model_input": 4017.57
+        },
+        "budget": {
+          "search_calls": 2.844,
+          "generated": 235.97,
+          "model_input": 3925.36
+        },
+        "answer": {
+          "search_calls": 1.0,
+          "generated": 112.49,
+          "model_input": 887.54
+        }
+      },
+      "train_arms_reported": {
+        "keep": {
+          "em_rounded": 0.3092
+        },
+        "review": {
+          "em": 0.305,
+          "gain": 52,
+          "harm": 57
+        },
+        "budget": {
+          "em": 0.2075,
+          "gain": 33,
+          "harm": 155
+        },
+        "answer": {
+          "em": 0.0275,
+          "gain": 2,
+          "harm": 340
+        }
+      },
+      "by_dataset_keep_em": {
+        "hotpotqa": 0.3325,
+        "2wiki": 0.2425
+      },
+      "decision": "Current ridge prototype archived NO-GO. No demonstrated advantage over frozen matched-rate random; single random draw and one-question gap do not establish inferiority/equivalence or general feature impossibility. Low aggregate harm is not evidence of learned avoidance. No mandatory new run, validation tuning, SI2, confirmation or RL."
     }
   ],
-  "rl_go_decision": "SI1_RL_not_authorized_until_new_independent_evidence",
+  "rl_go_decision": "not_authorized_SI1_ridge_archived_NO_GO",
   "remaining": [
-    "Read predeclared random_matched_rate, simple_fixed_rule, risk_neutral_ablation, frozen_fixed_arm, by_dataset and costs from existing SI1 artifacts",
-    "CPU-only trigger/gain/harm/opportunity and train feature/format diagnostics; validation is observed development evidence, never a new tuning split",
-    "Historical E branch remains archived; original 46/52/3 reconciliation stays unresolved and separate from SI1"
+    "No mandatory SI1 tasks remain; optional one-pass raw-format descriptive classification is not a reopening or archive gate",
+    "Historical E branch stays archived; original 46/52/3 reconciliation remains unresolved and separate",
+    "Any future SI2 starts with separately authorized protocol review, not optimization of the observed 800 validation questions"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -405,14 +511,15 @@
   "code_alignment": {
     "public_base_commit": "3664469791000f5df3ca289338c808bfd61e70f1",
     "reported_factory_base": "43473fc",
-    "reported_factory_head": "285cac7",
+    "reported_factory_head": "d6435e4",
     "factory_source_available": false,
     "user_instruction": "No factory source provided; public developer repository is authoritative, factory will replace code from it. Preserve old commits/artifacts locally.",
-    "implemented_alignment": "SI1 public branch source available at 43473fc; current edits preserve policy and add CPU-only reported-result diagnostics plus launcher/test-path fixes. Factory 285cac7 source/raw pack unavailable.",
+    "implemented_alignment": "Factory reports bfd5aa7 CPU diagnostics and launcher/test-path fixes merged and effective. This update records reported diagnostic completion and archives current ridge prototype; frozen policies/results remain unchanged. Factory source/raw outputs unavailable here.",
     "additional_reported_commits": [
       "839431d",
       "113ca69"
-    ]
+    ],
+    "reported_factory_public_source_merged": "bfd5aa7"
   },
   "gate_review": {
     "gate_1": "not_established: on 178 E3 states/151 questions, E3 delta -10 versus matched E1 -13 gives excess +3 counts, reported cluster CI [-4,+10]; no equivalence claim",
@@ -439,5 +546,12 @@
     "default_validation_questions": 800,
     "execution_protocol": "SI1_four_worker_global_barrier_v1",
     "factory_raw_artifacts_available": false
+  },
+  "SI1_decision": {
+    "status": "current_ridge_prototype_NO_GO",
+    "finite_action_opportunity": "reported 41 validation gains under outcome-known oracle; no guarantee of observable selectability",
+    "learned_selection_advantage": "not_established_vs_keep_or_frozen_same_rate_random",
+    "statistical_scope": "single frozen random realization; no selector-versus-random paired interval supplied",
+    "future_protocol": "uninitiated; requires independent scope decision and train-only reproducible signal before new confirmation"
   }
 }
