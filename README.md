@@ -1,4 +1,19 @@
-# Work 2: Search Feedback Drift and Recovery
+# Work 2: Path Luck in RL-Trained Search Agents（PCR）
+
+**2026-10-16 新方向，分支 `feat/path-luck-pcr`：路径运气与安慰剂对照重放（PCR v1）。**
+问题：RL 训练的搜索智能体，有多少“答对”是路径运气而不是证据驱动？每个内容/恢复干预都配同状态的语义空安慰剂。
+厂内 agent 从 [PCR 厂内执行指导](docs/PCR_FACTORY_GUIDE.md) 开始；预登记协议与 Go/No-Go 门槛见
+[PCR 协议](research/PCR_PROTOCOL.md)。本轮 = Phase 0（CPU 重分析旧 A1/A3）+ Phase 1（Exp-1/2/3），不训练。
+
+```bash
+bash scripts/run_pcr.sh test && bash scripts/run_pcr.sh phase0
+bash scripts/run_pcr.sh prepare && bash scripts/run_pcr.sh smoke
+bash scripts/run_pcr.sh run && bash scripts/run_pcr.sh analyze
+```
+
+以下 SI1 / E / A 系列为已归档的历史方向，保留供复核。
+
+---
 
 **2026-10-13 SI1 CPU 诊断已报告完成：当前 ridge 原型归档 NO-GO。**
 选择器 gain 3 / harm 5，同触发率随机 gain 4 / harm 5；未建立选择优势。

@@ -4,7 +4,9 @@ This is an independent project rooted at this directory. The user explicitly
 requested that Work 2 contain no GMST methods, training, experiments, or selected
 artifacts. Do not modify the stopped research projects elsewhere in the workspace.
 
-Read `research/EXPERIMENT_PLAN.md`, `research/STATE.json`, and
+Active direction (2026-10-16): path luck / PCR v1 on `feat/path-luck-pcr`; read
+`research/PCR_PROTOCOL.md` and `docs/PCR_FACTORY_GUIDE.md` first. Also read
+`research/EXPERIMENT_PLAN.md`, `research/STATE.json`, and
 `research/DECISION_LOG.md` before changing research code or proposing experiments.
 Continue the recorded stage. Stage C requires evidence from stages A and B and
 an explicit recorded GO decision; repository setup is not a research GO decision.

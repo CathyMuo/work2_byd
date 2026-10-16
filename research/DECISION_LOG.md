@@ -658,3 +658,38 @@ Any future project needs separately authorized scope, stable observable signal
 across train splits, same-rate/random/keep/simple controls, explicit objectives
 and new unseen confirmation. Record and report:
 report/SI1_CPU_DIAGNOSTICS_AND_NO_GO_20261013.md.
+
+
+## 2026-10-16 — New direction: path luck and placebo-controlled replay (PCR v1)
+
+The user converged Work 2 on a new research question after reviewing all archived
+results and recent literature: a substantial share of RL-trained search-agent
+successes may be path luck rather than evidence-driven. The reported legacy
+signals motivate it (not paper results, not independently recomputed here): E1
+permutation flips in BOTH directions (75/583 degraded, 96/1389 improved); matched
+E3 excess over E1 +3 counts, CI [-4,+10]; B3 repair 44/134 on outcome-selected
+degraded states alongside 53/449 stable harms, a regression-to-the-mean confound.
+The archived drift→recovery, E, and SI1 methods stay NO-GO and are not resumed.
+
+Decision: open branch `feat/path-luck-pcr` with a pre-registered protocol
+(research/PCR_PROTOCOL.md) frozen BEFORE any Phase 1 outcome. Every state forks the
+same raw prefix; E0/E0 must reproduce the source exactly; six semantic-null
+placebos (4 outcome-blind permutations + 2 byte-identical-content format variants)
+estimate p(s); recovery arms (review, token-matched neutral, budget+2, and the
+same on the perm_1 observation) and deletion arms (support vs non-support slot,
+same replacement candidate) are assigned to every state before outcomes. Primary
+estimands use the format-corrected view (alias/containment/F1>=0.8 flips removed).
+Gates G1/G2/G3 and their dispositions are fixed in the protocol; analysis emits
+mechanical values only, the GO decision is recorded here by a human. Default
+sources reuse SI1 dev natural E0 sources (600 questions, turns 1/2). Phase 0 adds a
+CPU re-analysis of existing A1/A3 raw files with the audit_pairs contract; the
+unpublished B schema is not audited further, Exp-2 replaces it.
+
+Implementation: work2/placebo.py, work2/pcr.py (prepare / N-GPU TP=1 workers with
+resume / ordered merge), work2/pcr_analysis.py, work2/phase0_luck.py,
+configs/pcr_v1.json, scripts/run_pcr.sh, docs/PCR_FACTORY_GUIDE.md. 124 CPU tests
+pass (111 existing + 13 new: format/permutation invariants, token-matched neutral,
+deletion candidate sharing, all-arm state with exact controls, budget+2, control
+drift stop, turn-2 fork, analysis gates, tamper rejection, prepare→worker→merge,
+Phase 0 collection). No H800 execution, no RL; Phase 2/3 (more checkpoints/data,
+LDR training) require a recorded decision on G1–G3 first.

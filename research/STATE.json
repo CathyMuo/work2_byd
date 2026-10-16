@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-10-13",
-  "current_stage": "SI1_ridge_prototype_archived",
-  "status": "NO_GO_archived_reported_CPU_diagnostics_complete",
-  "next_action": "No mandatory next run. Preserve all frozen SI1 samples, policies, fitted selector, decisions, worker/barrier sources and observed validation outcomes. Current ridge prototype has no demonstrated advantage over keep or frozen same-rate random; archive NO-GO. No validation tuning, action redesign, new GPU, confirmation or RL. A future SI2 requires a separately recorded hypothesis, train-only stable observable signal and new unseen confirmation protocol; not initiated.",
+  "updated_at": "2026-10-16",
+  "current_stage": "PCR_v1_phase0_phase1_ready_for_factory",
+  "status": "PCR_v1_implemented_CPU_verified_awaiting_factory_results",
+  "next_action": "Factory: Phase 0 CPU re-analysis of existing A1/A3 raw (work2.phase0_luck), then PCR Phase 1 prepare/smoke/run/analyze per docs/PCR_FACTORY_GUIDE.md and return pcr_report.md. Developer records G1-G3 decision in DECISION_LOG before any Phase 2/3 (more checkpoints, LDR training).",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -489,11 +489,11 @@
       "decision": "Current ridge prototype archived NO-GO. No demonstrated advantage over frozen matched-rate random; single random draw and one-question gap do not establish inferiority/equivalence or general feature impossibility. Low aggregate harm is not evidence of learned avoidance. No mandatory new run, validation tuning, SI2, confirmation or RL."
     }
   ],
-  "rl_go_decision": "not_authorized_SI1_ridge_archived_NO_GO",
+  "rl_go_decision": "not_authorized_PCR_phase1_pending",
   "remaining": [
-    "No mandatory SI1 tasks remain; optional one-pass raw-format descriptive classification is not a reopening or archive gate",
-    "Historical E branch stays archived; original 46/52/3 reconciliation remains unresolved and separate",
-    "Any future SI2 starts with separately authorized protocol review, not optimization of the observed 800 validation questions"
+    "Factory Phase 0 and Phase 1 PCR results",
+    "Human G1-G3 decision recorded in DECISION_LOG",
+    "Phase 2 checkpoint/dataset/retriever/temperature generalization and Phase 3 LDR protocols not yet written"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -533,19 +533,28 @@
     "next_action": "No mandatory E tasks remain. Preserve immutable artifacts and the generic/replay baseline assets. Optional one-pass historical 46/52/3 ID reconciliation using original B records, with unresolved if unavailable. Any subsequent research starts with a separate literature/hypothesis/observable-state protocol review, not old E optimization; no new GPU, F, prompt variant, sharding or RL.",
     "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence"
   },
-  "active_protocol": "SI1_natural_prefix_gain_harm_v1",
+  "active_protocol": "PCR_placebo_controlled_replay_v1",
   "active_implementation": {
-    "protocol": "SI1_natural_prefix_gain_harm_v1",
-    "branch": "feat/selective-intervention",
-    "CPU_test_count": 111,
-    "factory_results_available": true,
-    "new_external_runtime_dependencies": false,
-    "archived_constraint_preserved": true,
-    "data_parallel_workers": 4,
-    "default_train_questions": 1200,
-    "default_validation_questions": 800,
-    "execution_protocol": "SI1_four_worker_global_barrier_v1",
-    "factory_raw_artifacts_available": false
+    "protocol": "PCR_placebo_controlled_replay_v1",
+    "branch": "feat/path-luck-pcr",
+    "protocol_doc": "research/PCR_PROTOCOL.md",
+    "factory_guide": "docs/PCR_FACTORY_GUIDE.md",
+    "config": "configs/pcr_v1.json",
+    "CPU_test_count": 124,
+    "factory_results_available": false,
+    "default_sources": "outputs/si1_dp4_dev/sources.jsonl",
+    "default_questions_per_dataset": 300,
+    "target_turns": [
+      1,
+      2
+    ],
+    "arms_per_state": 16,
+    "preregistered_gates": [
+      "G1 semantic lucky share >=10% and CI low >5%",
+      "G2 placebo explains >=1/3 of review/budget2 repair or reverses net direction",
+      "G3 drop_support minus drop_nonsupport CI upper <0"
+    ],
+    "new_external_runtime_dependencies": false
   },
   "SI1_decision": {
     "status": "current_ridge_prototype_NO_GO",
@@ -553,5 +562,6 @@
     "learned_selection_advantage": "not_established_vs_keep_or_frozen_same_rate_random",
     "statistical_scope": "single frozen random realization; no selector-versus-random paired interval supplied",
     "future_protocol": "uninitiated; requires independent scope decision and train-only reproducible signal before new confirmation"
-  }
+  },
+  "previous_archived_protocol": "SI1_natural_prefix_gain_harm_v1 (ridge prototype NO-GO, 2026-10-13)"
 }
