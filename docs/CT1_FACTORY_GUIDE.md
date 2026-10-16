@@ -94,6 +94,28 @@ tail -f outputs/ct1_pilot_mc.log
 - 中断后重跑**同一条命令**即可续跑：已完成的题不会重跑。要求代码 commit、GPU 映射和题目都不变。跑的过程中不要 `git pull`。
 - 完成标志：`outputs/ct1_pilot/run_manifest.json` 中 `"status": "completed"`，并且有 `records_sha256`。
 
+## 4b. 2026-10-16 补充：按协议做 k=16 重测（当前要做的事）
+
+k=8 pilot 的 G-a 未通过（A 的信度 0.259；E 为 0.740，已达标）。按协议 §6，在**同一批 300 题**上用 k=16 重测一次。
+前 8 个样本按种子与 k=8 完全相同，只是再追加 8 个。分析见 `research/CT1_PILOT_RESULTS_AND_DECISION.md`。
+
+```bash
+git pull --ff-only && bash scripts/run_credit.sh test          # 期望 141 项 OK
+export CT_PROTOCOL=configs/credit_v1_k16.json CT_PLAN=outputs/ct1_plan_k16 CT_RUN=outputs/ct1_pilot_k16
+export CT_SOURCES=outputs/si1_dp4_dev/sources.jsonl CT_GPUS=0,1,2,3
+bash scripts/run_credit.sh prepare
+"$CT_PYTHON" -c "import json;a=json.load(open('outputs/ct1_plan/plan.json'));b=json.load(open('outputs/ct1_plan_k16/plan.json'));print('same_questions', [q['sample_id'] for q in a['questions']]==[q['sample_id'] for q in b['questions']])"
+nohup bash scripts/run_credit.sh run > outputs/ct1_pilot_k16_mc.log 2>&1 &   # 复用已通过的 outputs/ct1_smoke；预计约 40 min
+bash scripts/run_credit.sh signals          # 新增探索性信号 cf_ig，约 2 min
+bash scripts/run_credit.sh signals-ref      # 可选：configs/local.json 的 base_model 存在时才跑；不存在就跳过并说明
+bash scripts/run_credit.sh analyze
+bash scripts/run_credit.sh pack
+```
+
+- `same_questions` 必须为 `True`，否则停下回报。
+- k=8 的 `outputs/ct1_pilot` 保持不动。
+- 回传：`outputs/ct1_pilot_k16/analysis/ct1_report.md` 全文（含新增的“探索性诊断”一节）、`ct1_report.json` 中的 `gates`、`reliability`、`exploratory`，以及 `run_manifest.json` 中的 `mc_wall_seconds` 和 `retrieval`。另外写明是否跑了 `signals-ref`。
+- 探索性诊断不进入门槛；同样不要自行下 GO/NO-GO。
 ## 5. 信号与分析
 
 ```bash

@@ -793,3 +793,28 @@ with exponential backoff (4 attempts). Strict ordered drift checks in A2/SI1/PCR
 are unchanged. Protocol estimands are unchanged; cached determinism is a stricter
 environment, not a looser one. 139 tests pass (136 + 3 new; the old fatal-drift
 test is replaced). Two-GPU stub end-to-end rerun on the home server passes.
+
+## 2026-10-16 — CT1 k=8 pilot reported: G-a fails on A only; preregistered k=16 rerun
+
+Factory HEAD 0e4f22e (public afc1c05 merged), 300 questions, 869 turns, 18,704
+branches, MC 20.3 min, all trajectories reproduced, null eligible 300/300, EALR
+mask self-check exact. Reliability: A 0.259 [0.040, 0.433], E 0.740 [0.660, 0.805]
+-> G-a false. G-b true: rho vs E ig 0.089, ealr 0.043, fact_hit 0.079 (answer_hit
+0.150, random 0.001); rho(ig, ealr) 0.037. G-c true (0.68 h for 600).
+Interpretation: A's true variance is tiny (mean A 0.0014; on-policy resampling
+from s_{t-1} mostly reproduces the turn), so noise dominates; Spearman-Brown
+predicts A 0.41 at k=16 and k~34 for 0.6. Even so, disattenuated bounds already
+exclude moderate IG-A correlation (upper ~0.13) and cap evidence-signal agreement
+with E at ~0.12-0.18. 72% of turns sit in failed trajectories with E~0 (floor),
+which must be addressed; the memory-stratum hypothesis is not supported.
+
+Decision per CREDIT_PROTOCOL section 6: run the single preregistered k=16 rerun on
+the same frozen questions (configs/credit_v1_k16.json; first 8 samples identical
+by seed). If A still < 0.6, A-based claims are NO-GO and only E-based work may
+continue under a new CT2 protocol on fresh questions. No gate is lowered and no
+estimand is redefined on the seen 300 questions. Added for the rerun, labelled
+exploratory and outside the gates: cf_ig (gold log-prob with the real vs the
+stored null observation, a teacher-forced proxy of E), an informative-turn
+stratum, disattenuated correlations and reliability prophecy. Records now store
+null_observation_token_ids. 141 tests pass. Analysis:
+research/CT1_PILOT_RESULTS_AND_DECISION.md.

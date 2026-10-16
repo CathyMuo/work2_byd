@@ -192,6 +192,25 @@ class SignalTests(unittest.TestCase):
         self.assertEqual(rows[0][0], e[0]["target"][0] - 1)
         self.assertEqual(len(rows), e[0]["target"][1] - e[0]["target"][0])
 
+    def test_cf_ig_spans_use_stored_null_observation(self):
+        row = self.trajectory()
+        self.assertTrue(row["null_observation_token_ids"])
+        spans = cs.null_gold_spans(row, lambda x: list(x.encode()))
+        self.assertEqual([s["turn"] for s in spans], [1, 2])
+        for s in spans:
+            a, b = s["target"]
+            self.assertEqual(bytes(s["ids"][a:b]).decode(), "Paris")
+            text = bytes(s["ids"][:a]).decode()
+            self.assertIn("Beta text here.", text.rsplit("<information>", 1)[1])
+            self.assertNotIn("Alpha fact.", text.rsplit("<information>", 1)[1])
+
+    def test_k16_config_only_changes_k(self):
+        k16 = load_json(ROOT / "configs/credit_v1_k16.json")
+        self.assertEqual(k16["sampling"]["k"], 16)
+        strip = lambda p: {k: v for k, v in p.items() if k not in ("sampling", "rerun")}
+        self.assertEqual(strip(k16), strip(PROTOCOL))
+        self.assertEqual(ct.seed_for(PROTOCOL["seed"], "x", "V", 0, 3), ct.seed_for(k16["seed"], "x", "V", 0, 3))
+
     def test_score_record_with_fake_scorer(self):
         class Fake:
             encode = staticmethod(lambda x: list(x.encode()))
@@ -200,6 +219,7 @@ class SignalTests(unittest.TestCase):
         out = cs.score_record(Fake(), self.trajectory(), "policy")
         self.assertEqual(len(out["gold_mean_logprob"]), 3)
         self.assertEqual(out["ealr"], {"1": 1.0, "2": 1.0})
+        self.assertEqual(len(out["gold_mean_logprob_null"]), 2)
 
 
 class AnalysisTests(unittest.TestCase):
@@ -240,6 +260,8 @@ class AnalysisTests(unittest.TestCase):
             self.assertIn("G_a_truth_reliability_ge_0.6", report["gates"])
             self.assertTrue(report["gates"]["G_c_cost_le_8h_for_600"])
             self.assertIn("CT1", ca.markdown(report))
+            self.assertIn("reliability_prophecy", report["exploratory"])
+            self.assertGreater(report["exploratory"]["informative_turns"], 0)
 
     def test_tampered_signals_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

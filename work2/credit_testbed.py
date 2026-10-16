@@ -211,13 +211,13 @@ def run_question(sample, decoy_question, generator, searcher, protocol):
     batched_continue([traj], generator, searcher, agent, retrieval, temp, top_p)
     batched_continue([again], generator, searcher, agent, retrieval, temp, top_p)
     null = null_documents(searcher, decoy_question, sample, retrieval)
+    null_obs = generator.encode(observation(null)) if null is not None else None
     T = traj["search_calls"]
     branches = []
     for j in range(T + 1):
         for i in range(k):
             branches.append(("V", j, i, new_rollout(sample, traj["tokens"][:obs_end(traj, j)], j, seed_for(protocol["seed"], sample["sample_id"], "V", j, i))))
     if null is not None:
-        null_obs = generator.encode(observation(null))
         for j in range(1, T + 1):
             for i in range(k):
                 branches.append(("N", j, i, new_rollout(sample, traj["tokens"][:query_end(traj, j)] + null_obs, j,
@@ -240,6 +240,7 @@ def run_question(sample, decoy_question, generator, searcher, protocol):
             "question": sample["question"], "gold_answer": sample["gold_answer"],
             "gold_supporting_facts": sample["gold_supporting_facts"],
             "null_eligible": null is not None, "null_document_ids": [d["document_id"] for d in null] if null else None,
+            "null_observation_token_ids": null_obs if null is not None else None,
             "trajectory": {"status": traj["status"], "final_answer": traj["final_answer"], "em": traj["em"], "f1": traj["f1"],
                            "search_calls": T, "token_ids": traj["tokens"], "segments": traj["segments"],
                            "texts": traj["texts"], "turns": traj["turns"], "seed": seed,

@@ -1,0 +1,16 @@
+{
+  "protocol": "CT1_interventional_credit_pilot_v1",
+  "seed": 20261017,
+  "agent": {
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "sampling": {"temperature": 1.0, "top_p": 1.0, "k": 16},
+  "null_observation": "Top-3 docs retrieved for the frozen decoy question (i + n/2) that contain neither the gold answer string nor a gold supporting-fact lexical hit",
+  "signals": ["ig (IGPO Eq.3-4)", "ig_deadzone (|ig|<0.05 -> 0)", "trace (reference-model gold log-prob TD, optional)", "ealr (CIPO-style 4D attention-mask likelihood ratio)", "fact_hit", "answer_hit", "random"],
+  "rerun": "CREDIT_PROTOCOL section 6: G-a failed at k=8 (A reliability 0.259), one preregistered rerun at k=16 on the same frozen questions; first 8 samples per branch are identical by seed",
+  "scope": "Week 1-2 pilot: Search-R1 7B PPO, 150 HotpotQA + 150 2Wiki from SI1 dev sources, on-policy temperature-1 sampling. See research/CREDIT_PROTOCOL.md."
+}

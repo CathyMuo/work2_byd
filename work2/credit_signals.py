@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 
 from .common import file_hash, load_json, local_path, write_json
-from .credit_testbed import frozen, obs_end, spawn
+from .credit_testbed import frozen, obs_end, query_end, spawn
 from .datasets import read_rows
 
 IGPO_PREFIX = "<think>Now there's enough information to answer</think><answer>"
@@ -29,6 +29,19 @@ def gold_spans(trajectory, encode, gold):
         end = obs_end(trajectory, j)
         out.append({"j": j, "context_end": end, "ids": trajectory["token_ids"][:end] + pre + ans + post,
                     "target": (end + len(pre), end + len(pre) + len(ans))})
+    return out
+
+
+def null_gold_spans(record, encode):
+    """Exploratory CF-IG: gold log-prob after observation t is REPLACED by the stored null observation."""
+    t, null = record["trajectory"], record.get("null_observation_token_ids")
+    if not null:
+        return []
+    pre, ans, post = encode(IGPO_PREFIX), encode(record["gold_answer"]), encode(IGPO_SUFFIX)
+    out = []
+    for turn in range(1, t["search_calls"] + 1):
+        ctx = t["token_ids"][:query_end(t, turn)] + list(null)
+        out.append({"turn": turn, "ids": ctx + pre + ans + post, "target": (len(ctx) + len(pre), len(ctx) + len(pre) + len(ans))})
     return out
 
 
@@ -100,6 +113,11 @@ def score_record(scorer, record, role):
         lp = scorer.target_logprobs(s["ids"], *s["target"])
         gold.append(sum(lp) / len(lp))
     out = {"sample_id": record["sample_id"], "role": role, "gold_mean_logprob": gold}
+    null_gold = []
+    for s in null_gold_spans(record, scorer.encode):
+        lp = scorer.target_logprobs(s["ids"], *s["target"])
+        null_gold.append(sum(lp) / len(lp))
+    out["gold_mean_logprob_null"] = null_gold or None
     if role == "policy":
         ealr = {}
         for span in ealr_spans(t):

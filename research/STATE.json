@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-16",
-  "current_stage": "CT1_pilot_ready_for_factory",
-  "status": "CT1_implemented_CPU_verified_awaiting_factory_pilot",
-  "next_action": "Factory: CT1 pilot per docs/CT1_FACTORY_GUIDE.md (prepare, smoke, run, signals, analyze) and return ct1_report.md. Developer records G-a/G-b/G-c decision before weeks 3-4 (more checkpoints, LLM critic/prompt judges) and weeks 4-8 (3B RL predictive validity).",
+  "current_stage": "CT1_k16_rerun_ready",
+  "status": "CT1_k8_pilot_G_a_failed_on_A_only_preregistered_k16_rerun_pending",
+  "next_action": "Factory: k=16 rerun per docs/CT1_FACTORY_GUIDE.md section 4b (same 300 questions, configs/credit_v1_k16.json), signals incl. exploratory cf_ig, analyze. If A reliability < 0.6 again: A-based claims NO-GO, consider CT2 (E-only, fresh questions).",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -568,6 +568,64 @@
         "G3": true
       },
       "decision": "G1 NO-GO per frozen protocol; path-luck headline retired; LDR and luck Phase 2 cancelled; methodology fallback pending user decision."
+    },
+    {
+      "stage": "CT1_k8_pilot_factory_report",
+      "report_date": "2026-10-16",
+      "reported_factory_head": "0e4f22e",
+      "public_source_merged": "afc1c05",
+      "evidence_source": "user-pasted factory report",
+      "questions": 300,
+      "turns": 869,
+      "branch_rollouts": 18704,
+      "mc_wall_seconds": 1215.6,
+      "trajectory_reproduced": 300,
+      "null_eligible": 300,
+      "reliability": {
+        "A": [
+          0.259,
+          [
+            0.04,
+            0.433
+          ]
+        ],
+        "E": [
+          0.74,
+          [
+            0.66,
+            0.805
+          ]
+        ]
+      },
+      "truth": {
+        "mean_A": 0.0014,
+        "mean_E": 0.0456,
+        "share_E_ge_0.25": 0.123,
+        "rho_A_E": 0.403,
+        "closed_book_V": 0.148,
+        "memory_known_questions": 46
+      },
+      "rho_vs_E": {
+        "ig": 0.089,
+        "ealr": 0.043,
+        "fact_hit": 0.079,
+        "answer_hit": 0.15,
+        "random": 0.001
+      },
+      "auroc": {
+        "ig": 0.58,
+        "ealr": 0.547,
+        "fact_hit": 0.553,
+        "answer_hit": 0.622,
+        "random": 0.523
+      },
+      "rho_ig_ealr": 0.037,
+      "gates": {
+        "G_a": false,
+        "G_b": true,
+        "G_c": true
+      },
+      "decision": "Preregistered k=16 rerun; A-based claims NO-GO if A still <0.6; no gate change."
     }
   ],
   "rl_go_decision": "not_authorized_CT1_pilot_pending",
@@ -622,8 +680,8 @@
     "protocol_doc": "research/CREDIT_PROTOCOL.md",
     "factory_guide": "docs/CT1_FACTORY_GUIDE.md",
     "config": "configs/credit_v1.json",
-    "CPU_test_count": 136,
-    "factory_results_available": false,
+    "CPU_test_count": 141,
+    "factory_results_available": true,
     "questions": 300,
     "k": 8,
     "temperature": 1.0,

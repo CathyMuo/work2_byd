@@ -15,7 +15,8 @@ from .pcr_analysis import cluster_bootstrap
 
 DEADZONE = 0.05
 USEFUL_EVIDENCE = 0.25
-SIGNALS = ("ig", "ig_deadzone", "trace", "ealr", "fact_hit", "answer_hit", "random")
+SIGNALS = ("ig", "ig_deadzone", "trace", "ealr", "fact_hit", "answer_hit", "random", "cf_ig")
+EXPLORATORY_SIGNALS = ("cf_ig",)  # added after the k=8 pilot; never part of the frozen gates
 GATE_SIGNALS = ("ig", "ealr", "fact_hit")
 
 
@@ -76,6 +77,7 @@ def turn_rows(record, policy=None, reference=None):
         seen_answer = seen_answer or info["answer_hit"]
         row = {"sample_id": record["sample_id"], "dataset": record["dataset"], "turn": turn,
                "A": mean(V[turn]) - mean(V[turn - 1]), "E": mean(V[turn]) - mean(N[turn - 1]),
+               "informative": max(mean(V[turn]), mean(N[turn - 1]), mean(V[turn - 1])) > 0,
                "A_h": [half(V[turn], h) - half(V[turn - 1], h) for h in (0, 1)],
                "E_h": [half(V[turn], h) - half(N[turn - 1], h) for h in (0, 1)],
                "cb": cb, "memory_known": cb >= .5, "traj_success": t["em"] == 1,
@@ -86,6 +88,8 @@ def turn_rows(record, policy=None, reference=None):
             row["ig"] = g[turn] - g[turn - 1]
             row["ig_deadzone"] = row["ig"] if abs(row["ig"]) >= DEADZONE else 0.0
             row["ealr"] = policy["ealr"].get(str(turn))
+            if policy.get("gold_mean_logprob_null"):
+                row["cf_ig"] = g[turn] - policy["gold_mean_logprob_null"][turn - 1]
         if reference is not None:
             r = reference["gold_mean_logprob"]
             row["trace"] = r[turn] - r[turn - 1]
@@ -165,6 +169,7 @@ def analyze(run_dir, resamples=2000):
            and signals[s]["vs_E"]["spearman"] < .3 and signals[s]["vs_E"]["ci95"] and signals[s]["vs_E"]["ci95"][1] < .5]
     strat = [s for s, d in diffs.items() if d["ci95"] and (d["ci95"][0] > 0 or d["ci95"][1] < 0)]
     disagree = bool(pair and pair["spearman"] is not None and pair["spearman"] < .3)
+    exploratory = exploratory_block(rows, rel, resamples, len(records[0]["values"]["C"]) if records[0]["values"]["C"] else None)
     mc_hours = m.get("mc_wall_seconds", 0) / 3600
     planned = len(records)
     gates = {"G_a_truth_reliability_ge_0.6": ga,
@@ -184,8 +189,35 @@ def analyze(run_dir, resamples=2000):
                       "share_E_ge_useful": mean([float(r["E"] >= USEFUL_EVIDENCE) for r in rows]),
                       "spearman_A_E": spearman([r["A"] for r in rows], [r["E"] for r in rows])},
             "reliability": rel, "signals": signals, "memory_stratum_difference": diffs, "ig_vs_ealr": pair,
-            "strata": strata, "gates": gates,
+            "strata": strata, "gates": gates, "exploratory": exploratory,
             "bootstrap": {"unit": "question", "strata": "dataset", "resamples": resamples, "seed": 42}}, rows
+
+
+def prophecy(rel, factor):
+    return factor * rel / (1 + (factor - 1) * rel) if rel is not None else None
+
+
+def exploratory_block(rows, rel, resamples, k):
+    """Post-pilot diagnostics (NOT gates): floor-effect stratum, disattenuation, reliability prophecy."""
+    informative = [r for r in rows if r["informative"]]
+    out = {"note": "Exploratory, added after seeing the k=8 pilot; confirm on fresh questions before any claim.",
+           "k": k, "informative_turns": len(informative),
+           "informative_signals": signal_block(informative, resamples // 2) if len(informative) >= 10 else None,
+           "disattenuated_vs_truth": {}, "reliability_prophecy": {}}
+    for truth in ("A", "E"):
+        r = rel[truth]["spearman_brown"]
+        if r is None or r <= 0:
+            continue
+        need = 0.6 * (1 - r) / (r * 0.4)
+        out["reliability_prophecy"][truth] = {"at_2k": prophecy(r, 2), "at_4k": prophecy(r, 4),
+                                              "k_needed_for_0.6": k * need if k else None}
+        for s in SIGNALS:
+            have = [x for x in rows if x.get(s) is not None]
+            if len(have) < 10:
+                continue
+            a = agreement(rows, s, truth, 0)
+            out["disattenuated_vs_truth"].setdefault(truth, {})[s] = a["spearman"] / math.sqrt(r) if a["spearman"] is not None else None
+    return out
 
 
 def fmt(e):
@@ -219,7 +251,18 @@ def markdown(r):
         L.append("| {} | {} | {} | {} | {} | {} |".format(name, st["turns"], None if st["mean_E"] is None else round(st["mean_E"], 3), g("ig"), g("ealr"), g("fact_hit")))
     L += ["", "记忆层差异（known − unknown）：{}".format(json.dumps(r["memory_stratum_difference"], ensure_ascii=False)),
           "ig vs ealr：{}".format(json.dumps(r["ig_vs_ealr"], ensure_ascii=False)), "",
-          "## 预登记门槛（机械值）", "", "```json", json.dumps(r["gates"], ensure_ascii=False, indent=2), "```", ""]
+          "## 预登记门槛（机械值）", "", "```json", json.dumps(r["gates"], ensure_ascii=False, indent=2), "```", "",
+          "## 探索性诊断（不是门槛）", ""]
+    ex = r.get("exploratory") or {}
+    L.append("informative turns（任一 V 或 N > 0）：{}".format(ex.get("informative_turns")))
+    if ex.get("informative_signals"):
+        L += ["", "| signal | rho vs E (informative) | AUROC |", "| --- | --- | --- |"]
+        for s, v in ex["informative_signals"].items():
+            if v.get("available"):
+                L.append("| {} | {} | {} |".format(s, fmt(v["vs_E"]), "NA" if v["auroc_useful_evidence"] is None else "{:.3f}".format(v["auroc_useful_evidence"])))
+    L += ["", "信度预言：{}".format(json.dumps(ex.get("reliability_prophecy"), ensure_ascii=False)),
+          "去衰减相关：{}".format(json.dumps(ex.get("disattenuated_vs_truth"), ensure_ascii=False)), ""]
+    L += [""]
     return "\n".join(L)
 
 
