@@ -771,3 +771,25 @@ search trajectory EALR = +0.35, same sign as an observation-deletion contrast
 (+0.71); the self-check rejects sdpa as designed. Not yet verified: a model that
 actually follows the search protocol end to end (Search-R1 3B download stalled
 at 65% when the 7890 reverse proxy dropped; resumes when the proxy is back).
+
+## 2026-10-16 — CT1 smoke stopped on retrieval "drift": tie-order instability, fixed client-side
+
+Factory (HEAD 0c6ac67, H800, torch 2.4.0, transformers 4.47.1) stopped the MC smoke
+three times on `Live retriever drift` for the agent query "where is Doc Scott
+raised": isolated calls were stable, but its Top-3 scores contain a tie
+(0.8303, 0.8251, 0.8251) and under 4-worker concurrent batched load the service
+swapped tied ranks; the service also returned a transient HTTP 500 at peak.
+No code was changed by the factory.
+
+Decision: not a service bug to patch and not a per-query exemption (ties can hit
+any query, not just decoys). CT1 is a Monte Carlo over sampled branches, so what
+matters is that the environment is a FIXED function of the query within a run.
+LiveSearcher now (1) canonicalises order by (score rounded to 4 d.p. desc,
+document_id), (2) caches the first canonical result per query per worker, so all
+branches see identical observations, (3) every 50th cache hit re-fetches and
+counts (non-fatally) Top-k id-set changes, reported as retrieval.audit_change_rate
+(>5% flags an unstable service), and (4) retries transient HTTP/connection errors
+with exponential backoff (4 attempts). Strict ordered drift checks in A2/SI1/PCR
+are unchanged. Protocol estimands are unchanged; cached determinism is a stricter
+environment, not a looser one. 139 tests pass (136 + 3 new; the old fatal-drift
+test is replaced). Two-GPU stub end-to-end rerun on the home server passes.

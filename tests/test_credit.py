@@ -26,7 +26,7 @@ class BatchRetriever:
     def _docs(self, top_k):
         docs = ["Alpha\nAlpha fact.", "Beta\nBeta text here.", "Gamma\nGamma text here."]
         docs += ["Filler{}\nFiller text {}.".format(i, i) for i in range(4, top_k + 1)]
-        return [{"document_id": "d{}".format(i), "title": c.split("\n")[0], "contents": c, "rank": i + 1, "score": 1.0}
+        return [{"document_id": "d{}".format(i), "title": c.split("\n")[0], "contents": c, "rank": i + 1, "score": 1.0 - 0.01 * i}
                 for i, c in enumerate(docs[:top_k])]
 
     def search(self, query, top_k):
@@ -119,19 +119,58 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(row["branch_rollouts"], 2 * k + k + k)
         self.assertIn(row["branch_rollouts"], gen.batch_sizes)
 
-    def test_drift_raises(self):
+    def test_tied_scores_get_deterministic_order(self):
+        docs = [{"document_id": "b", "score": 0.82510001}, {"document_id": "z", "score": 0.9}, {"document_id": "a", "score": 0.8251}]
+        self.assertEqual([d["document_id"] for d in ct.canonical(docs)], ["z", "a", "b"])
+        self.assertEqual([d["document_id"] for d in ct.canonical(list(reversed(docs)))], ["z", "a", "b"])
+        self.assertEqual([d["rank"] for d in ct.canonical(docs)], [1, 2, 3])
+
+    def test_swapped_ties_under_load_do_not_change_observations(self):
+        class Swapping(BatchRetriever):
+            n = 0
+            def search_batch(self, queries, top_k):
+                Swapping.n += 1
+                groups = []
+                for _ in queries:
+                    docs = [dict(d, score=0.5) for d in self._docs(top_k)]
+                    groups.append(docs[::-1] if Swapping.n % 2 else docs)
+                return groups
+        s = ct.LiveSearcher(Swapping(), RETRIEVAL, audit_every=1)
+        first = s.search_many(["a"])["a"]
+        for _ in range(5):
+            self.assertEqual(s.search_many(["a"])["a"], first)
+        self.assertEqual(s.stats()["audit_topk_set_changes"], 0)
+        self.assertEqual(s.stats()["audits"], 5)
+
+    def test_changed_topk_set_is_counted_not_fatal(self):
         class Drifty(BatchRetriever):
             n = 0
             def search_batch(self, queries, top_k):
                 Drifty.n += 1
                 docs = super().search_batch(queries, top_k)
                 if Drifty.n > 1:
-                    docs[0][0] = dict(docs[0][0], contents="Changed\nchanged.")
+                    docs[0][0] = dict(docs[0][0], document_id="other")
                 return docs
-        s = ct.LiveSearcher(Drifty(), RETRIEVAL)
-        s.search_many(["a"])
+        s = ct.LiveSearcher(Drifty(), RETRIEVAL, audit_every=1)
+        first = s.search_many(["a"])["a"]
+        self.assertEqual(s.search_many(["a"])["a"], first)
+        self.assertEqual(s.stats()["audit_topk_set_changes"], 1)
+
+    def test_transient_http_errors_are_retried(self):
+        class Flaky(BatchRetriever):
+            n = 0
+            def search_batch(self, queries, top_k):
+                Flaky.n += 1
+                if Flaky.n <= 2:
+                    raise OSError("HTTP Error 500: Internal Server Error")
+                return super().search_batch(queries, top_k)
+        s = ct.LiveSearcher(Flaky(), RETRIEVAL, backoff=0)
+        self.assertIn("a", s.search_many(["a"]))
+        self.assertEqual(s.stats()["retried_batches"], 2)
+        dead = ct.LiveSearcher(type("Dead", (), {"search_batch": lambda self, q, k: (_ for _ in ()).throw(OSError("down"))})(),
+                               RETRIEVAL, retries=1, backoff=0)
         with self.assertRaises(RuntimeError):
-            s.search_many(["a"])
+            dead.search_many(["a"])
 
 
 class SignalTests(unittest.TestCase):

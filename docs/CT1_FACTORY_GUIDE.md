@@ -62,7 +62,14 @@ smoke 依次执行三步：
 
 **停止条件**：
 - `check` 报 `Retriever batch interface check failed`，或 Retriever 返回格式错误：当前检索服务不支持一次发多个 query。停止并回报服务启动命令（不要改服务）。
-- `Live retriever drift`：同一 query 两次检索结果不同。停止并回报。
+- ~~`Live retriever drift`~~：**2026-10-16 已在代码侧处理，不再是停止条件。** 厂内 smoke 发现检索服务在并发批量负载下，会把分数并列或几乎并列的文档换顺序（例如 `[0.8303, 0.8251, 0.8251]`）。现在的处理：
+  1. 客户端统一排序：先按分数（保留 4 位小数）降序，并列时按 `document_id` 排；
+  2. 同一 worker 内，同一个 query 只取第一次的结果并缓存复用，所以所有分支看到的观测一致；
+  3. 每命中缓存 50 次，抽一次重新检索，比较 Top-3 的 id **集合**，变化只计数，不中止；
+  4. 检索返回 HTTP 500、超时这类临时错误时，自动退避重试，最多 4 次；仍然失败才停止，并回报服务日志。
+
+  回传时附上 `run_manifest.json` 里的 `retrieval` 字段（`audit_change_rate`）。如果这个比例 > 5%，说明服务本身不稳定，需要在报告里写明。
+- **不需要**改检索服务、重建索引或豁免 decoy 查询。
 - 信号阶段报 `Explicit 4D causal mask is not equivalent ...` 或 `Evidence mask had no effect`：当前 transformers 或注意力实现没有正确执行自定义掩码。
   默认已是 `eager`（家服在 transformers 4.47.1 上验证过：eager 严格执行 4D 掩码；sdpa + bf16 一传入掩码就会换 kernel，单 token 的 log-prob 最多差约 0.9，因此不可用）。
   报错时停止，并回报 transformers 版本和 `CT_ATTN` 的值；**不要**改成 sdpa。
@@ -111,7 +118,7 @@ CT_RUN=outputs/ct1_pilot bash scripts/run_credit.sh analyze --output-dir outputs
 1. `git rev-parse HEAD`、`git status --short`、`CT_SOURCES`、GPU 与显存设置、`CT_ATTN`。
 2. `outputs/ct1_pilot/analysis/ct1_report.md` **全文**。
 3. `ct1_report.json` 中的 `gates`、`reliability`、`truth`、`memory_stratum_difference`、`ig_vs_ealr`。
-4. `run_manifest.json` 中的 `mc_wall_seconds`、`trajectory_reproduced`、`null_eligible`、`branch_rollouts`；信号阶段的耗时（看 `signals/policy/worker_*_manifest.json` 里的 `seconds`）。
+4. `run_manifest.json` 中的 `mc_wall_seconds`、`trajectory_reproduced`、`null_eligible`、`branch_rollouts`、`retrieval`；信号阶段的耗时（看 `signals/policy/worker_*_manifest.json` 里的 `seconds`）。
 5. 任意 3 题的 `ct1_turns.json` 条目（同一题的所有轮次一起给出）。
 6. pack 生成的 feedback 包路径。
 

@@ -23,7 +23,7 @@ from .datasets import read_rows
 from .metrics import answer_scores, lexical_fact_hits
 from .pcr import gpu_list, rank_key, stop
 from .placebo import contains_answer
-from .replay import observation, visible_signature
+from .replay import observation
 from .rollout import PROMPT_VERSION, parse_action, question_prompt
 from .run_baseline import asset_identity, validate_design
 from .selective import sha
@@ -46,28 +46,68 @@ def load_protocol(path):
     return p
 
 
+SCORE_DECIMALS = 4  # near-equal FAISS scores (batched float noise) count as ties
+
+
+def canonical(docs):
+    """Deterministic order: score (rounded) descending, ties broken by document_id; ranks renumbered."""
+    key = lambda d: (-round(d["score"], SCORE_DECIMALS) if d.get("score") is not None else 0, str(d["document_id"]))
+    return [dict(d, rank=i + 1) for i, d in enumerate(sorted(docs, key=key))]
+
+
 class LiveSearcher:
-    """Batched live retrieval with same-query visible-result drift checks."""
-    def __init__(self, retriever, retrieval):
+    """Batched live retrieval that makes the environment a fixed function of the query.
+
+    Factory CT1 smoke (2026-10-16) showed the Search-R1 service reordering tied /
+    near-tied scores under concurrent batched load. Inside one worker, the first
+    canonical result for a query is cached and reused, so every branch sees the
+    same observation for the same query. Every `audit_every`-th cache hit re-fetches
+    and counts (non-fatally) a changed visible Top-k id set as service instability.
+    Transient HTTP/connection errors are retried with backoff.
+    """
+    def __init__(self, retriever, retrieval, audit_every=50, retries=4, backoff=2.0):
         self.retriever, self.retrieval = retriever, retrieval
-        self.signatures, self.calls, self.drift = {}, 0, 0
+        self.audit_every, self.retries, self.backoff = audit_every, retries, backoff
+        self.cache, self.calls, self.hits, self.audits, self.drift, self.retried = {}, 0, 0, 0, 0, 0
+
+    def _fetch(self, queries):
+        for attempt in range(self.retries + 1):
+            try:
+                groups = self.retriever.search_batch(queries, self.retrieval["candidate_top_k"])
+                break
+            except (OSError, ValueError) as exc:  # URLError/HTTPError/timeouts are OSError subclasses
+                if attempt == self.retries:
+                    raise RuntimeError("Retriever failed after {} retries: {}".format(self.retries, exc))
+                self.retried += 1
+                time.sleep(self.backoff * 2 ** attempt)
+        self.calls += len(queries)
+        out = []
+        for docs in groups:
+            if len(docs) < self.retrieval["visible_top_k"]:
+                raise ValueError("Retriever returned fewer than visible_top_k documents")
+            out.append(canonical(docs))
+        return out
+
+    def _ids(self, docs):
+        return sorted(d["document_id"] for d in docs[:self.retrieval["visible_top_k"]])
 
     def search_many(self, queries):
         unique = list(dict.fromkeys(queries))
-        if not unique:
-            return {}
-        groups = self.retriever.search_batch(unique, self.retrieval["candidate_top_k"])
-        out = {}
-        for query, docs in zip(unique, groups):
-            if len(docs) < self.retrieval["visible_top_k"]:
-                raise ValueError("Retriever returned fewer than visible_top_k documents")
-            signature = visible_signature(docs[:self.retrieval["visible_top_k"]])
-            if self.signatures.setdefault(query, signature) != signature:
+        missing = [q for q in unique if q not in self.cache]
+        for q, docs in zip(missing, self._fetch(missing) if missing else []):
+            self.cache[q] = docs
+        hits = [q for q in unique if q not in missing]
+        self.hits += len(hits)
+        audit = [q for i, q in enumerate(hits) if self.audit_every and (self.hits - len(hits) + i + 1) % self.audit_every == 0]
+        for q, docs in zip(audit, self._fetch(audit) if audit else []):
+            self.audits += 1
+            if self._ids(docs) != self._ids(self.cache[q]):
                 self.drift += 1
-                raise RuntimeError("Live retriever drift for query: " + query)
-            out[query] = docs
-        self.calls += len(unique)
-        return out
+        return {q: self.cache[q] for q in unique}
+
+    def stats(self):
+        return {"unique_fetched": len(self.cache), "http_query_calls": self.calls, "cache_hits": self.hits,
+                "audits": self.audits, "audit_topk_set_changes": self.drift, "retried_batches": self.retried}
 
 
 def new_rollout(sample, tokens, calls, seed, mode="live", null_docs=None, track=False, segments=None):
@@ -272,7 +312,9 @@ def worker(run_dir, index):
     if [r["sample_id"] for r in done] != [q["sample_id"] for q in questions[:len(done)]]:
         raise ValueError("Existing worker output does not match frozen order")
     manifest = {"version": VERSION, "worker_index": index, "gpu": run["gpus"][index], "status": "loading",
-                "expected": len(questions), "recorded": len(done), "resumed_from": len(done)}
+                "expected": len(questions), "recorded": len(done), "resumed_from": len(done),
+                "retrieval_sessions": (load_json(folder / "run_manifest.json").get("retrieval_sessions", [])
+                                       if (folder / "run_manifest.json").exists() else [])}
     write_json(folder / "run_manifest.json", manifest)
     os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1")
     from .backends import VLLMGenerator
@@ -296,8 +338,7 @@ def worker(run_dir, index):
         raise
     finally:
         manifest["seconds_this_session"] = time.monotonic() - started
-        manifest["retrieval_unique_calls_this_session"] = searcher.calls
-        manifest["retrieval_drift"] = searcher.drift
+        manifest.setdefault("retrieval_sessions", []).append(searcher.stats())
         manifest["packages"] = {}
         for name in ("torch", "transformers", "vllm"):
             try: manifest["packages"][name] = importlib.metadata.version(name)
@@ -307,15 +348,16 @@ def worker(run_dir, index):
 
 def merge(run_dir):
     run, plan = frozen(run_dir)
-    rows = []
+    rows, sessions = [], []
     for index in range(len(run["gpus"])):
         folder = run_dir / "workers" / ("worker_" + str(index))
         m = load_json(folder / "run_manifest.json")
         got = read_rows(folder / "records.jsonl")
         expected = [q["sample_id"] for q in shard(run, plan, index)]
-        if m["status"] != "completed" or [r["sample_id"] for r in got] != expected or m.get("retrieval_drift"):
-            raise ValueError("Worker {} incomplete, out of order or drifted".format(index))
+        if m["status"] != "completed" or [r["sample_id"] for r in got] != expected:
+            raise ValueError("Worker {} incomplete or out of order".format(index))
         rows += got
+        sessions += m.get("retrieval_sessions", [])
     order = {q: i for i, q in enumerate(run["question_ids"])}
     rows.sort(key=lambda r: order[r["sample_id"]])
     with (run_dir / "records.jsonl").open("w", encoding="utf-8") as stream:
@@ -326,9 +368,16 @@ def merge(run_dir):
              trajectory_reproduced=sum(r["trajectory"]["reproduced"] for r in rows),
              null_eligible=sum(r["null_eligible"] for r in rows),
              branch_rollouts=sum(r["branch_rollouts"] for r in rows))
+    audits = sum(s["audits"] for s in sessions)
+    changes = sum(s["audit_topk_set_changes"] for s in sessions)
+    m["retrieval"] = {"sessions": len(sessions), "unique_fetched": sum(s["unique_fetched"] for s in sessions),
+                      "cache_hits": sum(s["cache_hits"] for s in sessions), "audits": audits,
+                      "audit_topk_set_changes": changes, "audit_change_rate": changes / audits if audits else None,
+                      "retried_batches": sum(s["retried_batches"] for s in sessions),
+                      "policy": "per-worker first canonical result cached; tie-break (rounded score desc, document_id)"}
     write_json(run_dir / "run_manifest.json", m)
-    print("Merged {} questions; {} branch rollouts; trajectory reproduced {}/{}; null eligible {}.".format(
-        len(rows), m["branch_rollouts"], m["trajectory_reproduced"], len(rows), m["null_eligible"]))
+    print("Merged {} questions; {} branch rollouts; trajectory reproduced {}/{}; null eligible {}; retrieval audit Top-k set changes {}/{}.".format(
+        len(rows), m["branch_rollouts"], m["trajectory_reproduced"], len(rows), m["null_eligible"], changes, audits))
     return m
 
 
