@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-16",
-  "current_stage": "PCR_v1_phase1_reported_G1_NO_GO",
-  "status": "path_luck_headline_retired_methodology_fallback_pending_user_decision",
-  "next_action": "User decides: (A) methodology short paper with pre-registered confirmation on fresh questions + one more checkpoint + one literature recovery method, or (B) stop this direction. Factory must return git log/diff 4d74af6..d8ff019. No new GPU run, Phase 2 matrix or LDR until decided.",
+  "current_stage": "CT1_pilot_ready_for_factory",
+  "status": "CT1_implemented_CPU_verified_awaiting_factory_pilot",
+  "next_action": "Factory: CT1 pilot per docs/CT1_FACTORY_GUIDE.md (prepare, smoke, run, signals, analyze) and return ct1_report.md. Developer records G-a/G-b/G-c decision before weeks 3-4 (more checkpoints, LLM critic/prompt judges) and weeks 4-8 (3B RL predictive validity).",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -570,11 +570,12 @@
       "decision": "G1 NO-GO per frozen protocol; path-luck headline retired; LDR and luck Phase 2 cancelled; methodology fallback pending user decision."
     }
   ],
-  "rl_go_decision": "not_authorized_PCR_G1_NO_GO_LDR_cancelled",
+  "rl_go_decision": "not_authorized_CT1_pilot_pending",
   "remaining": [
-    "User decision on methodology fallback vs stop",
-    "Factory git log/diff 4d74af6..d8ff019",
-    "If fallback: new pre-registered confirmation protocol on fresh questions"
+    "Factory CT1 pilot results",
+    "Human G-a/b/c decision",
+    "Weeks 3-4 protocol (checkpoints, LLM critic, prompt judge)",
+    "Weeks 4-8 3B RL predictive-validity protocol"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -614,28 +615,24 @@
     "next_action": "No mandatory E tasks remain. Preserve immutable artifacts and the generic/replay baseline assets. Optional one-pass historical 46/52/3 ID reconciliation using original B records, with unresolved if unavailable. Any subsequent research starts with a separate literature/hypothesis/observable-state protocol review, not old E optimization; no new GPU, F, prompt variant, sharding or RL.",
     "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence"
   },
-  "active_protocol": "PCR_placebo_controlled_replay_v1",
+  "active_protocol": "CT1_interventional_credit_pilot_v1",
   "active_implementation": {
-    "protocol": "PCR_placebo_controlled_replay_v1",
-    "branch": "feat/path-luck-pcr",
-    "protocol_doc": "research/PCR_PROTOCOL.md",
-    "factory_guide": "docs/PCR_FACTORY_GUIDE.md",
-    "config": "configs/pcr_v1.json",
-    "CPU_test_count": 124,
-    "factory_results_available": true,
-    "default_sources": "outputs/si1_dp4_dev/sources.jsonl",
-    "default_questions_per_dataset": 300,
-    "target_turns": [
-      1,
-      2
-    ],
-    "arms_per_state": 16,
+    "protocol": "CT1_interventional_credit_pilot_v1",
+    "branch": "feat/credit-testbed",
+    "protocol_doc": "research/CREDIT_PROTOCOL.md",
+    "factory_guide": "docs/CT1_FACTORY_GUIDE.md",
+    "config": "configs/credit_v1.json",
+    "CPU_test_count": 136,
+    "factory_results_available": false,
+    "questions": 300,
+    "k": 8,
+    "temperature": 1.0,
     "preregistered_gates": [
-      "G1 semantic lucky share >=10% and CI low >5%",
-      "G2 placebo explains >=1/3 of review/budget2 repair or reverses net direction",
-      "G3 drop_support minus drop_nonsupport CI upper <0"
+      "G-a split-half Spearman-Brown of A and E >= 0.6",
+      "G-b ig/ealr/fact_hit rho vs E < 0.3 with CI upper < 0.5, or memory-stratum difference CI excludes 0, or rho(ig,ealr) < 0.3",
+      "G-c MC wall time x 600/300 <= 8 h"
     ],
-    "new_external_runtime_dependencies": false
+    "untested_on_developer_server": "HF/torch scoring path (no torch); guarded by runtime mask self-check"
   },
   "SI1_decision": {
     "status": "current_ridge_prototype_NO_GO",
@@ -644,5 +641,10 @@
     "statistical_scope": "single frozen random realization; no selector-versus-random paired interval supplied",
     "future_protocol": "uninitiated; requires independent scope decision and train-only reproducible signal before new confirmation"
   },
-  "previous_archived_protocol": "SI1_natural_prefix_gain_harm_v1 (ridge prototype NO-GO, 2026-10-13)"
+  "previous_archived_protocol": "SI1_natural_prefix_gain_harm_v1 (ridge prototype NO-GO, 2026-10-13)",
+  "archived_PCR": {
+    "branch": "feat/path-luck-pcr",
+    "decision": "G1 NO-GO 2026-10-16",
+    "results": "research/PCR_PHASE1_RESULTS_AND_DECISION.md"
+  }
 }

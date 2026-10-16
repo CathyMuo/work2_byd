@@ -719,3 +719,36 @@ placebo-controlled replay: selection-induced mean reversion in recovery rates,
 resolving power for evidence effects) is pending the user's choice; no new protocol
 or code until then. Pack fix: analysis also writes flip_cases.json, pack converts
 old .jsonl outputs. Details: research/PCR_PHASE1_RESULTS_AND_DECISION.md.
+
+## 2026-10-16 — New direction CT1: interventional validation of turn-level credit signals
+
+After PCR G1 NO-GO the user asked for a fresh, solid idea. Developer survey (kept
+locally, not in this repo) found many 2026 turn-level credit/process-reward methods
+for search agents (IGPO, IG-Search, TRACE, CIPO, KnowGPO, STAMP, E-GRPO,
+CriticSearch) with no validation against REAL re-executed causal effects; QVal
+(2606.32034) validates dense signals only in non-search environments, intervenes
+on actions only, uses reference-optimal policies and leaves downstream RL
+validity open. The user chose this direction (A) and asked for a frozen protocol,
+the week 1–2 pilot code and a factory guide on a new branch.
+
+Protocol research/CREDIT_PROTOCOL.md frozen before any CT1 outcome: 7B PPO,
+150+150 outcome-blind questions from SI1 dev sources, temperature-1 on-policy
+sampling, k=8. Truth A_t = V(s_t) − V(s_{t−1}), E_t = V(s_t) − V(s_t with a
+semantic-null observation), closed-book V_cb with all retrievals nulled. Signals:
+IGPO Eq.3–4 information gain (+dead-zone), optional TRACE-style reference TD,
+CIPO-style EALR with a 4D attention mask (runtime self-check refuses ignored
+masks), first-exposure fact/answer hits, random. Gates G-a (split-half
+Spearman-Brown >= 0.6), G-b (reportable disagreement), G-c (cost); dispositions
+fixed in the protocol. PCR code and results remain archived on feat/path-luck-pcr.
+
+Implementation: work2/credit_testbed.py (lockstep batched multi-turn sampling,
+batched live retrieval with drift checks, N-GPU workers with resume, merge),
+work2/credit_signals.py (HF scoring), work2/credit_analysis.py, configs/credit_v1.json,
+scripts/run_credit.sh, docs/CT1_FACTORY_GUIDE.md. Additive backend changes:
+VLLMGenerator.sample_batch, SearchR1Retriever.search_batch (search() unchanged
+in behaviour). 136 CPU tests pass (124 + 12 new: batched≡sequential rollout,
+spent-budget carry-over, null-world isolation, null-document filtering, value
+layout and token segments, drift stop, IGPO/EALR spans, fake-scorer EALR,
+rank statistics, gates, tamper rejection, prepare→worker→merge). The torch/HF
+scoring path cannot run on the developer server (no torch); its mask behaviour is
+guarded by the runtime self-check. No H800 execution yet.

@@ -32,6 +32,15 @@ class VLLMGenerator(TokenizerMixin):
         return {"text": result.text, "token_ids": list(result.token_ids),
                 "finish_reason": result.finish_reason}
 
+    def sample_batch(self, prompts, max_tokens, seeds, temperature, top_p=1.0):
+        """One batched vLLM call; each request has its own seed (CT1 on-policy sampling)."""
+        params = [self.sampling_class(temperature=temperature, top_p=top_p, max_tokens=m, seed=s,
+                                      stop=STOP_STRINGS, include_stop_str_in_output=True)
+                  for m, s in zip(max_tokens, seeds)]
+        results = self.model.generate([{"prompt_token_ids": list(p)} for p in prompts], params, use_tqdm=False)
+        return [{"text": r.outputs[0].text, "token_ids": list(r.outputs[0].token_ids),
+                 "finish_reason": r.outputs[0].finish_reason} for r in results]
+
 
 class HFGenerator(TokenizerMixin):
     def __init__(self, checkpoint):

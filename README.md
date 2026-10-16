@@ -1,16 +1,16 @@
-# Work 2: Path Luck in RL-Trained Search Agents（PCR）
+# Work 2: Interventional Validation of Turn-Level Credit for Search Agents（CT1）
 
-**2026-10-16 新方向，分支 `feat/path-luck-pcr`：路径运气与安慰剂对照重放（PCR v1）。**
-问题：RL 训练的搜索智能体，有多少“答对”是路径运气而不是证据驱动？每个内容/恢复干预都配同状态的语义空安慰剂。
-厂内 agent 从 [PCR 厂内执行指导](docs/PCR_FACTORY_GUIDE.md) 开始；预登记协议与 Go/No-Go 门槛见
-[PCR 协议](research/PCR_PROTOCOL.md)。本轮 = Phase 0（CPU 重分析旧 A1/A3）+ Phase 1（Exp-1/2/3），不训练。
+**2026-10-16 当前方向，分支 `feat/credit-testbed`：用真实重新执行检验搜索智能体的逐轮信用信号。**
+对每一轮搜索测出 on-policy 的干预真值（A_t 轮优势、E_t 证据价值），检验 IGPO / CIPO / TRACE / 事实命中等信号是否与真值一致。
+厂内 agent 从 [CT1 厂内执行指导](docs/CT1_FACTORY_GUIDE.md) 开始；协议与 Go/No-Go 见 [CT1 协议](research/CREDIT_PROTOCOL.md)。
 
 ```bash
-bash scripts/run_pcr.sh test && bash scripts/run_pcr.sh phase0
-bash scripts/run_pcr.sh prepare && bash scripts/run_pcr.sh smoke
-bash scripts/run_pcr.sh run && bash scripts/run_pcr.sh analyze
+bash scripts/run_credit.sh test && bash scripts/run_credit.sh prepare
+bash scripts/run_credit.sh smoke && bash scripts/run_credit.sh run
+bash scripts/run_credit.sh signals && bash scripts/run_credit.sh analyze
 ```
 
+PCR（路径运气）已于 2026-10-16 按预登记 G1 NO-GO 归档，结果见 [PCR 结果与决策](research/PCR_PHASE1_RESULTS_AND_DECISION.md)。
 以下 SI1 / E / A 系列为已归档的历史方向，保留供复核。
 
 ---
