@@ -752,3 +752,22 @@ layout and token segments, drift stop, IGPO/EALR spans, fake-scorer EALR,
 rank statistics, gates, tamper rejection, prepare→worker→merge). The torch/HF
 scoring path cannot run on the developer server (no torch); its mask behaviour is
 guarded by the runtime self-check. No H800 execution yet.
+
+## 2026-10-16 — CT1 verified on the home server (searchr1 conda env, RTX 5090)
+
+Environment: /mnt/wh/miniconda3/envs/searchr1 (python 3.12, torch 2.9.1+cu130,
+transformers 4.47.1, vLLM 0.6.3, xformers 0.0.33); all 136 tests pass there.
+vLLM 0.6.3's bundled FlashAttention rejects sm_120, so on the 5090 the run needs
+VLLM_ATTENTION_BACKEND=XFORMERS (as Search-R1's own scripts set); H800 unaffected.
+Real-model checks with Qwen2.5-0.5B-Instruct: batched seeded sampling works and
+reproduces; the full CLI chain (prepare, check against a Search-R1-format HTTP
+stub, 2-GPU MC workers, merge, 2-GPU signal workers, merge) completes.
+Mask finding: with transformers 4.47.1, eager attention reproduces the default
+causal mask EXACTLY when an explicit 4D mask is passed (max diff 0), while
+sdpa+bf16 switches kernels and differs by up to 0.87 per-token log-prob (fp32
+exact). Therefore the default is now eager, and the EALR visible side also uses
+an explicit causal 4D mask so both sides share one kernel. On a hand-built
+search trajectory EALR = +0.35, same sign as an observation-deletion contrast
+(+0.71); the self-check rejects sdpa as designed. Not yet verified: a model that
+actually follows the search protocol end to end (Search-R1 3B download stalled
+at 65% when the 7890 reverse proxy dropped; resumes when the proxy is back).

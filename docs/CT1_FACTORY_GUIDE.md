@@ -64,9 +64,11 @@ smoke 依次执行三步：
 - `check` 报 `Retriever batch interface check failed`，或 Retriever 返回格式错误：当前检索服务不支持一次发多个 query。停止并回报服务启动命令（不要改服务）。
 - `Live retriever drift`：同一 query 两次检索结果不同。停止并回报。
 - 信号阶段报 `Explicit 4D causal mask is not equivalent ...` 或 `Evidence mask had no effect`：当前 transformers 或注意力实现没有正确执行自定义掩码。
-  先用 `CT_ATTN=eager bash scripts/run_credit.sh smoke` 重试（换一个 `CT_SMOKE_DIR`，例如 `outputs/ct1_smoke_eager`）。仍然失败就停止，回报 transformers 版本。
+  默认已是 `eager`（家服在 transformers 4.47.1 上验证过：eager 严格执行 4D 掩码；sdpa + bf16 一传入掩码就会换 kernel，单 token 的 log-prob 最多差约 0.9，因此不可用）。
+  报错时停止，并回报 transformers 版本和 `CT_ATTN` 的值；**不要**改成 sdpa。
 - 任何 worker 非零退出：回传 `outputs/ct1_smoke/logs/*.log` 的最后 50 行。
-- `CUDA out of memory`：在 MC 命令后追加 `--gpu-memory-utilization 0.7` 重试，并说明。
+- `CUDA out of memory`：MC 阶段在命令后追加 `--gpu-memory-utilization 0.7` 重试；信号阶段（eager、8k 上下文）如果 OOM，先确认卡上没有其他进程。都要在回报里说明。
+- `FlashAttention only supports Ampere GPUs or newer`：只会出现在 H800/A800 以外的卡上（例如 RTX 5090 上的 vLLM 0.6.3）。设置 `export VLLM_ATTENTION_BACKEND=XFORMERS` 后重跑；H800 上不需要。
 
 **smoke 回传**：
 - `outputs/ct1_smoke/run_manifest.json`；

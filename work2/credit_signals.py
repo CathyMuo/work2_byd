@@ -16,6 +16,8 @@ from .datasets import read_rows
 
 IGPO_PREFIX = "<think>Now there's enough information to answer</think><answer>"
 IGPO_SUFFIX = "</answer>"
+# Verified 2026-10-16 (transformers 4.47.1): eager honors 4D masks exactly; sdpa+bf16 switches kernels
+# when a mask is passed (per-token log-prob diffs up to ~0.9), so eager is the default.
 MASK_SELF_CHECK_TOLERANCE = 0.05
 
 
@@ -101,7 +103,8 @@ def score_record(scorer, record, role):
     if role == "policy":
         ealr = {}
         for span in ealr_spans(t):
-            vis = scorer.target_logprobs(t["token_ids"], *span["target"])
+            # Both sides use an explicit 4D mask so they share one attention kernel (no kernel-switch noise).
+            vis = scorer.target_logprobs(t["token_ids"], *span["target"], rows=[])
             msk = scorer.target_logprobs(t["token_ids"], *span["target"], rows=masked_rows(span))
             ealr[str(span["turn"])] = sum(a - b for a, b in zip(vis, msk)) / len(vis)
         out["ealr"] = ealr
@@ -164,9 +167,9 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="command", required=True)
     q = sub.add_parser("run"); q.add_argument("--run-dir", type=Path, required=True)
-    q.add_argument("--role", choices=("policy", "reference"), default="policy"); q.add_argument("--attn", default="sdpa")
+    q.add_argument("--role", choices=("policy", "reference"), default="policy"); q.add_argument("--attn", default="eager")
     q = sub.add_parser("worker"); q.add_argument("--run-dir", type=Path, required=True); q.add_argument("--index", type=int, required=True)
-    q.add_argument("--role", choices=("policy", "reference"), required=True); q.add_argument("--attn", default="sdpa")
+    q.add_argument("--role", choices=("policy", "reference"), required=True); q.add_argument("--attn", default="eager")
     q = sub.add_parser("merge"); q.add_argument("--run-dir", type=Path, required=True); q.add_argument("--role", choices=("policy", "reference"), required=True)
     a = p.parse_args()
     try:

@@ -12,7 +12,7 @@ plan=${CT_PLAN:-outputs/ct1_plan}
 smoke=${CT_SMOKE_DIR:-outputs/ct1_smoke}
 run=${CT_RUN:-outputs/ct1_pilot}
 gpus=${CT_GPUS:-0,1,2,3}
-attn=${CT_ATTN:-sdpa}
+attn=${CT_ATTN:-eager}
 if ! command -v "$py" >/dev/null 2>&1; then
   printf '%s\n' 'Python 不存在；请设置 CT_PYTHON 为已有 Search-R1 环境解释器。' >&2
   exit 1

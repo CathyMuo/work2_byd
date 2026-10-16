@@ -157,7 +157,7 @@ class SignalTests(unittest.TestCase):
         class Fake:
             encode = staticmethod(lambda x: list(x.encode()))
             def target_logprobs(self, ids, start, end, rows=None):
-                return [-0.5 if rows is None else -1.5] * (end - start)
+                return [-0.5 if not rows else -1.5] * (end - start)
         out = cs.score_record(Fake(), self.trajectory(), "policy")
         self.assertEqual(len(out["gold_mean_logprob"]), 3)
         self.assertEqual(out["ealr"], {"1": 1.0, "2": 1.0})
