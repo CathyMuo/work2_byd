@@ -54,13 +54,17 @@ case "$mode" in
     "$py" -m work2.pcr_analysis --run-dir "$run" ${extra[@]+"${extra[@]}"} "$@"
     ;;
   pack)
+    if [[ ! -f "$run/analysis/flip_cases.json" ]]; then
+      # Older analysis outputs only have the .jsonl, which pack_feedback refuses by design.
+      "$py" -c 'import json,sys; rows=[json.loads(l) for l in open(sys.argv[1],encoding="utf-8") if l.strip()]; json.dump(rows,open(sys.argv[2],"w",encoding="utf-8"),ensure_ascii=False,indent=2)' "$run/analysis/flip_cases.jsonl" "$run/analysis/flip_cases.json"
+    fi
     "$py" scripts/pack_feedback.py \
       --include "$plan/plan.json" \
       --include "$run/run_manifest.json" \
       --include "$run/run_plan.json" \
       --include "$run/analysis/pcr_report.json" \
       --include "$run/analysis/pcr_report.md" \
-      --include "$run/analysis/flip_cases.jsonl"
+      --include "$run/analysis/flip_cases.json"
     ;;
   *) printf '%s\n' 'PCR modes: test | phase0 | prepare | check | smoke | run | resume | analyze | pack'
      printf '%s\n' '环境变量：PCR_PYTHON PCR_SOURCES PCR_PER_DATASET PCR_GPUS PCR_PLAN PCR_SMOKE_DIR PCR_RUN PCR_A1 PCR_A3。详见 docs/PCR_FACTORY_GUIDE.md' ;;

@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-16",
-  "current_stage": "PCR_v1_phase0_phase1_ready_for_factory",
-  "status": "PCR_v1_implemented_CPU_verified_awaiting_factory_results",
-  "next_action": "Factory: Phase 0 CPU re-analysis of existing A1/A3 raw (work2.phase0_luck), then PCR Phase 1 prepare/smoke/run/analyze per docs/PCR_FACTORY_GUIDE.md and return pcr_report.md. Developer records G1-G3 decision in DECISION_LOG before any Phase 2/3 (more checkpoints, LDR training).",
+  "current_stage": "PCR_v1_phase1_reported_G1_NO_GO",
+  "status": "path_luck_headline_retired_methodology_fallback_pending_user_decision",
+  "next_action": "User decides: (A) methodology short paper with pre-registered confirmation on fresh questions + one more checkpoint + one literature recovery method, or (B) stop this direction. Factory must return git log/diff 4d74af6..d8ff019. No new GPU run, Phase 2 matrix or LDR until decided.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -487,13 +487,94 @@
         "2wiki": 0.2425
       },
       "decision": "Current ridge prototype archived NO-GO. No demonstrated advantage over frozen matched-rate random; single random draw and one-question gap do not establish inferiority/equivalence or general feature impossibility. Low aggregate harm is not evidence of learned avoidance. No mandatory new run, validation tuning, SI2, confirmation or RL."
+    },
+    {
+      "stage": "PCR_v1_phase0_phase1_factory_report",
+      "report_date": "2026-10-16",
+      "reported_factory_head": "d8ff019",
+      "public_head": "4d74af6",
+      "factory_head_public": false,
+      "evidence_source": "user-pasted factory report; raw artifacts not on developer server",
+      "questions": 600,
+      "states": 1177,
+      "controls_exact": true,
+      "retrieval_drift": 0,
+      "si1_review_crosscheck": "600/600 identical",
+      "wall_seconds": 8691.7,
+      "luck_semantic": {
+        "clean_em": 0.2999,
+        "mEM": 0.2998,
+        "rEM": 0.2243,
+        "lucky_share": 0.0793,
+        "lucky_share_ci95": [
+          0.0476,
+          0.1137
+        ],
+        "luck_rate": 0.0493,
+        "lucky": 28,
+        "unlucky": 30,
+        "clean_correct": 353
+      },
+      "luck_raw": {
+        "lucky_share": 0.0907,
+        "lucky_share_ci95": [
+          0.0578,
+          0.1273
+        ]
+      },
+      "recovery_selected": {
+        "degraded": 39,
+        "stable": 314,
+        "review_repair": 0.308,
+        "review_harm": 0.118,
+        "P1_reperturb_repair": 0.41,
+        "P2_neutral_repair": 0.179,
+        "P1_harm": 0.076,
+        "P2_harm": 0.089,
+        "review_net_uncorrected": -25,
+        "review_net_corrected": -13
+      },
+      "recovery_natural": {
+        "review_delta": -0.0102,
+        "neutral_delta": -0.0153,
+        "budget2_delta": 0.0102
+      },
+      "deletion": {
+        "matched": 287,
+        "nce_support": -0.09,
+        "nce_nonsupport": 0.0006,
+        "support_minus_nonsupport": -0.0906,
+        "ci95": [
+          -0.1362,
+          -0.0479
+        ]
+      },
+      "phase0_E1": {
+        "states": 1972,
+        "degraded_raw_sem": [
+          75,
+          69
+        ],
+        "improved_raw_sem": [
+          96,
+          90
+        ],
+        "format_flips": 12,
+        "semantic_degradation_rate": 0.118
+      },
+      "gates": {
+        "G1": false,
+        "G2": true,
+        "G3": true
+      },
+      "decision": "G1 NO-GO per frozen protocol; path-luck headline retired; LDR and luck Phase 2 cancelled; methodology fallback pending user decision."
     }
   ],
-  "rl_go_decision": "not_authorized_PCR_phase1_pending",
+  "rl_go_decision": "not_authorized_PCR_G1_NO_GO_LDR_cancelled",
   "remaining": [
-    "Factory Phase 0 and Phase 1 PCR results",
-    "Human G1-G3 decision recorded in DECISION_LOG",
-    "Phase 2 checkpoint/dataset/retriever/temperature generalization and Phase 3 LDR protocols not yet written"
+    "User decision on methodology fallback vs stop",
+    "Factory git log/diff 4d74af6..d8ff019",
+    "If fallback: new pre-registered confirmation protocol on fresh questions"
   ],
   "realized_cohort": {
     "agent": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo",
@@ -541,7 +622,7 @@
     "factory_guide": "docs/PCR_FACTORY_GUIDE.md",
     "config": "configs/pcr_v1.json",
     "CPU_test_count": 124,
-    "factory_results_available": false,
+    "factory_results_available": true,
     "default_sources": "outputs/si1_dp4_dev/sources.jsonl",
     "default_questions_per_dataset": 300,
     "target_turns": [

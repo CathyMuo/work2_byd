@@ -358,6 +358,8 @@ def main():
     with (out / "flip_cases.jsonl").open("x", encoding="utf-8") as f:
         for row in flips:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    # pack_feedback deliberately refuses .jsonl (raw trajectories); this small case list ships as JSON.
+    write_json(out / "flip_cases.json", flips)
     print(markdown(report))
     return 0
 

@@ -693,3 +693,29 @@ deletion candidate sharing, all-arm state with exact controls, budget+2, control
 drift stop, turn-2 fork, analysis gates, tamper rejection, prepare→worker→merge,
 Phase 0 collection). No H800 execution, no RL; Phase 2/3 (more checkpoints/data,
 LDR training) require a recorded decision on G1–G3 first.
+
+## 2026-10-16 — PCR Phase 0/1 reported: G1 NO-GO, G2/G3 pass; path-luck headline retired
+
+Factory report (HEAD `d8ff019`, NOT in the public remote whose branch is `4d74af6`;
+factory must return the log/diff before results move past provisional). 600 SI1-dev
+questions, 1177 states, all E0/E0 exact, drift 0; turn-1 review arm 600/600 identical
+to SI1. Reported arithmetic checks out (28/353, (28+30)/1177, net −25 / −13).
+
+G1 false: semantic lucky share 7.93% [4.76, 11.37] (raw 9.07%). Per the frozen
+protocol this is NO-GO for "a substantial share of correct answers is path luck".
+No threshold lowering, no redefinition (any-placebo fragility 1−rEM/EM≈25% stays
+descriptive), no sample enlargement to rescue. mEM≈EM: bidirectional flips cancel,
+so aggregate-EM bias is negligible and the ranking-noise RQ loses its premise.
+G3 true: drop_support NCE −9.0 pp vs drop_nonsupport +0.06 pp, difference −9.1 pp
+[−13.6, −4.8]; the earlier "bridge removal ≈ permutation" reading is withdrawn.
+G2 true: on perm_1-selected failures review repairs 30.8% (harm 11.8% on stable),
+reproducing B3 32.8%/11.8%, while a second permutation alone repairs 41.0%;
+placebo-corrected net −13. Natural-state review −1.0 pp (CI covers 0); budget2
++1.0 pp. Phase 0: E1 format flips 12/171; semantic degradation 11.8% [9.0, 14.8].
+
+Decision: retire the path-luck headline; cancel Phase 3 LDR and the luck-prevalence
+Phase 2 matrix. The protocol's permitted fallback (methodology short paper on
+placebo-controlled replay: selection-induced mean reversion in recovery rates,
+resolving power for evidence effects) is pending the user's choice; no new protocol
+or code until then. Pack fix: analysis also writes flip_cases.json, pack converts
+old .jsonl outputs. Details: research/PCR_PHASE1_RESULTS_AND_DECISION.md.
