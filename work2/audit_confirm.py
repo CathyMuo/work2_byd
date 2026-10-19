@@ -33,11 +33,8 @@ def load_protocol(path):
     return p
 
 
-def freeze(args):
-    protocol, local = load_protocol(args.protocol), load_json(args.local)
-    if args.output.exists():
-        raise ValueError("Output exists; keep frozen selections")
-    paths = list(args.exclude) + [Path(p) for p in DEFAULT_EXCLUDE if Path(p).is_file() and Path(p) not in args.exclude]
+def select_fresh(local, paths, per_dataset, seed):
+    """Outcome-blind fresh questions; excluded by id AND normalized question; cross-dataset dedup."""
     if not paths:
         raise ValueError("No historical cohorts to exclude were found; pass --exclude explicitly")
     ids, questions, receipts = exclusions(paths)
@@ -45,18 +42,37 @@ def freeze(args):
     for dataset, key in (("hotpotqa", "hotpotqa_file"), ("2wiki", "two_wiki_file")):
         rows = [canonicalize(r, dataset) for r in read_rows(local_path(local[key]))]
         pool = sorted((r for r in rows if r["sample_id"] not in ids and question_key(r["question"]) not in questions),
-                      key=lambda r: rank_key(protocol["seed"], r["sample_id"]))
+                      key=lambda r: rank_key(seed, r["sample_id"]))
         picked = []
         for r in pool:
             q = question_key(r["question"])
             if q in seen:
                 continue
             seen.add(q); picked.append(r)
-            if len(picked) == args.per_dataset:
+            if len(picked) == per_dataset:
                 break
-        if len(picked) < args.per_dataset:
+        if len(picked) < per_dataset:
             raise ValueError("Only {} unused {} questions".format(len(picked), dataset))
         chosen += picked
+    return chosen, receipts, ids, questions
+
+
+def write_selection(output, chosen, manifest):
+    output.mkdir(parents=True)
+    with (output / "samples.jsonl").open("x", encoding="utf-8") as f:
+        for r in chosen:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    write_json(output / "selection_manifest.json", dict(manifest, sample_ids=[r["sample_id"] for r in chosen],
+                                                       samples_sha256=file_hash(output / "samples.jsonl"),
+                                                       created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat()))
+
+
+def freeze(args):
+    protocol, local = load_protocol(args.protocol), load_json(args.local)
+    if args.output.exists():
+        raise ValueError("Output exists; keep frozen selections")
+    paths = list(args.exclude) + [Path(p) for p in DEFAULT_EXCLUDE if Path(p).is_file() and Path(p) not in args.exclude]
+    chosen, receipts, ids, questions = select_fresh(local, paths, args.per_dataset, protocol["seed"])
     args.output.mkdir(parents=True)
     with (args.output / "samples.jsonl").open("x", encoding="utf-8") as f:
         for r in chosen:

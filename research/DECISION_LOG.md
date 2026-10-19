@@ -889,3 +889,27 @@ checkpoint is the main weakness; any second policy (Qwen2.5-7B-Instruct, or the
 factory's own GRPO run if HF weights exist) must be registered before running.
 Whether to start the (b)-A handoff-replay pilot now is the user's decision.
 Details: research/AC1_RESULTS_AND_DECISION.md.
+
+## 2026-10-19 — User starts the (b)-A handoff-replay pilot HR1
+
+The user asked to freeze a protocol and run handoff replay between
+Qwen2.5-7B-Instruct (I) and Search-R1 7B PPO (R), both available offline at the
+factory. Protocol research/HANDOFF_PROTOCOL.md frozen before any HR1 outcome:
+300 fresh HotpotQA/2Wiki dev questions disjoint from all history INCLUDING the
+AC1 fresh set; temperature-1 sampling, k=8; one scored trajectory per policy;
+handoff points t in {0,1,2,3} and end; arms real, placebo (all observations up
+to t replaced by the frozen null observation), evonly (think text dropped).
+Estimands: handoff curves, 2x2 Shapley acquisition/utilization at end, and the
+evidence-free gap; gates G-A1 (martingale self-replay + placebo drop >= 5 pp),
+G-A2 (component CI half-width <= 3 pp), G-A3 (evidence-free share >= 30% or a
+dominant pathway >= 60% with CI low >= 50%); criterion (iii) not applicable
+with a single RL checkpoint.
+Pre-outcome amendment: the two tokenizers' chat templates differ (system
+prompt "You are a helpful assistant." vs "You are Qwen, created by Alibaba
+Cloud..."; identical 151,665 vocab), so both policies use the initial prompt
+rendered by R's tokenizer; every handoff is then token-identical, and the
+instruct-native mismatch is logged as a limitation.
+Implementation: work2/handoff.py (freeze, three phases r1/i2/r3 with one model
+per GPU process, resume, merge, smoke), work2/handoff_analysis.py,
+configs/handoff_v1.json, scripts/run_handoff.sh, docs/HR1_FACTORY_GUIDE.md;
+audit_confirm freeze refactored into select_fresh/write_selection. 149 tests pass.

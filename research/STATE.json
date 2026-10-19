@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-19",
-  "current_stage": "AC1_main_checkpoint_reported",
-  "status": "AC1_H1_H3_confirmed_H2_not_single_checkpoint",
-  "next_action": "User decides whether to start the (b)-A handoff-replay pilot now (also yields a second policy, Qwen2.5-7B-Instruct, for (a)). Factory to paste full selected_fragile fields and signals vs_A from AC1. (a) vs (b) decision window around 2026-11-02.",
+  "current_stage": "AC1_reported_and_HR1_pilot_ready",
+  "status": "AC1_H1_H3_confirmed; HR1_handoff_replay_pilot_implemented_awaiting_factory",
+  "next_action": "Factory: HR1 per docs/HR1_FACTORY_GUIDE.md (local.handoff.json with instruct_checkpoint, freeze, smoke, run, analyze). Also paste AC1 selected_fragile fields and signals vs_A. Decide (a) vs (b) around 2026-11-02.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -808,5 +808,19 @@
   "archived_CT1": {
     "decision": "NO-GO 2026-10-19",
     "results": "research/CT1_PILOT_RESULTS_AND_DECISION.md"
+  },
+  "parallel_pilot": {
+    "protocol": "HR1_handoff_replay_pilot_v1",
+    "doc": "research/HANDOFF_PROTOCOL.md",
+    "guide": "docs/HR1_FACTORY_GUIDE.md",
+    "config": "configs/handoff_v1.json",
+    "policies": {
+      "R": "Search-R1 7B PPO",
+      "I": "Qwen2.5-7B-Instruct"
+    },
+    "questions": 300,
+    "k": 8,
+    "CPU_test_count": 149,
+    "factory_results_available": false
   }
 }

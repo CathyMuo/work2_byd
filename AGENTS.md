@@ -6,7 +6,8 @@ artifacts. Do not modify the stopped research projects elsewhere in the workspac
 
 Active task (2026-10-19): AC1 confirmation of the interventional-audit claims on
 `feat/credit-testbed`; read `research/AUDIT_CONFIRM_PROTOCOL.md` and `docs/AC1_FACTORY_GUIDE.md`
-first. CT1 and PCR are archived NO-GO (their confirmed findings feed AC1). Also read
+first. CT1 and PCR are archived NO-GO (their confirmed findings feed AC1). Parallel pilot:
+HR1 handoff replay (`research/HANDOFF_PROTOCOL.md`, `docs/HR1_FACTORY_GUIDE.md`). Also read
 `research/EXPERIMENT_PLAN.md`, `research/STATE.json`, and
 `research/DECISION_LOG.md` before changing research code or proposing experiments.
 Continue the recorded stage. Stage C requires evidence from stages A and B and

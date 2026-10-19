@@ -1,5 +1,8 @@
 # Work 2: Interventional Replay Audits of RL-Trained Search Agents（AC1）
 
+**2026-10-19 并行任务：HR1 交接重放 pilot（方向 (b)-A）。** Qwen2.5-7B-Instruct 与 Search-R1 7B PPO 从同一前缀互相交接，
+把 RL 增益拆成“获取证据 / 利用证据 / 与证据无关”三部分。厂内从 [HR1 厂内执行指导](docs/HR1_FACTORY_GUIDE.md) 开始，协议见 [HR1 协议](research/HANDOFF_PROTOCOL.md)。
+AC1 主检查点结果：H1、H3 确认，H2 未确认，见 [AC1 结果与决策](research/AC1_RESULTS_AND_DECISION.md)。
 **2026-10-19 当前任务，分支 `feat/credit-testbed`：AC1 确认实验。** 在从未用过的新题和第二个检查点上，确认三条干预式审计主张：
 恢复收益主要是均值回归、证据有因果作用、证据类信用信号不测证据。
 厂内 agent 从 [AC1 厂内执行指导](docs/AC1_FACTORY_GUIDE.md) 开始；协议见 [AC1 协议](research/AUDIT_CONFIRM_PROTOCOL.md)。
