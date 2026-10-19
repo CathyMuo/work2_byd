@@ -23,12 +23,19 @@ FORMAT_ARMS = ("fmt_1", "fmt_2")
 PLACEBO_ARMS = PERMUTATION_ARMS + FORMAT_ARMS
 RECOVERY_ARMS = ("review", "neutral", "budget2", "perm1_review", "perm1_neutral", "perm1_budget2")
 DELETION_ARMS = ("drop_support", "drop_nonsupport")
+# AC1 (2026-10-19): a second, more specific reflection method with its own token-matched placebo.
+REFLECT_ARMS = ("reflect", "neutral_reflect", "perm1_reflect", "perm1_neutral_reflect")
 ALL_ARMS = CONTROL_ARMS + PLACEBO_ARMS + RECOVERY_ARMS + DELETION_ARMS
 ARM_GROUPS = {"core": CONTROL_ARMS + PLACEBO_ARMS,
               "recovery": CONTROL_ARMS + PLACEBO_ARMS + RECOVERY_ARMS,
               "deletion": CONTROL_ARMS + PLACEBO_ARMS + DELETION_ARMS,
-              "all": ALL_ARMS}
+              "all": ALL_ARMS,
+              "audit": ALL_ARMS + REFLECT_ARMS}
 REVIEW_PROMPT = PROMPTS["review"]  # identical text to SI1 review, for cross-checks
+REFLECT_PROMPT = ("\n\nBefore continuing, reflect: state which part of the original question is still unresolved, "
+                  "check whether the information already shown actually resolves it, and if something is missing, "
+                  "issue one more specific search within the remaining original budget; otherwise give the answer. "
+                  "Use the original <search> or <answer> protocol.\n\n")
 NEUTRAL_SEED = ("\n\nNote: this line is a neutral layout separator and carries no task "
                 "information or instruction. ")
 NEUTRAL_FILLER = (" ok", " .", " -", " note", " line")
@@ -149,7 +156,10 @@ def arm_spec(arm, prefix, source, turn, encode, deletion):
     perms = permutations_for(source["sample_id"], turn, len(visible))
     permuted = lambda k: [copy.deepcopy(visible[i]) for i in perms[k]]
     review_tokens = len(encode(REVIEW_PROMPT))
-    instructions = {"review": REVIEW_PROMPT, "neutral": neutral_instruction(encode, review_tokens)}
+    reflect_tokens = len(encode(REFLECT_PROMPT))
+    instructions = {"review": REVIEW_PROMPT, "neutral": neutral_instruction(encode, review_tokens),
+                    "reflect": REFLECT_PROMPT, "neutral_reflect": neutral_instruction(encode, reflect_tokens)}
+    matched = {"review": review_tokens, "neutral": review_tokens, "reflect": reflect_tokens, "neutral_reflect": reflect_tokens}
     if arm in CONTROL_ARMS:
         return visible, "canonical", "", 0, {"family": "E0_control"}
     if arm in PERMUTATION_ARMS:
@@ -157,7 +167,7 @@ def arm_spec(arm, prefix, source, turn, encode, deletion):
         return permuted(k), "canonical", "", 0, {"family": "N1_permutation", "order": perms[k]}
     if arm in FORMAT_ARMS:
         return visible, arm, "", 0, {"family": "N2_format_null", "variant": arm}
-    if arm in RECOVERY_ARMS:
+    if arm in RECOVERY_ARMS or arm in REFLECT_ARMS:
         base = arm.split("_", 1)[1] if arm.startswith("perm1_") else arm
         documents = permuted(0) if arm.startswith("perm1_") else visible
         meta = {"family": "recovery", "base_observation": "perm_1" if arm.startswith("perm1_") else "clean",
@@ -167,7 +177,7 @@ def arm_spec(arm, prefix, source, turn, encode, deletion):
         text = instructions[base]
         return documents, "canonical", text, 0, dict(meta, instruction=text,
                                                       instruction_tokens=len(encode(text)),
-                                                      review_tokens=review_tokens)
+                                                      matched_tokens=matched[base], review_tokens=review_tokens)
     if arm in DELETION_ARMS:
         entry = deletion["arms"][arm]
         if not entry["eligible"]:

@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-19",
-  "current_stage": "CT1_v1_NO_GO_awaiting_user_direction",
-  "status": "CT1_k16_G_a_failed_again_NO_GO_novelty_threat_2608.19760_2609.02417",
-  "next_action": "User chooses (a) consolidated interventional-audit analysis paper (PCR + CT1, fresh questions + second checkpoint) or (b) new direction. Factory to report git log/diff c39af3c..e279f63 (170 vs 141 tests). No CT2 code until decided.",
+  "current_stage": "AC1_confirmation_ready_for_factory",
+  "status": "user_chose_a_confirmation_plus_parallel_b_scan_decide_in_two_weeks",
+  "next_action": "Factory: report git log c39af3c..e279f63 and offline Search-R1 checkpoints; then AC1 per docs/AC1_FACTORY_GUIDE.md (freeze once, run_audit.sh all for 7b_ppo and one second checkpoint). Decide (a) vs (b) around 2026-11-02.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -717,24 +717,25 @@
     "next_action": "No mandatory E tasks remain. Preserve immutable artifacts and the generic/replay baseline assets. Optional one-pass historical 46/52/3 ID reconciliation using original B records, with unresolved if unavailable. Any subsequent research starts with a separate literature/hypothesis/observable-state protocol review, not old E optimization; no new GPU, F, prompt variant, sharding or RL.",
     "rl_go_decision": "not_granted_pending_semantic_and_independent_confirmation_evidence"
   },
-  "active_protocol": "CT1_interventional_credit_pilot_v1",
+  "active_protocol": "AC1_interventional_audit_confirmation_v1",
   "active_implementation": {
-    "protocol": "CT1_interventional_credit_pilot_v1",
+    "protocol": "AC1_interventional_audit_confirmation_v1",
     "branch": "feat/credit-testbed",
-    "protocol_doc": "research/CREDIT_PROTOCOL.md",
-    "factory_guide": "docs/CT1_FACTORY_GUIDE.md",
-    "config": "configs/credit_v1.json",
-    "CPU_test_count": 141,
-    "factory_results_available": true,
-    "questions": 300,
-    "k": 8,
-    "temperature": 1.0,
-    "preregistered_gates": [
-      "G-a split-half Spearman-Brown of A and E >= 0.6",
-      "G-b ig/ealr/fact_hit rho vs E < 0.3 with CI upper < 0.5, or memory-stratum difference CI excludes 0, or rho(ig,ealr) < 0.3",
-      "G-c MC wall time x 600/300 <= 8 h"
+    "protocol_doc": "research/AUDIT_CONFIRM_PROTOCOL.md",
+    "factory_guide": "docs/AC1_FACTORY_GUIDE.md",
+    "configs": [
+      "configs/audit_confirm_v1.json",
+      "configs/pcr_audit_v1.json",
+      "configs/credit_v1_k16.json"
     ],
-    "untested_on_developer_server": "HF/torch scoring path (no torch); guarded by runtime mask self-check"
+    "CPU_test_count": 146,
+    "factory_results_available": false,
+    "fresh_questions": 1000,
+    "claims": [
+      "H1 recovery explained by placebo",
+      "H2 support deletion hurts more",
+      "H3 evidence credit signals do not track E"
+    ]
   },
   "SI1_decision": {
     "status": "current_ridge_prototype_NO_GO",
@@ -748,5 +749,9 @@
     "branch": "feat/path-luck-pcr",
     "decision": "G1 NO-GO 2026-10-16",
     "results": "research/PCR_PHASE1_RESULTS_AND_DECISION.md"
+  },
+  "archived_CT1": {
+    "decision": "NO-GO 2026-10-19",
+    "results": "research/CT1_PILOT_RESULTS_AND_DECISION.md"
   }
 }

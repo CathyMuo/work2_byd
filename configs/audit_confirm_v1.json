@@ -1,0 +1,13 @@
+{
+  "protocol": "AC1_interventional_audit_confirmation_v1",
+  "seed": 20261019,
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "scope": "Fresh never-used HotpotQA/2Wiki dev questions (500 each), greedy E0 sources per checkpoint; feeds PCR arm group 'audit' and CT1 k=16. See research/AUDIT_CONFIRM_PROTOCOL.md."
+}

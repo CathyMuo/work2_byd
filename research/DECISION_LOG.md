@@ -840,3 +840,29 @@ the user chooses between (a) a consolidated interventional-audit analysis paper
 (PCR + CT1 findings, confirmed on fresh questions and a second checkpoint) and
 (b) a new direction. The earlier survey's gap claim was wrong for general
 agents; recorded in the Chinese survey document.
+
+## 2026-10-19 — User decision: start (a) AC1 confirmation, scan for (b) in parallel
+
+The user chose to start the confirmation experiments for the consolidated
+interventional-audit paper (a) and, in parallel, run a literature scan for a
+new main-conference direction (b), deciding between them in two weeks. The (b)
+scan runs as a separate read-only session (output in the user's local folder,
+not this repo).
+
+AC1 protocol research/AUDIT_CONFIRM_PROTOCOL.md frozen before any AC1 outcome:
+1000 never-used HotpotQA/2Wiki dev questions (excluded by id AND normalized
+question text against all historical cohorts), greedy E0 sources regenerated per
+checkpoint; 7B PPO plus one second offline Search-R1 checkpoint (3B PPO > 7B GRPO
+> 3B GRPO, chosen and logged before its results). Claims: H1 recovery repair
+explained by placebo (>=1/3 or reversed net) for review or the new reflect
+method; H2 support minus non-support deletion CI upper < 0; H3 on informative
+turns ig/ealr/fact_hit rho vs E < 0.3 with CI upper < 0.4 given E reliability
+>= 0.8. Continue (a) if >=2 of 3 confirm on the main checkpoint and >=1 in the
+same direction on the second.
+
+Implementation: work2/audit_confirm.py (freeze, multi-GPU E0 sources with resume,
+report verdicts), PCR arm group "audit" (+reflect, neutral_reflect,
+perm1_reflect, perm1_neutral_reflect with a token-matched placebo), PCR recovery
+analysis generalised per method with a reperturb-difference CI,
+configs/audit_confirm_v1.json, configs/pcr_audit_v1.json, scripts/run_audit.sh,
+docs/AC1_FACTORY_GUIDE.md. 146 tests pass. No H800 execution yet.

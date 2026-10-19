@@ -165,7 +165,7 @@ def recovery(rows, view, resamples):
         return {"available": False}
     y = lambda r, a: r[view][a]
     natural = {}
-    for arm in ("review", "neutral", "budget2"):
+    for arm in [a for a in ("review", "neutral", "budget2", "reflect", "neutral_reflect") if all(a in r[view] for r in have)]:
         natural[arm] = {"rescue": sum(r["y0"] == 0 and y(r, arm) == 1 for r in have),
                         "harm": sum(r["y0"] == 1 and y(r, arm) == 0 for r in have),
                         "delta_em_vs_clean": estimate(have, mean(lambda r, a=arm: y(r, a) - r["y0"]), resamples),
@@ -181,17 +181,24 @@ def recovery(rows, view, resamples):
     placebo_harm = {"P1_reperturb_perm2": rate(stable, lambda r: 1 - y(r, "perm_2")),
                     "P2_neutral_on_perm1": rate(stable, lambda r: 1 - y(r, "perm1_neutral"))}
     methods = {}
-    for method in ("review", "budget2"):
+    # Each instruction method has its own token-matched neutral placebo (P2); budget2 uses the review-matched one.
+    neutral_for = {"review": "perm1_neutral", "budget2": "perm1_neutral", "reflect": "perm1_neutral_reflect"}
+    for method in ("review", "budget2", "reflect"):
         arm = "perm1_" + method
+        if not all(arm in r[view] and neutral_for[method] in r[view] for r in have):
+            continue
         repair, harm = rate(degraded, lambda r: y(r, arm)), rate(stable, lambda r: 1 - y(r, arm))
-        best = max(v for v in placebo_repair.values() if v is not None) if degraded else None
-        ph = placebo_harm["P2_neutral_on_perm1"]
+        p2 = rate(degraded, lambda r: y(r, neutral_for[method]))
+        best = max(v for v in (placebo_repair["P1_reperturb_perm2"], p2) if v is not None) if degraded else None
+        ph = rate(stable, lambda r: 1 - y(r, neutral_for[method]))
         raw_net = (repair * len(degraded) - harm * len(stable)) if degraded and stable else None
         adj_net = ((repair - best) * len(degraded) - (harm - ph) * len(stable)) if degraded and stable else None
         methods[method] = {"repair_rate_on_degraded": repair, "harm_rate_on_stable": harm,
+                           "P2_neutral_repair": p2, "P2_neutral_harm": ph,
                            "placebo_explained_fraction": (best / repair) if repair else None,
                            "uncorrected_net_count": raw_net, "placebo_corrected_net_count": adj_net,
-                           "direction_reversed": (raw_net is not None and adj_net is not None and raw_net * adj_net < 0)}
+                           "direction_reversed": (raw_net is not None and adj_net is not None and raw_net * adj_net < 0),
+                           "repair_minus_reperturb": estimate(degraded, mean(lambda r, a=arm: y(r, a) - y(r, "perm_2")), resamples) if degraded else None}
     return {"available": True, "states": len(have), "natural_states": natural,
             "selected_fragile": {"selection": "clean correct and perm_1 wrong (B-style); stable = clean correct and perm_1 correct",
                                  "degraded_states": len(degraded), "stable_states": len(stable),

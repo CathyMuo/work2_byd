@@ -1,15 +1,16 @@
-# Work 2: Interventional Validation of Turn-Level Credit for Search Agents（CT1）
+# Work 2: Interventional Replay Audits of RL-Trained Search Agents（AC1）
 
-**2026-10-16 当前方向，分支 `feat/credit-testbed`：用真实重新执行检验搜索智能体的逐轮信用信号。**
-对每一轮搜索测出 on-policy 的干预真值（A_t 轮优势、E_t 证据价值），检验 IGPO / CIPO / TRACE / 事实命中等信号是否与真值一致。
-厂内 agent 从 [CT1 厂内执行指导](docs/CT1_FACTORY_GUIDE.md) 开始；协议与 Go/No-Go 见 [CT1 协议](research/CREDIT_PROTOCOL.md)。
+**2026-10-19 当前任务，分支 `feat/credit-testbed`：AC1 确认实验。** 在从未用过的新题和第二个检查点上，确认三条干预式审计主张：
+恢复收益主要是均值回归、证据有因果作用、证据类信用信号不测证据。
+厂内 agent 从 [AC1 厂内执行指导](docs/AC1_FACTORY_GUIDE.md) 开始；协议见 [AC1 协议](research/AUDIT_CONFIRM_PROTOCOL.md)。
 
 ```bash
-bash scripts/run_credit.sh test && bash scripts/run_credit.sh prepare
-bash scripts/run_credit.sh smoke && bash scripts/run_credit.sh run
-bash scripts/run_credit.sh signals && bash scripts/run_credit.sh analyze
+bash scripts/run_audit.sh test && bash scripts/run_audit.sh freeze
+AC_LABEL=7b_ppo bash scripts/run_audit.sh all
+AC_LABEL=3b_ppo AC_LOCAL=configs/local.second.json bash scripts/run_audit.sh all
 ```
 
+CT1（逐轮信用检验）已于 2026-10-19 判 NO-GO（A 两次信度不足；且被 2608.19760 / 2609.02417 抢先），结果见 [CT1 结果与决策](research/CT1_PILOT_RESULTS_AND_DECISION.md)。
 PCR（路径运气）已于 2026-10-16 按预登记 G1 NO-GO 归档，结果见 [PCR 结果与决策](research/PCR_PHASE1_RESULTS_AND_DECISION.md)。
 以下 SI1 / E / A 系列为已归档的历史方向，保留供复核。
 

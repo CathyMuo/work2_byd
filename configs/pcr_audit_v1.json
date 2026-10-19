@@ -1,0 +1,28 @@
+{
+  "protocol": "PCR_placebo_controlled_replay_v1",
+  "seed": 20261019,
+  "target_turns": [1, 2],
+  "arm_group": "audit",
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "placebo": {
+    "N1_permutation": "4 distinct non-identity permutations of the Top-3, chosen by sha256(sample_id|turn|perm), outcome-blind",
+    "N2_format_null": "2 rendering variants; titles and bodies byte-identical, order unchanged",
+    "p_estimate": "mean EM over the 6 placebo arms"
+  },
+  "recovery": {
+    "review": "SI1 review prompt, verbatim",
+    "neutral": "semantically empty text with exactly the review prompt token count (P2)",
+    "budget2": "search budget +2, no text (P3, B1 analogue)",
+    "perm1_*": "same operations on the perm_1 perturbed observation (B-style selected-fragile design; P1 placebo = perm_2)"
+  },
+  "deletion": "drop_support / drop_nonsupport replace one Top-3 slot with the SAME lowest-rank (4..20) candidate that has no gold-fact proxy and no gold answer string; length ratio [0.5, 2.0]; lexical proxy, not semantic certification",
+  "ac1": "AC1 confirmation: adds reflect / neutral_reflect / perm1_reflect / perm1_neutral_reflect (20 arms); run on fresh AC1 sources with --per-dataset 0",
+  "scope": "Frozen cohort: Search-R1 7B PPO / E5 / Wiki-18 Flat / Top-3 / 4 searches / greedy. Exp-1/2/3 of the PCR plan; no RL."
+}
