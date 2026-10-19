@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-10-16",
-  "current_stage": "CT1_k16_rerun_ready",
-  "status": "CT1_k8_pilot_G_a_failed_on_A_only_preregistered_k16_rerun_pending",
-  "next_action": "Factory: k=16 rerun per docs/CT1_FACTORY_GUIDE.md section 4b (same 300 questions, configs/credit_v1_k16.json), signals incl. exploratory cf_ig, analyze. If A reliability < 0.6 again: A-based claims NO-GO, consider CT2 (E-only, fresh questions).",
+  "updated_at": "2026-10-19",
+  "current_stage": "CT1_v1_NO_GO_awaiting_user_direction",
+  "status": "CT1_k16_G_a_failed_again_NO_GO_novelty_threat_2608.19760_2609.02417",
+  "next_action": "User chooses (a) consolidated interventional-audit analysis paper (PCR + CT1, fresh questions + second checkpoint) or (b) new direction. Factory to report git log/diff c39af3c..e279f63 (170 vs 141 tests). No CT2 code until decided.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -626,9 +626,53 @@
         "G_c": true
       },
       "decision": "Preregistered k=16 rerun; A-based claims NO-GO if A still <0.6; no gate change."
+    },
+    {
+      "stage": "CT1_k16_rerun_factory_report",
+      "report_date": "2026-10-19",
+      "reported_factory_head": "e279f63",
+      "factory_head_public": false,
+      "reported_tests": 170,
+      "public_tests": 141,
+      "questions": 300,
+      "branch_rollouts": 37408,
+      "mc_wall_seconds": 1797.3,
+      "retrieval_audit_changes": "0/107",
+      "reliability": {
+        "A": [
+          0.492,
+          [
+            0.294,
+            0.639
+          ]
+        ],
+        "E": [
+          0.885,
+          [
+            0.847,
+            0.912
+          ]
+        ]
+      },
+      "rho_vs_E": {
+        "ig": 0.087,
+        "ealr": 0.064,
+        "fact_hit": 0.154,
+        "answer_hit": 0.163,
+        "trace": 0.06,
+        "cf_ig": 0.026,
+        "random": -0.032
+      },
+      "rho_ig_ealr": 0.037,
+      "gates": {
+        "G_a": false,
+        "G_b": true,
+        "G_c": true
+      },
+      "decision": "CT1 v1 NO-GO; no k=25 rerun; cf_ig dropped; CT2 not started pending user choice due to 2608.19760 and 2609.02417."
     }
   ],
-  "rl_go_decision": "not_authorized_CT1_pilot_pending",
+  "rl_go_decision": "not_authorized_CT1_NO_GO",
   "remaining": [
     "Factory CT1 pilot results",
     "Human G-a/b/c decision",

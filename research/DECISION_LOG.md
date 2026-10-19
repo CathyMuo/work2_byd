@@ -818,3 +818,25 @@ stored null observation, a teacher-forced proxy of E), an informative-turn
 stratum, disattenuated correlations and reliability prophecy. Records now store
 null_observation_token_ids. 141 tests pass. Analysis:
 research/CT1_PILOT_RESULTS_AND_DECISION.md.
+
+## 2026-10-19 — CT1 k=16 rerun: G-a fails again -> CT1 v1 NO-GO; novelty threat found
+
+Factory HEAD e279f63 (not public; reports 170 tests vs public 141 — factory must
+return log/diff vs c39af3c before results leave provisional). 300 questions,
+37,408 branches, 30 min, retrieval audit 0/107 changes. A reliability 0.492
+[0.294, 0.639] (< 0.6), E 0.885. rho vs E: ig 0.087, ealr 0.064, fact_hit 0.154,
+answer_hit 0.163, trace 0.060, cf_ig 0.026; informative-subset values similar;
+disattenuated rho vs A ~0.03 for all signals.
+
+Decision: per CREDIT_PROTOCOL section 6, CT1 v1 is NO-GO (second G-a failure).
+No further k=25 rerun (one rerun was preregistered; the A-side conclusion would
+not change). cf_ig dropped as a method candidate. Literature re-scan found
+2608.19760 (executed-replay audit of step-level credit in ALFWorld: no signal
+beats a shuffled control; preregistered training arms differ by dose not credit)
+and 2609.02417 (shuffled per-turn rewards cost nothing on tau^2-bench). These
+pre-empt CT's core claim in general agents; our remaining delta is search QA,
+observation interventions (E) and search-specific signals. CT2 is NOT started;
+the user chooses between (a) a consolidated interventional-audit analysis paper
+(PCR + CT1 findings, confirmed on fresh questions and a second checkpoint) and
+(b) a new direction. The earlier survey's gap claim was wrong for general
+agents; recorded in the Chinese survey document.
