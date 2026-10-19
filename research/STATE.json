@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-19",
-  "current_stage": "AC1_confirmation_ready_for_factory",
-  "status": "user_chose_a_confirmation_plus_parallel_b_scan_decide_in_two_weeks",
-  "next_action": "Factory: report git log c39af3c..e279f63 and offline Search-R1 checkpoints; then AC1 per docs/AC1_FACTORY_GUIDE.md (freeze once, run_audit.sh all for 7b_ppo and one second checkpoint). Decide (a) vs (b) around 2026-11-02.",
+  "current_stage": "AC1_main_checkpoint_reported",
+  "status": "AC1_H1_H3_confirmed_H2_not_single_checkpoint",
+  "next_action": "User decides whether to start the (b)-A handoff-replay pilot now (also yields a second policy, Qwen2.5-7B-Instruct, for (a)). Factory to paste full selected_fragile fields and signals vs_A from AC1. (a) vs (b) decision window around 2026-11-02.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -670,6 +670,61 @@
         "G_c": true
       },
       "decision": "CT1 v1 NO-GO; no k=25 rerun; cf_ig dropped; CT2 not started pending user choice due to 2608.19760 and 2609.02417."
+    },
+    {
+      "stage": "AC1_7b_ppo_factory_report",
+      "report_date": "2026-10-19",
+      "reported_factory_head": "f50a195",
+      "public_source_merged": "c21a997",
+      "factory_local_only": "dashboard/progress files, 29 local tests",
+      "second_checkpoint": "none available offline",
+      "fresh_questions": 1000,
+      "fresh_sha256": "438fa37a37528f2b07b1001b956240eb6126e59c2e491d273e03bddf69c0ffe7",
+      "excluded_historical": 3000,
+      "wall_seconds": {
+        "sources": 619,
+        "pcr": 13681,
+        "ct": 2967
+      },
+      "H1": {
+        "confirmed": true,
+        "per_method": {
+          "review": true,
+          "reflect": true
+        },
+        "degraded_states": 56,
+        "review_repair": 0.357,
+        "explained_fraction": 1.25
+      },
+      "H2": {
+        "confirmed": false,
+        "matched_states": 421,
+        "support_minus_nonsupport": -0.0214,
+        "ci95": [
+          -0.0502,
+          0.0093
+        ],
+        "drop_support": -0.0301,
+        "drop_nonsupport": -0.0087
+      },
+      "H3": {
+        "confirmed": true,
+        "E_reliability": 0.849,
+        "rho_vs_E_informative": {
+          "ig": 0.0817,
+          "ealr": -0.0375,
+          "fact_hit": 0.0193
+        }
+      },
+      "descriptive": {
+        "clean_em": 0.2534,
+        "lucky_share": 0.0664,
+        "A_reliability": 0.668,
+        "mean_A": -0.0032,
+        "mean_E": 0.0311,
+        "answer_hit_vs_E": 0.0903
+      },
+      "decision": "(a) continues with H1+H3; H2 reported as non-replication; single checkpoint limitation."
     }
   ],
   "rl_go_decision": "not_authorized_CT1_NO_GO",
@@ -729,7 +784,7 @@
       "configs/credit_v1_k16.json"
     ],
     "CPU_test_count": 146,
-    "factory_results_available": false,
+    "factory_results_available": true,
     "fresh_questions": 1000,
     "claims": [
       "H1 recovery explained by placebo",

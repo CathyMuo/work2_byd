@@ -866,3 +866,26 @@ perm1_reflect, perm1_neutral_reflect with a token-matched placebo), PCR recovery
 analysis generalised per method with a reperturb-difference CI,
 configs/audit_confirm_v1.json, configs/pcr_audit_v1.json, scripts/run_audit.sh,
 docs/AC1_FACTORY_GUIDE.md. 146 tests pass. No H800 execution yet.
+
+## 2026-10-19 — AC1 on fresh questions (7B PPO only): H1 and H3 confirmed, H2 not
+
+Factory f50a195 = public c21a997 plus factory-local dashboard/progress files (8
+local commits c39af3c..e279f63; 29 local tests explain 170/175 vs 141/146); no
+experiment path changed — accepted. No official second Search-R1 checkpoint
+exists offline at the factory, so per protocol only the main checkpoint ran.
+1000 fresh questions (3000 historical excluded), E0/E0 exact, drift 0.
+H1 confirmed for review and reflect (D=56; review repair 35.7%, explained 1.25 —
+the 1.25 implies reperturb P1 ~44.6%, not the 28.6% neutral figure the report
+attributed it to; full fields requested). H2 NOT confirmed: support minus
+non-support -2.1 pp [-5.0, +0.9] (dev set -9.1 pp). H3 confirmed: E reliability
+0.849, informative-turn rho ig 0.082, ealr -0.038, fact_hit 0.019. Descriptive:
+lucky share 6.6%, clean EM 0.253, A reliability 0.668 (descriptive only; CT1 v1
+verdict unchanged).
+
+Decision: (a) continues per AC1 section 4 with two claims (H1 mean reversion in
+recovery evaluation; H3 evidence-credit signals do not track interventional
+evidence value); H2 is reported as a non-replication, not a claim. Single
+checkpoint is the main weakness; any second policy (Qwen2.5-7B-Instruct, or the
+factory's own GRPO run if HF weights exist) must be registered before running.
+Whether to start the (b)-A handoff-replay pilot now is the user's decision.
+Details: research/AC1_RESULTS_AND_DECISION.md.
