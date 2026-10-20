@@ -913,3 +913,25 @@ Implementation: work2/handoff.py (freeze, three phases r1/i2/r3 with one model
 per GPU process, resume, merge, smoke), work2/handoff_analysis.py,
 configs/handoff_v1.json, scripts/run_handoff.sh, docs/HR1_FACTORY_GUIDE.md;
 audit_confirm freeze refactored into select_fresh/write_selection. 149 tests pass.
+
+## 2026-10-20 — AC1 second checkpoint (official Search-R1 3B PPO): 3/3 confirmed
+
+The factory obtained SearchR1-nq_hotpotqa_train-qwen2.5-3b-em-ppo-v0.3 through an
+internal HF mirror and reran AC1 on the SAME frozen fresh questions (no
+re-freeze). E0/E0 exact, drift 0. H1 confirmed (95 degraded states; explained
+review 1.36, reflect 1.07); H2 confirmed (-7.5 pp [-11.2, -4.0]); H3 confirmed
+(E reliability 0.937; ig 0.183, ealr 0.124, fact_hit 0.137; answer_hit 0.235).
+clean EM 0.359, mean E 0.078, lucky share 0.063, A reliability 0.641. The
+factory's own 3B GRPO run emits only malformed actions and is not a usable
+checkpoint.
+
+Decision: the AC1 continuation criterion is met (main 2/3, second 3/3 in the
+same direction); the single-checkpoint limitation is removed. Paper claims:
+H1 and H3 (confirmed on both checkpoints). H2 is reported per checkpoint as
+"confirmed on 1 of 2, same sign": not robust, not a non-replication. The factory's
+"power" explanation is incomplete — 3B depends more on evidence (mean E 0.078 vs
+0.031) and the 7B dev-set estimate (-9.1 pp) was inflated relative to fresh
+(-2.1 pp); the wording is that single-document deletion effects grow with
+evidence dependence. HR1 remains pending as frozen. If an official 7B/3B GRPO
+checkpoint is reachable through the mirror, it must be registered here before
+running as an AC1 third checkpoint or for HR1's PPO-vs-GRPO criterion.

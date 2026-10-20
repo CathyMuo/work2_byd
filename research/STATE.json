@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-10-19",
-  "current_stage": "AC1_reported_and_HR1_pilot_ready",
-  "status": "AC1_H1_H3_confirmed; HR1_handoff_replay_pilot_implemented_awaiting_factory",
-  "next_action": "Factory: HR1 per docs/HR1_FACTORY_GUIDE.md (local.handoff.json with instruct_checkpoint, freeze, smoke, run, analyze). Also paste AC1 selected_fragile fields and signals vs_A. Decide (a) vs (b) around 2026-11-02.",
+  "updated_at": "2026-10-20",
+  "current_stage": "AC1_two_checkpoints_complete_HR1_pending",
+  "status": "AC1_7b_2of3_3b_3of3; claims H1+H3 on both checkpoints; H2 confirmed on 1 of 2 same sign",
+  "next_action": "Factory: run HR1 per docs/HR1_FACTORY_GUIDE.md; list official Search-R1 GRPO checkpoints reachable via the internal HF mirror (register before use). Decide (a) vs (b) around 2026-11-02.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -725,6 +725,52 @@
         "answer_hit_vs_E": 0.0903
       },
       "decision": "(a) continues with H1+H3; H2 reported as non-replication; single checkpoint limitation."
+    },
+    {
+      "stage": "AC1_3b_ppo_factory_report",
+      "report_date": "2026-10-20",
+      "reported_factory_head": "7962eb4",
+      "checkpoint": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-3b-em-ppo-v0.3",
+      "same_fresh_questions": true,
+      "wall_seconds": {
+        "sources": 334,
+        "pcr": 5271,
+        "ct": 1127
+      },
+      "H1": {
+        "confirmed": true,
+        "degraded_states": 95,
+        "explained": {
+          "review": 1.36,
+          "reflect": 1.07
+        }
+      },
+      "H2": {
+        "confirmed": true,
+        "support_minus_nonsupport": -0.075,
+        "ci95": [
+          -0.112,
+          -0.04
+        ]
+      },
+      "H3": {
+        "confirmed": true,
+        "E_reliability": 0.937,
+        "rho_vs_E_informative": {
+          "ig": 0.183,
+          "ealr": 0.124,
+          "fact_hit": 0.137
+        },
+        "answer_hit": 0.235
+      },
+      "descriptive": {
+        "clean_em": 0.3589,
+        "mean_E": 0.078,
+        "lucky_share": 0.0628,
+        "A_reliability": 0.641
+      },
+      "factory_3b_grpo": "malformed outputs only; not usable",
+      "decision": "AC1 criterion met with two checkpoints; claims H1+H3; H2 confirmed on 1 of 2 with consistent sign."
     }
   ],
   "rl_go_decision": "not_authorized_CT1_NO_GO",
