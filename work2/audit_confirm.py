@@ -21,14 +21,17 @@ from .run_baseline import asset_identity, validate_design
 from .selective import exclusions, question_key, sha
 
 VERSION = "AC1_interventional_audit_confirmation_v1"
+FC1_VERSION = "FC1_harness_fidelity_v1"  # reuses the E0 source runner with a prompt variant
 DEFAULT_EXCLUDE = ("outputs/samples/pilot.jsonl", "outputs/a1_clean_scale500/clean_rollouts.jsonl",
                    "outputs/si1_samples/samples.jsonl", "outputs/si1_dp4_samples/samples.jsonl")
 
 
 def load_protocol(path):
     p = load_json(path)
-    if p.get("protocol") != VERSION:
-        raise ValueError("Unsupported AC1 protocol")
+    if p.get("protocol") not in (VERSION, FC1_VERSION):
+        raise ValueError("Unsupported AC1/FC1 protocol")
+    if p["agent"].get("prompt_variant", "bounded") not in ("bounded", "official"):
+        raise ValueError("Unknown prompt variant")
     validate_design(p)
     return p
 

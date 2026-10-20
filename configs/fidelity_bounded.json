@@ -1,0 +1,14 @@
+{
+  "protocol": "FC1_harness_fidelity_v1",
+  "seed": 20261019,
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "bounded"
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "scope": "FC1 harness fidelity: greedy E0 rollouts on the AC1 fresh questions with the bounded prompt. See research/FIDELITY_PROTOCOL.md."
+}

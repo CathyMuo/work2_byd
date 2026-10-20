@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-20",
-  "current_stage": "AC1_two_checkpoints_complete_HR1_pending",
-  "status": "AC1_7b_2of3_3b_3of3; claims H1+H3 on both checkpoints; H2 confirmed on 1 of 2 same sign",
-  "next_action": "Factory: run HR1 per docs/HR1_FACTORY_GUIDE.md; list official Search-R1 GRPO checkpoints reachable via the internal HF mirror (register before use). Decide (a) vs (b) around 2026-11-02.",
+  "current_stage": "HR1_NO_GO_FC1_fidelity_ready",
+  "status": "(a) mainline; FC1 harness fidelity check before writing",
+  "next_action": "Factory: FC1 per docs/FC1_FACTORY_GUIDE.md (download v0.3 7B PPO/GRPO via mirror, run bounded/official matrix, summarize) and paste AC1 selected_fragile + vs_A. Then apply FIDELITY_PROTOCOL D1-D4.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -867,6 +867,45 @@
     "questions": 300,
     "k": 8,
     "CPU_test_count": 149,
-    "factory_results_available": false
+    "factory_results_available": false,
+    "result": {
+      "run_dir": "outputs/hr1_pilot_v3",
+      "frozen_commit": "f61a8a4",
+      "rollouts": 76512,
+      "traj_em": {
+        "R": 0.24,
+        "I": 0.25
+      },
+      "gain_end": [
+        -0.0054,
+        [
+          -0.049,
+          0.04
+        ]
+      ],
+      "acquisition": -0.0244,
+      "utilization": 0.019,
+      "evidence_free": 0.0017,
+      "evidence_free_evonly": [
+        -0.0892,
+        [
+          -0.135,
+          -0.046
+        ]
+      ],
+      "gates": {
+        "G_A1": false,
+        "G_A2": false,
+        "G_A3": false
+      },
+      "decision": "NO-GO; candidate A closed; return to (a)"
+    }
+  },
+  "fidelity_check": {
+    "protocol": "FC1_harness_fidelity_v1",
+    "doc": "research/FIDELITY_PROTOCOL.md",
+    "guide": "docs/FC1_FACTORY_GUIDE.md",
+    "factory_results_available": false,
+    "CPU_test_count": 153
   }
 }

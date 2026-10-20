@@ -935,3 +935,37 @@ H1 and H3 (confirmed on both checkpoints). H2 is reported per checkpoint as
 evidence dependence. HR1 remains pending as frozen. If an official 7B/3B GRPO
 checkpoint is reachable through the mirror, it must be registered here before
 running as an AC1 third checkpoint or for HR1's PPO-vs-GRPO criterion.
+
+## 2026-10-20 — HR1 NO-GO; harness-fidelity check FC1 before writing (a)
+
+Factory run outputs/hr1_pilot_v3 (frozen f61a8a4; records e54b0eb0...): 300 fresh
+questions, 76,512 rollouts, template identical 300/300. Trajectory EM R 0.240 vs
+I 0.250; gain_end -0.005 [-0.049, 0.040]; acquisition -0.024, utilization 0.019,
+evidence_free 0.002, evidence_free_evonly -0.089 [-0.135, -0.046]. G-A1 fails
+(placebo drop 1.2 pp < 5 pp; martingale checks pass), G-A2 fails (half-widths
+3.28/3.00/4.08 pp), G-A3 fails, gain_end CI contains 0. Decision: HR1 NO-GO;
+candidate A closed; per the (a)/(b) tree, return to (a). Candidate B not started.
+Correction to the factory reading: evonly keeps observations and removes think
+text, so R's evonly deficit means R depends on its own reasoning trace (or is
+shifted more by its removal), not on observations. The placebo arm keeps think
+text that restates evidence, a known conservative bias.
+A v2 attempt was correctly refused by the code-freeze check after a mid-run
+factory commit; its data is excluded.
+
+Validity concern raised by HR1: R does not beat Instruct, and 7B (0.253) trails
+3B v0.3 (0.359) in AC1. Our 7B is the original v0.1 release (no suffix); v0.3
+7B PPO/GRPO exist. Our bounded prompt also deviates from the official Search-R1
+template ("You can search as many times as your want"). Before writing (a) we
+run FC1 (research/FIDELITY_PROTOCOL.md, frozen before outcomes): greedy EM on the
+AC1 fresh questions for v0.1 7B PPO, v0.3 3B PPO, v0.3 7B PPO, v0.3 7B GRPO and
+Qwen2.5-7B-Instruct, each with bounded and verbatim official prompts; rules D1
+(prompt depresses an (a) checkpoint -> rerun AC1 with the official prompt), D2
+(v0.3 7B PPO >= +3 pp over v0.1 -> new main 7B), D3 (RL vs Instruct, report;
+HR1 re-registration is the user's call), D4 (GRPO usable as third checkpoint).
+Remaining deviation reported as is: no 500-token observation truncation.
+Implementation: rollout.question_prompt variant "official" (verbatim template,
+prompt_version search_r1_official_base_v1; default unchanged), audit_confirm
+accepts FC1 configs, work2/fidelity.py, configs/fidelity_{bounded,official}.json,
+scripts/run_fidelity.sh, docs/FC1_FACTORY_GUIDE.md. 153 tests pass.
+Factory process note: DECISION_LOG.md and STATE.json are maintained here; factory
+execution notes go to factory-local files to avoid merge conflicts.

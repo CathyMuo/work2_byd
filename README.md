@@ -1,3 +1,6 @@
+**2026-10-20 当前任务：FC1 评测保真度检查。** HR1 交接重放判 NO-GO（R 相对 Instruct 无增益），并暴露出我们的 7B 是 Search-R1 v0.1、提示词也偏离了官方模板。
+写 (a) 之前，先比较各检查点（v0.1 / v0.3、PPO / GRPO、Instruct）在两种提示词下的 EM。厂内从 [FC1 厂内执行指导](docs/FC1_FACTORY_GUIDE.md) 开始，协议见 [FC1 协议](research/FIDELITY_PROTOCOL.md)。
+HR1 结果见 [HR1 结果与决策](research/HR1_RESULTS_AND_DECISION.md)。
 # Work 2: Interventional Replay Audits of RL-Trained Search Agents（AC1）
 
 **2026-10-19 并行任务：HR1 交接重放 pilot（方向 (b)-A）。** Qwen2.5-7B-Instruct 与 Search-R1 7B PPO 从同一前缀互相交接，

@@ -7,9 +7,22 @@ from .metrics import answer_scores, lexical_fact_hits
 from .retrieval import format_documents
 
 PROMPT_VERSION = "work2_search_r1_bounded_v1"
+# FC1 (2026-10-20): verbatim Search-R1 base template (third_party/Search-R1 scripts/data_process/
+# qa_search_test_merge.py make_prefix), used only for the harness-fidelity check.
+OFFICIAL_PROMPT_VERSION = "search_r1_official_base_v1"
+OFFICIAL_TEMPLATE = ("Answer the given question. You must conduct reasoning inside <think> and </think> first every time "
+                     "you get new information. After reasoning, if you find you lack some knowledge, you can call a search "
+                     "engine by <search> query </search> and it will return the top searched results between <information> "
+                     "and </information>. You can search as many times as your want. If you find no further external "
+                     "knowledge needed, you can directly provide the answer inside <answer> and </answer>, without detailed "
+                     "illustrations. For example, <answer> Beijing </answer>. Question: {}\n")
 
 
-def question_prompt(question, max_search_turns):
+def question_prompt(question, max_search_turns, variant="bounded"):
+    if variant == "official":
+        return OFFICIAL_TEMPLATE.format(question)
+    if variant != "bounded":
+        raise ValueError("Unknown prompt variant: " + str(variant))
     return ("Answer the given question. You must conduct reasoning inside <think> and </think> "
             "first every time you get new information. After reasoning, if you find you lack "
             "some knowledge, you can call a search engine by <search> query </search> and it "
@@ -33,10 +46,12 @@ def parse_action(text):
 
 def run_sample(sample, generator, retriever, agent, retrieval):
     start = time.monotonic()
-    record = {**sample, "condition": "E0_clean", "prompt_version": PROMPT_VERSION,
+    variant = agent.get("prompt_variant", "bounded")
+    record = {**sample, "condition": "E0_clean",
+              "prompt_version": OFFICIAL_PROMPT_VERSION if variant == "official" else PROMPT_VERSION,
               "status": None, "final_answer": "", "search_calls": 0,
               "generated_tokens": 0, "model_input_tokens": 0, "steps": [], "prefixes": []}
-    text = generator.initial_prompt(question_prompt(sample["question"], agent["max_search_turns"]))
+    text = generator.initial_prompt(question_prompt(sample["question"], agent["max_search_turns"], variant))
     tokens = generator.encode(text)
     record["initial_prompt"] = text
     return continue_record(record, generator, retriever, agent, retrieval, text, tokens, start)
