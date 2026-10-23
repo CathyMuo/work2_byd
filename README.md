@@ -1,3 +1,5 @@
+**2026-10-22 冲主会升级 U1（目标 ACL 2027 主会）：** 把 H1 / H3 的审计扩到 7 个官方 Search-R1 智能体 × 5 个数据集（HotpotQA、2Wiki、NQ、MuSiQue、Bamboogle）。
+FC1 完成、提示词定下来之后再运行。厂内从 [U1 厂内执行指导](docs/U1_FACTORY_GUIDE.md) 开始，协议见 [U1 协议](research/U1_PROTOCOL.md)。
 **2026-10-20 当前任务：FC1 评测保真度检查。** HR1 交接重放判 NO-GO（R 相对 Instruct 无增益），并暴露出我们的 7B 是 Search-R1 v0.1、提示词也偏离了官方模板。
 写 (a) 之前，先比较各检查点（v0.1 / v0.3、PPO / GRPO、Instruct）在两种提示词下的 EM。厂内从 [FC1 厂内执行指导](docs/FC1_FACTORY_GUIDE.md) 开始，协议见 [FC1 协议](research/FIDELITY_PROTOCOL.md)。
 HR1 结果见 [HR1 结果与决策](research/HR1_RESULTS_AND_DECISION.md)。

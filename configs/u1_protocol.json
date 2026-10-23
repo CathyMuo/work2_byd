@@ -1,0 +1,12 @@
+{
+  "protocol": "U1_multi_agent_audit_v1",
+  "seed": 20261022,
+  "reused_datasets": {"hotpotqa": "AC1 fresh (500)", "2wiki": "AC1 fresh (500)"},
+  "new_datasets": {
+    "nq": {"local_key": "nq_file", "per_dataset": 500, "format": "FlashRAG jsonl (id, question, golden_answers)"},
+    "musique": {"local_key": "musique_file", "per_dataset": 500, "format": "FlashRAG jsonl"},
+    "bamboogle": {"local_key": "bamboogle_file", "per_dataset": 0, "format": "FlashRAG jsonl; 0 = all (125)"}
+  },
+  "prompt_variant": "fixed by the FC1 decision before any U1 run (run_u1.sh requires U1_PROMPT)",
+  "criteria": "Per agent: H1 and H3 as in AC1 (research/AUDIT_CONFIRM_PROTOCOL.md section 4; fact_hit skipped where undefined). Claim holds if confirmed on >= ceil(0.8 x included agents); agents with >= 10% format/length failures are excluded and reported. See research/U1_PROTOCOL.md."
+}

@@ -20,8 +20,7 @@ from pathlib import Path
 from .common import file_hash, git_output, load_json, local_path, write_json
 from .datasets import read_rows
 from .placebo import ARM_GROUPS, VERSION, run_state
-from .replay import AuditedRetriever
-from .rollout import PROMPT_VERSION
+from .replay import PROMPT_VARIANT_OF, AuditedRetriever
 from .run_baseline import asset_identity, validate_design
 from .selective import sha
 
@@ -44,11 +43,21 @@ def source_rows(path):
     if not rows or len(ids) != len(set(ids)):
         raise ValueError("Source rollouts empty or duplicated")
     for r in rows:
-        if r.get("condition") != "E0_clean" or r.get("prompt_version") != PROMPT_VERSION:
-            raise ValueError("Sources must be frozen E0_clean rollouts of " + PROMPT_VERSION)
-        if r["status"] == "infrastructure_error" or r["dataset"] not in ("hotpotqa", "2wiki"):
+        if r.get("condition") != "E0_clean" or r.get("prompt_version") not in PROMPT_VARIANT_OF:
+            raise ValueError("Sources must be frozen E0_clean rollouts of " + " / ".join(PROMPT_VARIANT_OF))
+        if r["status"] == "infrastructure_error" or not r.get("dataset"):
             raise ValueError("Invalid source row: " + r["sample_id"])
+    if len({r["prompt_version"] for r in rows}) != 1:
+        raise ValueError("Sources mix prompt versions")
     return rows
+
+
+DATASET_ORDER = ("hotpotqa", "2wiki", "nq", "musique", "bamboogle")
+
+
+def datasets_of(rows):
+    present = {r["dataset"] for r in rows}
+    return [d for d in DATASET_ORDER if d in present] + sorted(present - set(DATASET_ORDER))
 
 
 def rank_key(seed, sample_id):
@@ -60,14 +69,17 @@ def prepare(args):
     rows = source_rows(args.sources)
     if args.output.exists():
         raise ValueError("Plan directory exists; keep frozen selections")
-    questions, unreachable = [], collections.Counter()
-    for dataset in ("hotpotqa", "2wiki"):
+    questions, unreachable, short = [], collections.Counter(), {}
+    datasets = datasets_of(rows)
+    for dataset in datasets:
         pool = sorted((r for r in rows if r["dataset"] == dataset), key=lambda r: rank_key(protocol["seed"], r["sample_id"]))
         # Outcome-blind: order by hash only; a question needs at least the first search to fork.
         pool = [r for r in pool if r["prefixes"]]
         limit = args.per_dataset if args.per_dataset > 0 else len(pool)
         if len(pool) < limit:
-            raise ValueError("Only {} searchable {} questions, requested {}".format(len(pool), dataset, limit))
+            if datasets == ["hotpotqa", "2wiki"]:   # original PCR / AC1 behaviour
+                raise ValueError("Only {} searchable {} questions, requested {}".format(len(pool), dataset, limit))
+            short[dataset] = len(pool)            # small sets (e.g. Bamboogle) are used in full and recorded
         questions.extend(pool[:limit])
     states = []
     for r in questions:
@@ -76,12 +88,13 @@ def prepare(args):
                 states.append({"sample_id": r["sample_id"], "dataset": r["dataset"], "target_turn": turn})
             else:
                 unreachable[str(turn)] += 1
-    smoke_ids = [r["sample_id"] for d in ("hotpotqa", "2wiki") for r in [q for q in questions if q["dataset"] == d][:5]]
+    per_smoke = 5 if len(datasets) <= 2 else 2
+    smoke_ids = [r["sample_id"] for d in datasets for r in [q for q in questions if q["dataset"] == d][:per_smoke]]
     args.output.mkdir(parents=True)
     plan = {"version": VERSION, "protocol": protocol, "protocol_sha256": sha(protocol),
             "sources_path": str(args.sources.resolve()), "sources_sha256": file_hash(args.sources),
             "question_ids": [r["sample_id"] for r in questions], "smoke_question_ids": smoke_ids,
-            "states": states, "unreachable_by_turn": dict(unreachable),
+            "states": states, "unreachable_by_turn": dict(unreachable), "datasets": datasets, "short_datasets": short,
             "selection": "per dataset: sha256(seed:sample_id) order among questions with >=1 search; no outcome filtering",
             "created_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()}
     write_json(args.output / "plan.json", plan)

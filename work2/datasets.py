@@ -55,6 +55,31 @@ def canonicalize(row, dataset):
             "gold_supporting_facts": facts}
 
 
+def canonicalize_flashrag(row, dataset):
+    """FlashRAG / Search-R1 test format: {"id", "question", "golden_answers": [...]}; no supporting facts.
+
+    gold_answer becomes the alias LIST (EM takes the best alias); gold_supporting_facts is empty,
+    so lexical fact proxies (fact_hit, deletion arms) are unavailable for these datasets.
+    """
+    if not isinstance(row, dict):
+        raise ValueError("Dataset row must be an object")
+    question = row.get("question")
+    answers = row.get("golden_answers", row.get("answers", row.get("answer")))
+    if isinstance(answers, str):
+        answers = [answers]
+    if not isinstance(question, str) or not question.strip():
+        raise ValueError("Missing nonempty question")
+    if not isinstance(answers, list) or not answers or not all(isinstance(a, str) for a in answers):
+        raise ValueError("Missing golden_answers list")
+    answers = list(dict.fromkeys(a.strip() for a in answers if a.strip()))
+    if not answers:
+        raise ValueError("Empty golden_answers")
+    question = question.strip()
+    source_id = str(row.get("id", row.get("_id", digest(question.encode()))))
+    return {"sample_id": dataset + ":" + source_id, "source_id": source_id, "dataset": dataset,
+            "question": question, "gold_answer": answers, "gold_supporting_facts": []}
+
+
 def freeze_pilot(local, destination, count=100, seed=42):
     """Select local rows before outcomes; no network, new data, or label inference."""
     if count < 1:

@@ -969,3 +969,31 @@ accepts FC1 configs, work2/fidelity.py, configs/fidelity_{bounded,official}.json
 scripts/run_fidelity.sh, docs/FC1_FACTORY_GUIDE.md. 153 tests pass.
 Factory process note: DECISION_LOG.md and STATE.json are maintained here; factory
 execution notes go to factory-local files to avoid merge conflicts.
+
+## 2026-10-22 — Target ACL 2027 main; upgrade plan confirmed; U1 implemented
+
+The user restated the target: ACL 2027 main conference, not Findings. Developer
+assessment: with 2 checkpoints, 2 datasets and our own recovery prompts, (a)
+reads as "correct but incremental". Upgrade plan confirmed by the user: U1
+(breadth: official Search-R1 agents across sizes, PPO/GRPO, base/instruct, and
+five datasets), U2 (audit >= 2 published recovery methods; literature scan running
+in a separate read-only session), U3 (training-side test) decided after a training
+pipeline pilot, U4 (release the audit toolkit) during writing. Milestones 11-04,
+11-25, 12-09 with stop rules are recorded in the user's status document.
+
+U1 protocol research/U1_PROTOCOL.md frozen before any U1 outcome. The only
+open choice, the prompt variant, is fixed by FC1 rule D1 before any run (the
+runner refuses without U1_PROMPT). Questions: AC1 fresh HotpotQA/2Wiki reused
+verbatim; NQ 500, MuSiQue 500, Bamboogle all from FlashRAG files, outcome-blind,
+excluding historical question text. Roster (configs/u1_agents.json): v0.1 7B PPO,
+v0.3 3B PPO/GRPO, 7B PPO/GRPO, 7B-it GRPO, 14B GRPO. Per agent: greedy sources;
+PCR with the slim arm group "h1" (9 arms) on <= 400 searchable questions per
+dataset; CT k=16 on 150 per dataset. Per-agent H1/H3 criteria as in AC1
+(fact_hit skipped where undefined); claim holds on >= ceil(0.8 x included
+agents); agents with >= 10% format/length failures are excluded and reported.
+Implementation: multi-alias EM (best alias, FlashRAG convention; IGPO scores
+the first alias), canonicalize_flashrag, official-prompt sources replay through
+validate_prefix, PCR/CT prepare over any dataset set (small sets used in full and
+recorded), recovery analysis works for the h1 group, work2/u1.py (freeze, check,
+cross-agent summary with per-dataset blocks), configs, scripts/run_u1.sh,
+docs/U1_FACTORY_GUIDE.md. Existing HotpotQA/2Wiki behaviour is unchanged.

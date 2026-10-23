@@ -1,0 +1,14 @@
+{
+  "protocol": "CT1_interventional_credit_pilot_v1",
+  "seed": 20261022,
+  "agent": {
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "official"
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "sampling": {"temperature": 1.0, "top_p": 1.0, "k": 16},
+  "scope": "U1 H3 measurement (E truth, k=16) with the official prompt on the U1 question set. See research/U1_PROTOCOL.md."
+}

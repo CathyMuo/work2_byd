@@ -6,7 +6,9 @@ import json
 from .common import digest
 from .metrics import lexical_fact_hits
 from .retrieval import format_documents
-from .rollout import PROMPT_VERSION, continue_record, parse_action, question_prompt
+from .rollout import OFFICIAL_PROMPT_VERSION, PROMPT_VERSION, continue_record, parse_action, question_prompt
+
+PROMPT_VARIANT_OF = {PROMPT_VERSION: "bounded", OFFICIAL_PROMPT_VERSION: "official"}
 
 
 def token_hash(tokens):
@@ -24,7 +26,8 @@ def visible_signature(documents):
 
 
 def validate_prefix(source, turn, agent, retrieval, generator=None):
-    if source.get("prompt_version") != PROMPT_VERSION or source.get("condition") != "E0_clean":
+    variant = PROMPT_VARIANT_OF.get(source.get("prompt_version"))
+    if variant is None or source.get("condition") != "E0_clean":
         raise ValueError("Unsupported A1 prompt version or source condition")
     prefixes = source["prefixes"]
     if not 1 <= turn <= len(prefixes) or turn > agent["max_search_turns"]:
@@ -32,7 +35,7 @@ def validate_prefix(source, turn, agent, retrieval, generator=None):
     text = source["initial_prompt"]
     tokens = None
     if generator is not None:
-        expected = generator.initial_prompt(question_prompt(source["question"], agent["max_search_turns"]))
+        expected = generator.initial_prompt(question_prompt(source["question"], agent["max_search_turns"], variant))
         if text != expected:
             raise ValueError("Source initial prompt differs from the frozen A1 prompt/tokenizer")
         tokens = generator.encode(text)

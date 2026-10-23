@@ -11,7 +11,7 @@ import hashlib
 import itertools
 import json
 
-from .metrics import lexical_fact_hits, normalize
+from .metrics import gold_list, lexical_fact_hits, normalize
 from .replay import continuation_signature, observation, validate_prefix
 from .rollout import continue_record
 from .selective import PROMPTS
@@ -30,7 +30,10 @@ ARM_GROUPS = {"core": CONTROL_ARMS + PLACEBO_ARMS,
               "recovery": CONTROL_ARMS + PLACEBO_ARMS + RECOVERY_ARMS,
               "deletion": CONTROL_ARMS + PLACEBO_ARMS + DELETION_ARMS,
               "all": ALL_ARMS,
-              "audit": ALL_ARMS + REFLECT_ARMS}
+              "audit": ALL_ARMS + REFLECT_ARMS,
+              # U1 (2026-10-22): only what H1 needs (selected-fragile design + both methods and their placebos).
+              "h1": CONTROL_ARMS + ("perm_1", "perm_2", "perm1_review", "perm1_neutral", "perm1_budget2",
+                                    "perm1_reflect", "perm1_neutral_reflect")}
 REVIEW_PROMPT = PROMPTS["review"]  # identical text to SI1 review, for cross-checks
 REFLECT_PROMPT = ("\n\nBefore continuing, reflect: state which part of the original question is still unresolved, "
                   "check whether the information already shown actually resolves it, and if something is missing, "
@@ -94,8 +97,9 @@ def neutral_instruction(encode, target_tokens):
 
 
 def contains_answer(document, gold):
-    answer = normalize(gold)
-    return bool(answer) and (" " + answer + " ") in (" " + normalize(document["contents"]) + " ")
+    """True if any gold alias appears as a whole normalized phrase in the document."""
+    text = " " + normalize(document["contents"]) + " "
+    return any(normalize(g) and (" " + normalize(g) + " ") in text for g in gold_list(gold))
 
 
 def deletion_plan(prefix, source, turn):

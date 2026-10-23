@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-10-20",
-  "current_stage": "HR1_NO_GO_FC1_fidelity_ready",
-  "status": "(a) mainline; FC1 harness fidelity check before writing",
-  "next_action": "Factory: FC1 per docs/FC1_FACTORY_GUIDE.md (download v0.3 7B PPO/GRPO via mirror, run bounded/official matrix, summarize) and paste AC1 selected_fragile + vs_A. Then apply FIDELITY_PROTOCOL D1-D4.",
+  "updated_at": "2026-10-23",
+  "current_stage": "FC1_pending_U1_ready",
+  "status": "upgrade plan confirmed: U1 implemented, U2 scan done (ReSeek, MR-Search), U3 pending training-pipeline pilot",
+  "next_action": "Factory: FC1 first; in parallel download U1 roster and FlashRAG data, build local.u1_*.json, freeze U1 questions. After FC1 the developer fixes U1_PROMPT (rule D1) and records it; then run_u1.sh all.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -907,5 +907,30 @@
     "guide": "docs/FC1_FACTORY_GUIDE.md",
     "factory_results_available": false,
     "CPU_test_count": 153
+  },
+  "target_venue": "ACL 2027 main (user, 2026-10-22)",
+  "u1": {
+    "protocol": "U1_multi_agent_audit_v1",
+    "doc": "research/U1_PROTOCOL.md",
+    "guide": "docs/U1_FACTORY_GUIDE.md",
+    "roster": "configs/u1_agents.json",
+    "datasets": [
+      "hotpotqa",
+      "2wiki",
+      "nq",
+      "musique",
+      "bamboogle"
+    ],
+    "CPU_test_count": 159,
+    "factory_results_available": false
+  },
+  "u2_scan": {
+    "report": "user-local 工作二_U2方法审计候选.md",
+    "recommended": [
+      "ReSeek 2510.00568 (TencentBAC/ReSeek-qwen2.5-3b-em-grpo)",
+      "MR-Search 2603.11327 (test-time reflection prompt on Search-R1)"
+    ],
+    "conditional": "R2-Searcher (needs training)",
+    "framing_change": "methods report full-question EM, not repair rates on failure-selected states; U2 measures how much of each method's recovery-mechanism repair rate is reproduced by same-state placebos"
   }
 }

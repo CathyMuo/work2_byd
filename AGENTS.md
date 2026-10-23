@@ -7,8 +7,9 @@ artifacts. Do not modify the stopped research projects elsewhere in the workspac
 Active task (2026-10-19): AC1 confirmation of the interventional-audit claims on
 `feat/credit-testbed`; read `research/AUDIT_CONFIRM_PROTOCOL.md` and `docs/AC1_FACTORY_GUIDE.md`
 first. CT1 and PCR are archived NO-GO (their confirmed findings feed AC1). HR1 handoff replay
-is NO-GO (2026-10-20). Current task: FC1 harness fidelity (`research/FIDELITY_PROTOCOL.md`,
-`docs/FC1_FACTORY_GUIDE.md`). Factory: do not edit research/DECISION_LOG.md or research/STATE.json. Also read
+is NO-GO (2026-10-20). Current tasks: FC1 harness fidelity (`research/FIDELITY_PROTOCOL.md`,
+`docs/FC1_FACTORY_GUIDE.md`), then U1 multi-agent audit (`research/U1_PROTOCOL.md`, `docs/U1_FACTORY_GUIDE.md`).
+Target venue: ACL 2027 main. Factory: do not edit research/DECISION_LOG.md or research/STATE.json. Also read
 `research/EXPERIMENT_PLAN.md`, `research/STATE.json`, and
 `research/DECISION_LOG.md` before changing research code or proposing experiments.
 Continue the recorded stage. Stage C requires evidence from stages A and B and

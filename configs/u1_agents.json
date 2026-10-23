@@ -1,0 +1,15 @@
+{
+  "note": "Roster for U1. Each label needs configs/local.u1_<label>.json (gitignored) whose agent_checkpoint points to the downloaded weights. Repos are official Search-R1 releases (PeterJinGo); download through the internal HF mirror.",
+  "agents": [
+    {"label": "v01_7b_ppo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo", "base": "Qwen2.5-7B", "algorithm": "PPO", "release": "v0.1", "note": "legacy checkpoint used in PCR/CT1/AC1"},
+    {"label": "v03_3b_ppo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-3b-em-ppo-v0.3", "base": "Qwen2.5-3B", "algorithm": "PPO", "release": "v0.3", "note": "AC1 second checkpoint"},
+    {"label": "v03_3b_grpo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-3b-em-grpo-v0.3", "base": "Qwen2.5-3B", "algorithm": "GRPO", "release": "v0.3"},
+    {"label": "v03_7b_ppo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo-v0.3", "base": "Qwen2.5-7B", "algorithm": "PPO", "release": "v0.3"},
+    {"label": "v03_7b_grpo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-grpo-v0.3", "base": "Qwen2.5-7B", "algorithm": "GRPO", "release": "v0.3"},
+    {"label": "v03_7b_it_grpo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-it-em-grpo-v0.3", "base": "Qwen2.5-7B-Instruct", "algorithm": "GRPO", "release": "v0.3"},
+    {"label": "v03_14b_grpo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-14b-em-grpo-v0.3", "base": "Qwen2.5-14B", "algorithm": "GRPO", "release": "v0.3"}
+  ],
+  "candidates_not_in_default_roster": [
+    {"label": "r1_searcher_7b", "repo": "RUCAIBox R1-Searcher (Qwen2.5-7B RAG-RL)", "note": "different action format; needs a template adapter; decided after the U2 scan"}
+  ]
+}

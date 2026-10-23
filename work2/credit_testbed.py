@@ -21,7 +21,7 @@ from pathlib import Path
 from .common import file_hash, git_output, load_json, local_path, write_json
 from .datasets import read_rows
 from .metrics import answer_scores, lexical_fact_hits
-from .pcr import gpu_list, rank_key, stop
+from .pcr import datasets_of, gpu_list, rank_key, stop
 from .placebo import contains_answer
 from .replay import observation
 from .rollout import PROMPT_VERSION, parse_action, question_prompt
@@ -204,7 +204,8 @@ def run_question(sample, decoy_question, generator, searcher, protocol):
     agent, retrieval, s = protocol["agent"], protocol["retrieval"], protocol["sampling"]
     k, temp, top_p = s["k"], s["temperature"], s["top_p"]
     started = time.monotonic()
-    prompt = generator.encode(generator.initial_prompt(question_prompt(sample["question"], agent["max_search_turns"])))
+    prompt = generator.encode(generator.initial_prompt(question_prompt(sample["question"], agent["max_search_turns"],
+                                                                       agent.get("prompt_variant", "bounded"))))
     seed = seed_for(protocol["seed"], sample["sample_id"], "trajectory")
     traj = new_rollout(sample, prompt, 0, seed, track=True, segments=[{"kind": "prompt", "start": 0, "end": len(prompt)}])
     again = new_rollout(sample, prompt, 0, seed)
@@ -259,23 +260,27 @@ def prepare(args):
     rows = read_rows(args.sources)
     if len({r["sample_id"] for r in rows}) != len(rows):
         raise ValueError("Duplicate source IDs")
-    chosen = []
-    for dataset in ("hotpotqa", "2wiki"):
+    chosen, short = [], {}
+    datasets = datasets_of(rows)
+    for dataset in datasets:
         pool = sorted((r for r in rows if r["dataset"] == dataset), key=lambda r: rank_key(protocol["seed"], r["sample_id"]))
         if len(pool) < args.per_dataset:
-            raise ValueError("Not enough {} questions".format(dataset))
+            if datasets == ["hotpotqa", "2wiki"]:   # original CT1 behaviour
+                raise ValueError("Not enough {} questions".format(dataset))
+            short[dataset] = len(pool)            # small sets (e.g. Bamboogle) are used in full and recorded
         chosen += pool[:args.per_dataset]
     questions = [{k: r[k] for k in ("sample_id", "dataset", "question", "gold_answer", "gold_supporting_facts")} for r in chosen]
     n = len(questions)
     for i, q in enumerate(questions):
         q["decoy_sample_id"] = questions[(i + n // 2) % n]["sample_id"]
         q["decoy_question"] = questions[(i + n // 2) % n]["question"]
-    smoke = [q["sample_id"] for d in ("hotpotqa", "2wiki") for q in [x for x in questions if x["dataset"] == d][:4]]
+    per_smoke = 4 if len(datasets) <= 2 else 2
+    smoke = [q["sample_id"] for d in datasets for q in [x for x in questions if x["dataset"] == d][:per_smoke]]
     args.output.mkdir(parents=True)
     write_json(args.output / "plan.json", {
         "version": VERSION, "protocol": protocol, "protocol_sha256": sha(protocol),
         "sources_path": str(args.sources.resolve()), "sources_sha256": file_hash(args.sources),
-        "questions": questions, "smoke_question_ids": smoke,
+        "questions": questions, "smoke_question_ids": smoke, "datasets": datasets, "short_datasets": short,
         "selection": "per dataset sha256(seed:sample_id) order, first N; outcome-blind; decoy = question i+n/2",
         "created_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()})
     print("Frozen {} questions (smoke {}).".format(n, len(smoke)))

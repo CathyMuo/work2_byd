@@ -9,7 +9,22 @@ def normalize(answer):
     return " ".join(value.split())
 
 
+def gold_list(gold):
+    """Gold answers as a list: HotpotQA/2Wiki keep one string, FlashRAG sets (NQ, ...) carry aliases."""
+    return [gold] if isinstance(gold, str) else list(gold)
+
+
+def primary_gold(gold):
+    return gold_list(gold)[0]
+
+
 def answer_scores(prediction, gold):
+    """EM/F1 against one gold string or the best-matching alias of a list (Search-R1 / FlashRAG convention)."""
+    if not isinstance(gold, str):
+        golds = gold_list(gold)
+        if not golds:
+            raise ValueError("Empty gold answer list")
+        return max((answer_scores(prediction, g) for g in golds), key=lambda s: (s["em"], s["f1"]))
     prediction, gold = normalize(prediction), normalize(gold)
     em = int(prediction == gold)
     if prediction in ("yes", "no", "noanswer") or gold in ("yes", "no", "noanswer"):

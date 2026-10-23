@@ -13,6 +13,7 @@ from pathlib import Path
 from .common import file_hash, load_json, local_path, write_json
 from .credit_testbed import frozen, obs_end, query_end, spawn
 from .datasets import read_rows
+from .metrics import primary_gold
 
 IGPO_PREFIX = "<think>Now there's enough information to answer</think><answer>"
 IGPO_SUFFIX = "</answer>"
@@ -37,7 +38,7 @@ def null_gold_spans(record, encode):
     t, null = record["trajectory"], record.get("null_observation_token_ids")
     if not null:
         return []
-    pre, ans, post = encode(IGPO_PREFIX), encode(record["gold_answer"]), encode(IGPO_SUFFIX)
+    pre, ans, post = encode(IGPO_PREFIX), encode(primary_gold(record["gold_answer"])), encode(IGPO_SUFFIX)
     out = []
     for turn in range(1, t["search_calls"] + 1):
         ctx = t["token_ids"][:query_end(t, turn)] + list(null)
@@ -109,7 +110,7 @@ class Scorer:
 def score_record(scorer, record, role):
     t = record["trajectory"]
     gold = []
-    for s in gold_spans(t, scorer.encode, record["gold_answer"]):
+    for s in gold_spans(t, scorer.encode, primary_gold(record["gold_answer"])):  # IGPO scores the first alias
         lp = scorer.target_logprobs(s["ids"], *s["target"])
         gold.append(sum(lp) / len(lp))
     out = {"sample_id": record["sample_id"], "role": role, "gold_mean_logprob": gold}

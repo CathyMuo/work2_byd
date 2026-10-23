@@ -13,7 +13,7 @@ from pathlib import Path
 
 from .common import file_hash, git_output, load_json, write_json
 from .datasets import read_rows
-from .metrics import answer_scores, normalize
+from .metrics import answer_scores, normalize, primary_gold
 from .placebo import ARM_GROUPS, PERMUTATION_ARMS, PLACEBO_ARMS, VERSION
 
 FORMAT_F1 = 0.8
@@ -38,7 +38,7 @@ def flip_kind(clean_answer, clean_em, other_answer, other_em):
 
 
 def answer_type(gold):
-    g = normalize(gold)
+    g = normalize(primary_gold(gold))
     if g in ("yes", "no"):
         return "yes_no"
     if re.fullmatch(r"[\d\s,.]+", g):
@@ -160,7 +160,8 @@ def strata(rows, resamples):
 
 
 def recovery(rows, view, resamples):
-    have = [r for r in rows if all(a in r[view] for a in ARM_GROUPS["recovery"])]
+    # Works for arm groups "recovery"/"all"/"audit" and the slim U1 group "h1" (selected-fragile arms only).
+    have = [r for r in rows if all(a in r[view] for a in ("perm_1", "perm_2", "perm1_neutral"))]
     if not have:
         return {"available": False}
     y = lambda r, a: r[view][a]
@@ -170,7 +171,8 @@ def recovery(rows, view, resamples):
                         "harm": sum(r["y0"] == 1 and y(r, arm) == 0 for r in have),
                         "delta_em_vs_clean": estimate(have, mean(lambda r, a=arm: y(r, a) - r["y0"]), resamples),
                         "nce_vs_placebo_mean": estimate(have, mean(lambda r, a=arm: y(r, a) - r["p_" + view]), resamples)}
-    natural["review_minus_neutral"] = estimate(have, mean(lambda r: y(r, "review") - y(r, "neutral")), resamples)
+    if all("review" in r[view] and "neutral" in r[view] for r in have):
+        natural["review_minus_neutral"] = estimate(have, mean(lambda r: y(r, "review") - y(r, "neutral")), resamples)
     natural["placebo_expected_rescue"] = sum(r["p_" + view] for r in have if r["y0"] == 0)
     natural["placebo_expected_harm"] = sum(1 - r["p_" + view] for r in have if r["y0"] == 1)
     degraded = [r for r in have if r["y0"] == 1 and y(r, "perm_1") == 0]
@@ -331,7 +333,8 @@ def markdown(r):
             sf["degraded_states"], sf["stable_states"], sf["placebo_repair_rates"], sf["placebo_harm_rates"]), ""]
         for m, v in sf["methods"].items():
             L.append("- {}: {}".format(m, json.dumps(v, ensure_ascii=False)))
-        L.append("- natural review−neutral: {}".format(fmt(rec["natural_states"]["review_minus_neutral"])))
+        if "review_minus_neutral" in rec["natural_states"]:
+            L.append("- natural review−neutral: {}".format(fmt(rec["natural_states"]["review_minus_neutral"])))
     dele = r["deletion"]["semantic"]
     if dele.get("available"):
         a = dele["all_matched"]

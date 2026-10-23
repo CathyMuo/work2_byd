@@ -225,7 +225,10 @@ def verdicts(pcr, ct1):
                                          "below": bool(a["spearman"] is not None and a["spearman"] < .3 and a["ci95"] and a["ci95"][1] < .4)}
     out["H3_evidence_signals_do_not_track_E"] = {"E_reliability": rel_e, "E_reliability_ok": bool(rel_e is not None and rel_e >= .8),
                                                   "per_signal": per,
-                                                  "confirmed": bool(rel_e is not None and rel_e >= .8 and per and all(v and v["below"] for v in per.values()))}
+                                                  # fact_hit is undefined (constant) on datasets without supporting facts
+                                                  # (FlashRAG NQ/Bamboogle/...): it is then skipped; ig and ealr are required.
+                                                  "confirmed": bool(rel_e is not None and rel_e >= .8 and per.get("ig") and per.get("ealr")
+                                                                    and all(v["below"] for v in per.values() if v and v["spearman"] is not None))}
     out["n_confirmed"] = sum(out[k]["confirmed"] for k in ("H1_recovery_explained_by_placebo", "H2_support_deletion_hurts_more", "H3_evidence_signals_do_not_track_E"))
     return out
 
