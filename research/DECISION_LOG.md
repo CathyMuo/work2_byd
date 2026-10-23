@@ -1020,3 +1020,9 @@ Process: a factory FC1 run OOM-killed the user's own GRPO training (progress fro
 step 50 to 80 lost; resumable from global_step_50). U1 (4 GPUs, ~1.5-2 days) must
 be scheduled with the user before launch. Details:
 research/FC1_RESULTS_AND_DECISION.md.
+
+## 2026-10-23 — GPU schedule: U1 first, user's GRPO resumes afterwards
+
+The user decided to run U1 first on all four GPUs (~1.5-2 days, U1_PROMPT=bounded).
+Their own GRPO training stays stopped until U1 finishes and is then resumed from
+global_step_50. The factory must not start other GPU jobs while U1 runs.
