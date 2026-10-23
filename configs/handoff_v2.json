@@ -1,0 +1,21 @@
+{
+  "protocol": "HR2_handoff_replay_v03_v1",
+  "seed": 20261023,
+  "agent": {
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "bounded"
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "sampling": {"temperature": 1.0, "top_p": 1.0, "k": 8},
+  "handoff_points": [0, 1, 2, 3],
+  "arm_set": ["real", "placebo", "evonly", "evonly_placebo"],
+  "policies": {"R": "local agent_checkpoint = Search-R1 v0.3 7B PPO (main run) or v0.3 7B GRPO (second run, separate local file and run dir)",
+               "I": "local instruct_checkpoint = Qwen2.5-7B-Instruct with the same Search-R1 prompt rendered by R's tokenizer"},
+  "arms": ["real", "placebo (all observations 1..t -> frozen null observation; thinking kept)",
+           "evonly (thinking dropped, queries + real observations, re-encoded)",
+           "evonly_placebo (thinking dropped, queries kept, every observation -> frozen null observation)"],
+  "scope": "HR2: 300 HotpotQA + 300 2Wiki fresh dev questions disjoint from all history incl. AC1, HR1 and U1. Bounded prompt per the FC1 decision D1. See research/HR2_PROTOCOL.md."
+}

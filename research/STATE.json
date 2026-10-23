@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-23",
-  "current_stage": "FC1_done_U1_ready_to_schedule",
-  "status": "FC1: D1 not triggered (bounded prompt), D2 triggered (main 7B -> v0.3 PPO), D4 GRPO usable; U1_PROMPT=bounded",
-  "next_action": "Schedule U1 (4 GPUs, ~1.5-2 days) with the user (their GRPO training must not overlap), then run_u1.sh all with U1_PROMPT=bounded. HR1 re-registration on v0.3 is the user's decision. U2 design follows.",
+  "current_stage": "U1_running_U2_HR2_registered",
+  "status": "FC1 done (bounded prompt, main 7B = v0.3 PPO). U1 runs first on 4 GPUs. U2 (ReSeek judge forcing, MR-Search reflection turn) and HR2 (handoff replay on v0.3 PPO/GRPO with evonly_placebo) are implemented, preregistered and have factory guides.",
+  "next_action": "Factory: finish U1 (U1_PROMPT=bounded), then U2 (docs/U2_FACTORY_GUIDE.md), then HR2 (docs/HR2_FACTORY_GUIDE.md). Downloads/configs for U2 may be prepared while U1 runs; do not pull code until U1 finishes. Confirm the four GPUs are free before each run.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -966,5 +966,59 @@
     "conditional": "R2-Searcher (needs training)",
     "framing_change": "methods report full-question EM, not repair rates on failure-selected states; U2 measures how much of each method's recovery-mechanism repair rate is reproduced by same-state placebos"
   },
-  "main_7b_checkpoint": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo-v0.3"
+  "main_7b_checkpoint": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo-v0.3",
+  "gpu_note": "2026-10-23 correction: the job earlier reported as the user's GRPO training is the user's GPU keep-alive program, not research; nothing to resume or schedule around.",
+  "hr2": {
+    "protocol": "HR2_handoff_replay_v03_v1",
+    "doc": "research/HR2_PROTOCOL.md",
+    "guide": "docs/HR2_FACTORY_GUIDE.md",
+    "config": "configs/handoff_v2.json",
+    "script": "scripts/run_hr2.sh",
+    "R": [
+      "v0.3 7B PPO (main)",
+      "v0.3 7B GRPO (second)"
+    ],
+    "I": "Qwen2.5-7B-Instruct",
+    "questions": "300 HotpotQA + 300 2Wiki fresh, excluding AC1/HR1/U1",
+    "arms": [
+      "real",
+      "placebo",
+      "evonly",
+      "evonly_placebo"
+    ],
+    "gates": "G-A1(b) = evonly - evonly_placebo >= 5 pp (CI lo > 0); EF primary = R-I gap under evonly_placebo; G-A3(iii) PPO vs GRPO share difference >= 20 pp with paired CI excluding 0",
+    "factory_results_available": false
+  },
+  "u2": {
+    "protocols": [
+      "U2_reseek_judge_audit_v1",
+      "U2_mrsearch_reflection_audit_v1"
+    ],
+    "doc": "research/U2_PROTOCOL.md",
+    "guide": "docs/U2_FACTORY_GUIDE.md",
+    "configs": [
+      "configs/u2_reseek.json",
+      "configs/u2_mrsearch.json"
+    ],
+    "script": "scripts/run_u2.sh",
+    "agents": {
+      "reseek": [
+        "reseek_3b (TencentBAC/ReSeek-qwen2.5-3b-em-grpo)",
+        "optional prompt-only v03_3b_ppo"
+      ],
+      "mrsearch": [
+        "v03_7b_ppo (main)",
+        "v03_3b_ppo"
+      ]
+    },
+    "questions": "U1 frozen set, first 300 per dataset (Bamboogle all)",
+    "primary_sets": {
+      "reseek": "S_fail (wrong greedy source, own judge Yes)",
+      "mrsearch": "S_wrong (episode 1 answered wrong)"
+    },
+    "verdict_rule": "AC1 H1 rule (placebo/method >= 1/3 or corrected net <= 0), only if the fidelity gate passes",
+    "prompt_verification": "ReSeek system/user prefix and MR retry_prompt equal upstream strings byte-for-byte (ast)",
+    "factory_results_available": false
+  },
+  "cpu_test_count": 170
 }

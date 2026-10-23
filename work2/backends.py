@@ -1,16 +1,31 @@
 """Local inference adapters; optional dependencies imported only at runtime."""
 STOP_STRINGS = ["</search>", "</answer>"]
+# MR-Search (generation.py) strips the Qwen default system turn to build its retry user turn.
+QWEN_DEFAULT_SYSTEM_END = "You are a helpful assistant.<|im_end|>"
 
 
 class TokenizerMixin:
     def encode(self, text):
         return self.tokenizer.encode(text, add_special_tokens=False)
 
-    def initial_prompt(self, text):
+    def decode(self, token_ids):
+        return self.tokenizer.decode(token_ids, skip_special_tokens=False)
+
+    def initial_prompt(self, text, system=None):
         if self.tokenizer.chat_template:
-            return self.tokenizer.apply_chat_template(
-                [{"role": "user", "content": text}], add_generation_prompt=True, tokenize=False)
+            messages = ([{"role": "system", "content": system}] if system is not None else []) + [{"role": "user", "content": text}]
+            return self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+        if system is not None:
+            raise ValueError("A system message needs a chat template")
         return text
+
+    def user_turn(self, content):
+        """A new user turn appended after an answered episode, exactly as MR-Search builds `retry_str`."""
+        rendered = self.tokenizer.apply_chat_template([{"role": "user", "content": content}],
+                                                      add_generation_prompt=True, tokenize=False) if self.tokenizer.chat_template else ""
+        if QWEN_DEFAULT_SYSTEM_END not in rendered:
+            raise ValueError("MR-Search user turn needs the Qwen2.5 default-system chat template")
+        return "<|im_end|>\n" + rendered.split(QWEN_DEFAULT_SYSTEM_END)[-1]
 
 
 class VLLMGenerator(TokenizerMixin):
@@ -32,10 +47,10 @@ class VLLMGenerator(TokenizerMixin):
         return {"text": result.text, "token_ids": list(result.token_ids),
                 "finish_reason": result.finish_reason}
 
-    def sample_batch(self, prompts, max_tokens, seeds, temperature, top_p=1.0):
+    def sample_batch(self, prompts, max_tokens, seeds, temperature, top_p=1.0, stop=None):
         """One batched vLLM call; each request has its own seed (CT1 on-policy sampling)."""
         params = [self.sampling_class(temperature=temperature, top_p=top_p, max_tokens=m, seed=s,
-                                      stop=STOP_STRINGS, include_stop_str_in_output=True)
+                                      stop=stop or STOP_STRINGS, include_stop_str_in_output=True)
                   for m, s in zip(max_tokens, seeds)]
         results = self.model.generate([{"prompt_token_ids": list(p)} for p in prompts], params, use_tqdm=False)
         return [{"text": r.outputs[0].text, "token_ids": list(r.outputs[0].token_ids),

@@ -17,10 +17,29 @@ OFFICIAL_TEMPLATE = ("Answer the given question. You must conduct reasoning insi
                      "knowledge needed, you can directly provide the answer inside <answer> and </answer>, without detailed "
                      "illustrations. For example, <answer> Beijing </answer>. Question: {}\n")
 
+# U2 (2026-10-23): ReSeek (TencentBAC/ReSeek utils/preprocess_reseek_dataset.py) system message and user prefix,
+# extracted verbatim with ast (indentation inside the triple-quoted string included); user = prefix.rstrip("\n") + question.
+RESEEK_PROMPT_VERSION = "reseek_official_v1"
+RESEEK_SYSTEM = "You are a helpful and harmless assistant."
+RESEEK_USER_PREFIX = (
+    "Answer the given question step by step.\n    Instructions:\n"
+    "    1. First, conduct reasoning inside <think> and </think> tags whenever you receive new information.\n"
+    "    2. If you need external knowledge, you can search using <search>query</search>.\n"
+    "    3. When you receive search results, evaluate their usefulness and put your judgment inside <judge>Yes</judge> or <judge>No</judge> tags.\n"
+    "    4. Based on your judgment, follow these strict rules:\n"
+    "    a. If the information is useful AND you now have sufficient information to provide a complete final answer, proceed directly to step 5.\n"
+    "    b. If the information is useful BUT you still need more details, you MUST search again with <search>...</search>.\n"
+    "    c. If the information is not useful, you MUST search again with <search>...</search>. You MUST NOT provide an answer in this case.\n"
+    "    5. Provide your final answer in <answer>...</answer> tags. The <answer> tag marks the end of the task. After providing the <answer>, you MUST stop and generate no further text.\n"
+    "\n    Question: ")
+SYSTEM_OF = {"reseek": RESEEK_SYSTEM}
+
 
 def question_prompt(question, max_search_turns, variant="bounded"):
     if variant == "official":
         return OFFICIAL_TEMPLATE.format(question)
+    if variant == "reseek":
+        return RESEEK_USER_PREFIX.rstrip("\n") + question
     if variant != "bounded":
         raise ValueError("Unknown prompt variant: " + str(variant))
     return ("Answer the given question. You must conduct reasoning inside <think> and </think> "

@@ -47,6 +47,9 @@ def jsonl(path, rows):
             f.write(json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n")
 
 
+HISTORY_DATASETS = ("hotpotqa", "2wiki", "nq", "musique", "bamboogle")
+
+
 def exclusions(paths):
     """Require actual historical canonical samples; IDs AND question text are blocked."""
     blocked_ids, blocked_questions, receipts = set(), set(), []
@@ -57,7 +60,8 @@ def exclusions(paths):
         for row in rows:
             if not isinstance(row, dict) or not isinstance(row.get("sample_id"), str) or not isinstance(row.get("question"), str):
                 raise ValueError("Exclusion must be canonical sample JSON/JSONL, not summary/manifest: " + str(path))
-            if row.get("dataset") not in ("hotpotqa", "2wiki"):
+            # U1 (2026-10-22) froze NQ / MuSiQue / Bamboogle questions; HR2 must be able to exclude them too.
+            if row.get("dataset") not in HISTORY_DATASETS:
                 raise ValueError("Unknown historical dataset")
             blocked_ids.add(row["sample_id"])
             blocked_questions.add(question_key(row["question"]))

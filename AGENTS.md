@@ -8,7 +8,9 @@ Active task (2026-10-19): AC1 confirmation of the interventional-audit claims on
 `feat/credit-testbed`; read `research/AUDIT_CONFIRM_PROTOCOL.md` and `docs/AC1_FACTORY_GUIDE.md`
 first. CT1 and PCR are archived NO-GO (their confirmed findings feed AC1). HR1 handoff replay
 is NO-GO (2026-10-20). Current tasks: FC1 harness fidelity (`research/FIDELITY_PROTOCOL.md`,
-`docs/FC1_FACTORY_GUIDE.md`), then U1 multi-agent audit (`research/U1_PROTOCOL.md`, `docs/U1_FACTORY_GUIDE.md`).
+`docs/FC1_FACTORY_GUIDE.md`), then U1 multi-agent audit (`research/U1_PROTOCOL.md`, `docs/U1_FACTORY_GUIDE.md`),
+then U2 published-method audits (`research/U2_PROTOCOL.md`, `docs/U2_FACTORY_GUIDE.md`) and HR2 handoff replay
+on v0.3 (`research/HR2_PROTOCOL.md`, `docs/HR2_FACTORY_GUIDE.md`).
 Target venue: ACL 2027 main. Factory: do not edit research/DECISION_LOG.md or research/STATE.json. Also read
 `research/EXPERIMENT_PLAN.md`, `research/STATE.json`, and
 `research/DECISION_LOG.md` before changing research code or proposing experiments.

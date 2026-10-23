@@ -1026,3 +1026,54 @@ research/FC1_RESULTS_AND_DECISION.md.
 The user decided to run U1 first on all four GPUs (~1.5-2 days, U1_PROMPT=bounded).
 Their own GRPO training stays stopped until U1 finishes and is then resumed from
 global_step_50. The factory must not start other GPU jobs while U1 runs.
+
+## 2026-10-23 — Correction: the "GRPO training" was a GPU keep-alive program
+
+The user clarified that the job the factory reported as "the user's GRPO training"
+(OOM-killed during FC1, "resumable from global_step_50") is only the user's GPU
+keep-alive program. It is not research work: no resume, no schedule dependency,
+no record beyond this correction. The two previous entries' statements about
+resuming it are void. Remaining rule: before any run, confirm the four GPUs are
+free (nvidia-smi); the keep-alive is stopped and restarted by the user's own
+practice. FC1_RESULTS_AND_DECISION.md section 5 and the U1 guide are corrected.
+
+## 2026-10-23 — HR2 and U2 registered (code, protocols, factory guides)
+
+User decision: re-register HR1 on v0.3, and implement the U2 audits directly.
+Both protocols are frozen before any result. Execution order: U1 -> U2 -> HR2.
+
+HR2 (research/HR2_PROTOCOL.md, configs/handoff_v2.json, scripts/run_hr2.sh,
+docs/HR2_FACTORY_GUIDE.md): R = Search-R1 v0.3 7B PPO (main run) and v0.3 7B
+GRPO (second run), I = Qwen2.5-7B-Instruct, bounded prompt (FC1 D1); 300
+HotpotQA + 300 2Wiki fresh questions excluding AC1/HR1/U1 history (seed
+20261023); k = 8, temperature 1.0. New arm evonly_placebo (thinking dropped,
+queries kept, every observation nulled). Changes vs HR1, made because HR1's
+placebo kept evidence paraphrased in <think>: G-A1(b) becomes evonly minus
+evonly_placebo >= 5 pp with CI lower bound > 0; the primary evidence-free
+component becomes the R-I gap under evonly_placebo (HR1's definition reported).
+G-A3(iii) now applies: |share_PPO - share_GRPO| >= 20 pp with a paired CI
+excluding 0 for acquisition or utilization (handoff_analysis --compare-with).
+Other gates unchanged. Shared history exclusion now accepts the U1 FlashRAG
+datasets (selective.exclusions previously rejected them).
+
+U2 (research/U2_PROTOCOL.md, configs/u2_reseek.json, configs/u2_mrsearch.json,
+work2/u2.py, work2/u2_analysis.py, scripts/run_u2.sh, docs/U2_FACTORY_GUIDE.md):
+questions = U1 frozen set, first 300 per dataset by sha256(20261023:id).
+ReSeek-3B (TencentBAC weights; system + user prompt verbatim from the repo,
+checked byte-for-byte via ast): greedy source; from every post-observation state
+k = 4 samples per arm nat / force_no / force_yes (same sampled pre-judge head,
+judge value forced) / perm (P1). Primary set S_fail = wrong source with the
+agent's own judge = Yes; also S_natNo (nat - force_yes) and S_ok (harm).
+MR-Search test-time version on Search-R1 v0.3 7B PPO (main) and 3B PPO: greedy
+episode 1 with the verbatim Search-R1 template; episode 2 via MR-Search's own
+retry_str construction with k = 4 per arm reflect (retry_prompt verbatim) /
+reask (reflection sentence replaced) / neutral (token-matched, P2) / fresh (no
+history); final = last valid answer; primary set S_wrong. H1-U2 uses the AC1
+rule (placebo / method >= 1/3, or placebo-corrected net <= 0) and counts only if
+the fidelity gate passes (ReSeek judge after >= 80% of observations and <= 10%
+format failures; MR episode-1 format failures <= 10% and reflect episode-2
+answer rate >= 80%). Framing per the U2 scan: the methods report full-question
+EM, so U2 states how much of each mechanism's repair on failure-selected states
+same-state placebos reproduce. Real-tokenizer checks on the home server
+(Search-R1 3B, Qwen2.5-7B-Instruct): MR user turn equals retry_str, neutral turn
+142 vs 143 tokens, judge cut exact. CPU tests: all pass.

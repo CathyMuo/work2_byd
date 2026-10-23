@@ -1,5 +1,10 @@
+**2026-10-23 U1 之后的两项（代码与指导已就绪）：**
+- **U2 方法审计**：用同状态安慰剂检验 ReSeek（强制 judge）和 MR-Search（反思回合）自己的恢复机制。厂内从 [U2 厂内执行指导](docs/U2_FACTORY_GUIDE.md) 开始，协议见 [U2 协议](research/U2_PROTOCOL.md)。
+- **HR2 交接重放**：在 v0.3 7B PPO / GRPO 上重做 HR1，新增 `evonly_placebo` 臂。厂内从 [HR2 厂内执行指导](docs/HR2_FACTORY_GUIDE.md) 开始，协议见 [HR2 协议](research/HR2_PROTOCOL.md)。
+- 顺序：U1 → U2 → HR2。之前回传里的“GRPO 训练”是用户的显卡保活程序，不是研究任务；开跑前确认四卡空闲即可。
+
 **2026-10-22 冲主会升级 U1（目标 ACL 2027 主会）：** 把 H1 / H3 的审计扩到 7 个官方 Search-R1 智能体 × 5 个数据集（HotpotQA、2Wiki、NQ、MuSiQue、Bamboogle）。
-FC1 已完成（10-23）：U1 用 `bounded` 提示词；主 7B 换成 v0.3 7B PPO，详见 [FC1 结果与决策](research/FC1_RESULTS_AND_DECISION.md)。开跑前要先和用户确认 GPU 安排。厂内从 [U1 厂内执行指导](docs/U1_FACTORY_GUIDE.md) 开始，协议见 [U1 协议](research/U1_PROTOCOL.md)。
+FC1 已完成（10-23）：U1 用 `bounded` 提示词；主 7B 换成 v0.3 7B PPO，详见 [FC1 结果与决策](research/FC1_RESULTS_AND_DECISION.md)。厂内从 [U1 厂内执行指导](docs/U1_FACTORY_GUIDE.md) 开始，协议见 [U1 协议](research/U1_PROTOCOL.md)。
 **2026-10-20 当前任务：FC1 评测保真度检查。** HR1 交接重放判 NO-GO（R 相对 Instruct 无增益），并暴露出我们的 7B 是 Search-R1 v0.1、提示词也偏离了官方模板。
 写 (a) 之前，先比较各检查点（v0.1 / v0.3、PPO / GRPO、Instruct）在两种提示词下的 EM。厂内从 [FC1 厂内执行指导](docs/FC1_FACTORY_GUIDE.md) 开始，协议见 [FC1 协议](research/FIDELITY_PROTOCOL.md)。
 HR1 结果见 [HR1 结果与决策](research/HR1_RESULTS_AND_DECISION.md)。

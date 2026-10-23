@@ -1,0 +1,17 @@
+{
+  "protocol": "U2_mrsearch_reflection_audit_v1",
+  "seed": 20261023,
+  "agent": {
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "official"
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "sampling": {"temperature": 1.0, "top_p": 1.0, "k": 4},
+  "arms": ["reflect", "reask", "neutral", "fresh"],
+  "source": "greedy episode 1 with the verbatim Search-R1 template (MR-Search's own initial prompt); episode 2 sampled k times per arm with a fresh 4-search budget; final answer = last valid answer",
+  "reference": "MR-Search arXiv 2603.11327; code tengxiao1/MR-Search (retry_prompt and retry_str in meta-search/llm_agent/generation.py); no released weights, so this is the paper's test-time Search-R1-S setting",
+  "scope": "Agents: v03_7b_ppo (main) and v03_3b_ppo (second), reusing the U1 local files. See research/U2_PROTOCOL.md."
+}

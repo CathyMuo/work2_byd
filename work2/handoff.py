@@ -7,6 +7,7 @@ continuer Q in {I, R} samples k continuations under three arms:
   real     the prefix as is
   placebo  every observation 1..t replaced by the frozen null observation
   evonly   P's <think> text dropped; only <search>query</search> + observations kept
+  evonly_placebo (HR2) evonly with every observation 1..t replaced by the null observation
 Three phases keep ONE model per GPU process:
   r1  load R: sample tau_R, continue R on tau_R           (R>R)
   i2  load I: sample tau_I, continue I on tau_I and tau_R (I>I, R>I)
@@ -27,25 +28,38 @@ from .credit_testbed import (LiveSearcher, batched_continue, new_rollout, null_d
 from .datasets import read_rows
 from .pcr import gpu_list
 from .replay import observation
-from .rollout import PROMPT_VERSION, question_prompt
+from .rollout import OFFICIAL_PROMPT_VERSION, PROMPT_VERSION, question_prompt
 from .run_baseline import asset_identity, validate_design
 from .selective import sha
 
 VERSION = "HR1_handoff_replay_pilot_v1"
+# HR2 (2026-10-23): HR1 re-registered on Search-R1 v0.3 (PPO main R, GRPO second R) with the evonly_placebo arm.
+HR2_VERSION = "HR2_handoff_replay_v03_v1"
+VERSIONS = (VERSION, HR2_VERSION)
 PHASES = ("r1", "i2", "r3")
 MODEL_OF = {"r1": "R", "i2": "I", "r3": "R"}
 CHECKPOINT_KEY = {"R": "agent_checkpoint", "I": "instruct_checkpoint"}
 ARMS = ("real", "placebo", "evonly")
+ALL_ARMS = ARMS + ("evonly_placebo",)
+DEFAULT_HISTORY = ("outputs/ac1_fresh/samples.jsonl", "outputs/hr1_fresh/samples.jsonl", "outputs/u1_fresh/samples.jsonl")
+
+
+def arms_of(protocol):
+    """HR1 has no arm_set (three arms); HR2 lists its arms explicitly."""
+    return tuple(protocol.get("arm_set", ARMS))
 
 
 def load_protocol(path):
     p = load_json(path)
-    if p.get("protocol") != VERSION:
-        raise ValueError("Unsupported HR1 protocol")
+    if p.get("protocol") not in VERSIONS:
+        raise ValueError("Unsupported HR protocol")
     validate_design(dict(p, agent=dict(p["agent"], temperature=0)))
     s = p["sampling"]
     if not 0 < s["temperature"] <= 2 or s["k"] < 2:
         raise ValueError("Invalid sampling settings")
+    arms = arms_of(p)
+    if arms[0] != "real" or len(set(arms)) != len(arms) or not set(arms) <= set(ALL_ARMS):
+        raise ValueError("arm_set must start with real and use only " + ", ".join(ALL_ARMS))
     return p
 
 
@@ -65,21 +79,25 @@ def state_tokens(traj, t, arm, null_obs, encode):
         for s in segs:
             out += list(null_obs) if s["kind"] == "obs" else traj["token_ids"][s["start"]:s["end"]]
         return out
-    if arm == "evonly":
+    if arm in ("evonly", "evonly_placebo"):
         out = list(traj["token_ids"][segs[0]["start"]:segs[0]["end"]])  # initial prompt
         for turn in range(1, t + 1):
             obs = next(s for s in segs if s["kind"] == "obs" and s["turn"] == turn)
             out += encode("<search> {} </search>".format(traj["turns"][turn - 1]["query"]))
-            out += traj["token_ids"][obs["start"]:obs["end"]]
+            out += list(null_obs) if arm == "evonly_placebo" else traj["token_ids"][obs["start"]:obs["end"]]
         return out
     raise ValueError("Unknown arm " + arm)
+
+
+def native_prompt(sample, agent):
+    return question_prompt(sample["question"], agent["max_search_turns"], agent.get("prompt_variant", "bounded"))
 
 
 def sample_trajectory(sample, generator, searcher, protocol, policy, prompt=None):
     """prompt: shared initial tokens (HR1 renders it once with R's template for BOTH policies)."""
     agent, retrieval, s = protocol["agent"], protocol["retrieval"], protocol["sampling"]
     if prompt is None:
-        prompt = generator.encode(generator.initial_prompt(question_prompt(sample["question"], agent["max_search_turns"])))
+        prompt = generator.encode(generator.initial_prompt(native_prompt(sample, agent)))
     traj = new_rollout(sample, prompt, 0, seed_for(protocol["seed"], sample["sample_id"], "trajectory", policy), track=True,
                        segments=[{"kind": "prompt", "start": 0, "end": len(prompt)}])
     batched_continue([traj], generator, searcher, agent, retrieval, s["temperature"], s["top_p"])
@@ -94,7 +112,7 @@ def continue_on(sample, source, continuer, null_obs, generator, searcher, protoc
     combo = source["policy"] + ">" + continuer
     branches = []
     for t in points(source, protocol["handoff_points"]):
-        for arm in (ARMS if t >= 1 else ("real",)):
+        for arm in (arms_of(protocol) if t >= 1 else ("real",)):
             tokens = state_tokens(source, t, arm, null_obs, generator.encode)
             for i in range(s["k"]):
                 branches.append((arm, t, new_rollout(sample, tokens, t, seed_for(protocol["seed"], sample["sample_id"], combo, arm, t, i))))
@@ -119,7 +137,7 @@ def run_phase_question(phase, sample, previous, generator, searcher, protocol):
                "null_observation_token_ids": null_obs, "trajectories": {"R": traj}, "combos": {combo: block}}
     elif phase == "i2":
         traj_r = previous["trajectories"]["R"]
-        native = generator.encode(generator.initial_prompt(question_prompt(sample["question"], protocol["agent"]["max_search_turns"])))
+        native = generator.encode(generator.initial_prompt(native_prompt(sample, protocol["agent"])))
         traj = sample_trajectory(sample, generator, searcher, protocol, "I", prompt=list(traj_r["prompt_tokens"]))
         null_obs = previous["null_observation_token_ids"]
         combos = dict([continue_on(sample, traj, "I", null_obs, generator, searcher, protocol),
@@ -141,18 +159,18 @@ def freeze(args):
     protocol, local = load_protocol(args.protocol), load_json(args.local)
     if args.output.exists():
         raise ValueError("Output exists; keep frozen selections")
-    defaults = list(DEFAULT_EXCLUDE) + ["outputs/ac1_fresh/samples.jsonl"]
+    defaults = list(DEFAULT_EXCLUDE) + list(DEFAULT_HISTORY)
     paths = list(args.exclude) + [Path(p) for p in defaults if Path(p).is_file() and Path(p) not in args.exclude]
     chosen, receipts, ids, questions = select_fresh(local, paths, args.per_dataset, protocol["seed"])
     n = len(chosen)
     for i, q in enumerate(chosen):
         q["decoy_sample_id"] = chosen[(i + n // 2) % n]["sample_id"]
         q["decoy_question"] = chosen[(i + n // 2) % n]["question"]
-    write_selection(args.output, chosen, {"version": VERSION, "protocol_sha256": sha(protocol), "seed": protocol["seed"],
+    write_selection(args.output, chosen, {"version": protocol["protocol"], "protocol_sha256": sha(protocol), "seed": protocol["seed"],
                                           "per_dataset": args.per_dataset, "exclusions": receipts,
                                           "excluded_ids": len(ids), "excluded_questions": len(questions),
-                                          "selection": "sha256(seed:sample_id) per dataset; excluded by id and question incl. AC1 fresh; decoy = i+n/2"})
-    print("Frozen {} HR1 questions; excluded {} historical ids from {} files.".format(n, len(ids), len(receipts)))
+                                          "selection": "sha256(seed:sample_id) per dataset; excluded by id and question incl. AC1/HR1/U1 fresh; decoy = i+n/2"})
+    print("Frozen {} HR questions; excluded {} historical ids from {} files.".format(n, len(ids), len(receipts)))
 
 
 def frozen(run_dir):
@@ -192,7 +210,7 @@ def worker(run_dir, index, phase):
     if [r["sample_id"] for r in done] != [s["sample_id"] for s in samples[:len(done)]]:
         raise ValueError("Existing phase output does not match frozen order")
     mpath = out.with_suffix(".manifest.json")
-    manifest = {"version": VERSION, "phase": phase, "worker_index": index, "gpu": run["gpus"][index], "status": "loading",
+    manifest = {"version": protocol["protocol"], "phase": phase, "worker_index": index, "gpu": run["gpus"][index], "status": "loading",
                 "expected": len(samples), "recorded": len(done)}
     write_json(mpath, manifest)
     os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1")
@@ -278,7 +296,7 @@ def run(args):
     if load_json(args.samples_dir / "selection_manifest.json")["samples_sha256"] != file_hash(samples):
         raise ValueError("Frozen samples changed")
     from .retrieval import SearchR1Retriever
-    probe = SearchR1Retriever(local["retrieval_url"], args.request_timeout).search_batch(["HR1 check", "second"], protocol["retrieval"]["candidate_top_k"])
+    probe = SearchR1Retriever(local["retrieval_url"], args.request_timeout).search_batch(["HR check", "second"], protocol["retrieval"]["candidate_top_k"])
     if len(probe) != 2:
         raise ValueError("Retriever batch interface check failed")
     if args.smoke:
@@ -301,15 +319,15 @@ def run(args):
     else:
         args.run_dir.mkdir(parents=True, exist_ok=True); (args.run_dir / "logs").mkdir(exist_ok=True)
         write_json(args.run_dir / "run_plan.json", {
-            "version": VERSION, "protocol": protocol, "smoke": args.smoke, "protocol_sha256": sha(protocol),
+            "version": protocol["protocol"], "protocol": protocol, "smoke": args.smoke, "protocol_sha256": sha(protocol),
             "samples_path": str(samples.resolve()), "samples_sha256": file_hash(samples), "gpus": gpus,
             "gpu_memory_utilization": args.gpu_memory_utilization, "request_timeout": args.request_timeout,
             "local_file": str(args.local.resolve()), "local_file_sha256": file_hash(args.local),
             "repository_commit": git_output("rev-parse", "HEAD"), "working_tree_dirty": bool(git_output("status", "--porcelain")),
-            "prompt_version": PROMPT_VERSION,
+            "prompt_version": PROMPT_VERSION if protocol["agent"].get("prompt_variant", "bounded") == "bounded" else OFFICIAL_PROMPT_VERSION,
             "assets": {k: asset_identity(local_path(local[k]), k in ("agent_checkpoint", "instruct_checkpoint", "retriever_model"))
                        for k in ("agent_checkpoint", "instruct_checkpoint", "retriever_model", "corpus_file", "index_file")}})
-        write_json(args.run_dir / "run_manifest.json", {"version": VERSION, "status": "running", "research_GO": False})
+        write_json(args.run_dir / "run_manifest.json", {"version": protocol["protocol"], "status": "running", "research_GO": False})
     run_plan = frozen(args.run_dir)
     for phase in PHASES:
         if phase_done(args.run_dir, run_plan, phase):
