@@ -10,6 +10,10 @@
 
 ## 0. 顺序与前置条件
 
+> **2026-10-23 FC1 决定**：`U1_PROMPT=bounded`（官方提示词没有带来显著差异）；主 7B 检查点换成 v0.3 7B PPO（它已在名单里）。
+> **开跑前必须先和用户确认 GPU 安排**：U1 要独占四卡约 1.5–2 天，不能与用户自己的 GRPO 训练同时运行（FC1 期间曾因抢显存导致训练 OOM）。
+> 下载模型时，请用 safe_open 做全量校验（镜像曾把 500 错误页当作文件内容返回）。
+
 1. **FC1 必须先完成并回传**（`docs/FC1_FACTORY_GUIDE.md`）。U1 用哪种提示词（`U1_PROMPT=bounded` 或 `official`），由家服根据 FC1 的结果决定并通知，**厂内不要自己选**。
 2. 下面第 1–3 步（拉代码、下载模型、准备数据和配置）**可以和 FC1 同时做**，第 4 步要等家服给出 `U1_PROMPT`。
 3. 规则同前：
@@ -99,7 +103,7 @@ sha256sum outputs/u1_fresh/samples.jsonl
 ## 4. 运行（等家服给出 `U1_PROMPT` 之后）
 
 ```bash
-export U1_PROMPT=official     # 或 bounded，以家服通知为准
+export U1_PROMPT=bounded      # 2026-10-23 FC1 决定
 export U1_GPUS=0,1,2,3
 nohup bash scripts/run_u1.sh all > outputs/u1_all.log 2>&1 &
 tail -f outputs/u1_all.log

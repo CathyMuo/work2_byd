@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-23",
-  "current_stage": "FC1_pending_U1_ready",
-  "status": "upgrade plan confirmed: U1 implemented, U2 scan done (ReSeek, MR-Search), U3 pending training-pipeline pilot",
-  "next_action": "Factory: FC1 first; in parallel download U1 roster and FlashRAG data, build local.u1_*.json, freeze U1 questions. After FC1 the developer fixes U1_PROMPT (rule D1) and records it; then run_u1.sh all.",
+  "current_stage": "FC1_done_U1_ready_to_schedule",
+  "status": "FC1: D1 not triggered (bounded prompt), D2 triggered (main 7B -> v0.3 PPO), D4 GRPO usable; U1_PROMPT=bounded",
+  "next_action": "Schedule U1 (4 GPUs, ~1.5-2 days) with the user (their GRPO training must not overlap), then run_u1.sh all with U1_PROMPT=bounded. HR1 re-registration on v0.3 is the user's decision. U2 design follows.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -905,8 +905,40 @@
     "protocol": "FC1_harness_fidelity_v1",
     "doc": "research/FIDELITY_PROTOCOL.md",
     "guide": "docs/FC1_FACTORY_GUIDE.md",
-    "factory_results_available": false,
-    "CPU_test_count": 153
+    "factory_results_available": true,
+    "CPU_test_count": 153,
+    "reported_head": "1dd463c",
+    "em": {
+      "v01_7b_ppo": [
+        0.254,
+        0.27
+      ],
+      "v03_3b_ppo": [
+        0.36,
+        0.354
+      ],
+      "v03_7b_ppo": [
+        0.408,
+        0.405
+      ],
+      "v03_7b_grpo": [
+        0.389,
+        0.386
+      ],
+      "instruct_7b": [
+        0.243,
+        0.243
+      ]
+    },
+    "D1": "not triggered (max +1.6 pp, CI includes 0) -> bounded",
+    "D2": "triggered (+13.5/+15.4 pp) -> main 7B v0.3 PPO",
+    "D3": {
+      "v01": 0.027,
+      "v03_7b_ppo": 0.162,
+      "v03_7b_grpo": 0.143,
+      "v03_3b_ppo": 0.111
+    },
+    "D4": "passed (0.0% format failures)"
   },
   "target_venue": "ACL 2027 main (user, 2026-10-22)",
   "u1": {
@@ -922,7 +954,8 @@
       "bamboogle"
     ],
     "CPU_test_count": 159,
-    "factory_results_available": false
+    "factory_results_available": false,
+    "prompt_variant": "bounded"
   },
   "u2_scan": {
     "report": "user-local 工作二_U2方法审计候选.md",
@@ -932,5 +965,6 @@
     ],
     "conditional": "R2-Searcher (needs training)",
     "framing_change": "methods report full-question EM, not repair rates on failure-selected states; U2 measures how much of each method's recovery-mechanism repair rate is reproduced by same-state placebos"
-  }
+  },
+  "main_7b_checkpoint": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-7b-em-ppo-v0.3"
 }

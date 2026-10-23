@@ -3,7 +3,8 @@
 登记：2026-10-22　分支：`feat/credit-testbed`
 配置：`configs/u1_protocol.json`、`configs/u1_agents.json`、`configs/pcr_u1_{bounded,official}.json`、`configs/credit_u1_{bounded,official}.json`
 用户决定（2026-10-22）：目标 ACL 2027 主会；确认升级计划，先做 U1 和 U2 查新，U3 等训练流程的 pilot 再定。
-本文件在看到任何 U1 结果前冻结；唯一留待之后决定的是提示词变体（见 §2），它必须在任何 U1 运行之前、按 FC1 的规则定下来，并记进决策日志。
+本文件在看到任何 U1 结果前冻结。唯一留待之后决定的是提示词变体（见 §2）；2026-10-23 按 FC1 规则 D1 定为 **`bounded`**，已记进决策日志。
+同日按 D2，(a) 的主 7B 检查点改为 `v03_7b_ppo`，它在 U1 中的运行同时承担 AC1 在新主检查点上的 H1 / H3 重跑。
 
 ## 1. 目的
 

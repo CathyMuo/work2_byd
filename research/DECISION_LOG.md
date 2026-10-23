@@ -997,3 +997,26 @@ validate_prefix, PCR/CT prepare over any dataset set (small sets used in full an
 recorded), recovery analysis works for the h1 group, work2/u1.py (freeze, check,
 cross-agent summary with per-dataset blocks), configs, scripts/run_u1.sh,
 docs/U1_FACTORY_GUIDE.md. Existing HotpotQA/2Wiki behaviour is unchanged.
+
+## 2026-10-23 — FC1 results: prompt is fine (D1 no), main 7B -> v0.3 (D2 yes)
+
+Factory 1dd463c (public 52ca62e + factory-local dashboard), 8 new runs frozen
+there. Greedy EM on the 1000 AC1 fresh questions (bounded / official):
+v0.1 7B PPO 0.254/0.270, v0.3 3B PPO 0.360/0.354, v0.3 7B PPO 0.408/0.405,
+v0.3 7B GRPO 0.389/0.386, Qwen2.5-7B-Instruct 0.243/0.243.
+D1 not triggered (official - bounded at most +1.6 pp, CI includes 0): U1_PROMPT =
+bounded; no AC1 rerun with the official prompt. D2 triggered (v0.3 7B PPO - v0.1
+= +13.5 [10.8, 16.4] official, +15.4 bounded): main 7B becomes v0.3 7B PPO; the
+AC1 H1/H3 rerun on it is carried by its U1 run (same HotpotQA/2Wiki fresh
+questions plus three datasets; H2 is no longer a claim). D3: RL - Instruct
+(official) v0.1 +2.7 [-0.5, 5.8], v0.3 7B PPO +16.2, v0.3 7B GRPO +14.3, 3B +11.1;
+HR1's null is attributed to the v0.1 checkpoint; re-registering HR1 on v0.3 is
+the user's call. D4 passed (GRPO format/length failures 0.0%); v03_7b_grpo is the
+third checkpoint and is already on the U1 roster. Note: v0.3 7B PPO uses ~3.97
+searches per question vs GRPO ~1.9; report them separately.
+AC1 supplementary fields confirm the earlier correction: explained 1.25 = P1
+re-perturbation 44.6% / review 35.7%. Signals vs A are weak on both checkpoints.
+Process: a factory FC1 run OOM-killed the user's own GRPO training (progress from
+step 50 to 80 lost; resumable from global_step_50). U1 (4 GPUs, ~1.5-2 days) must
+be scheduled with the user before launch. Details:
+research/FC1_RESULTS_AND_DECISION.md.
