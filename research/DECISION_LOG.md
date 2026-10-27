@@ -1109,3 +1109,25 @@ Paper (ACL 2027 main) narrows to the recovery audit: protocol, H1 across 7 agent
 datasets, U2 published mechanisms, rescue/harm accounting; credit signals secondary;
 HR2 PPO in the appendix. Next: factory CPU step docs/PAPER_TABLES_GUIDE.md; the user
 decides on adding a non-Search-R1 agent for generality.
+
+## 2026-10-27 — U1x registered: H1 on other training recipes
+
+User decision: full plan, H1 only, four agents from three non-Search-R1 recipes
+(research/U1X_PROTOCOL.md, configs/u1x_agents.json, scripts/run_u1x.sh,
+docs/U1X_FACTORY_GUIDE.md): ZeroSearch wiki V2 Llama-3.2-3B and Qwen2.5-7B
+(simulated-search RL; prompt = Search-R1 official verbatim), AutoRefine-Qwen2.5-7B-
+Base (GRPO + retrieval reward, <documents>/<refine>), StepSearch-7B-Base (StePPO).
+Candidates rejected for adapter cost: ReSearch/ReCall, R1-Searcher; web agents.
+Implementation: agent formats in work2/rollout.py (FORMATS: prompt version,
+observation tag, inner padding, strip, document style) threaded through
+continue_record, replay.observation/validate_prefix, placebo.render, the CT engine
+and audit_confirm; bounded/official/reseek keep their historical rendering. Prompts
+read with ast from the upstream repos (no execution), sha256 pinned in tests.
+Tokenizers without a chat template get BOS when tokenizer.encode adds it (Llama-3),
+matching upstream; verified token-identical on a real Llama-3.2-3B tokenizer.
+Harness: E5 + Wiki-18, top-3, 4 searches, U1 frozen questions, PCR h1 arm group
+(<= 400 per dataset, turns 1-2); no H3. Fidelity references read from the papers
+before any run (work2/u1x.py); macro gap < -10 pp marks an agent possibly
+mis-harnessed (reported separately, not counted); format failures >= 10% exclude.
+Generality claim: H1 confirmed on >= ceil(0.8 x included unflagged U1x agents);
+pooled effect sizes over U1 + U1x via paper_h1 with both rosters. 177 CPU tests.

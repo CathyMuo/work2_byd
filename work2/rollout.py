@@ -34,12 +34,58 @@ RESEEK_USER_PREFIX = (
     "\n    Question: ")
 SYSTEM_OF = {"reseek": RESEEK_SYSTEM}
 
+# U1x (2026-10-27): agents from other training recipes, prompts read verbatim with ast from their repos.
+# AutoRefine (syr-cn/AutoRefine preprocess/data_process/utils.py, template_type "autorefine");
+# StepSearch (Zillwang/StepSearch scripts/data_process/{nq,hotpot}_search.py, the effective second prefix = paper Table 4).
+# "{question}" is replaced literally (no str.format), so braces inside questions are safe.
+AUTOREFINE_PROMPT_VERSION = "autorefine_official_v1"
+STEPSEARCH_PROMPT_VERSION = "stepsearch_official_v1"
+AUTOREFINE_TEMPLATE = (
+    'You are a helpful assistant excel at answering questions with multi-turn search engine calling. To answer questions, you must first reason through the available information using <think> and </think>. If you identify missing knowledge, you may issue a search request using <search> query </search> at any time. The retrieval system will provide you with the three most relevant documents enclosed in <documents> and </documents>. After each search, you need to summarize and refine the existing documents in <refine> and </refine>. You may send multiple search requests if needed. Once you have sufficient information, provide a concise final answer using <answer> and </answer>. For example, <answer> Donald Trump </answer>. Question: {question}\n')
+STEPSEARCH_TEMPLATE = (
+    '## Background\n'
+    "You are a deep AI research assistant. I will give you a single-hop or multi-hop question. You don't have to answer the question now, but you should first think about your research plan or what to search for next. You can use search to fill in knowledge gaps. \n"
+    '## Response format: Your output format should be one of the following two formats: \n'
+    '<think>your thinking process</think>\n'
+    '<answer>your answer after getting enough information</answer>\n'
+    'or\n'
+    '<think>your thinking process</think>\n'
+    'use <search>search keywords</search> to search for information. For example, <think> plan to search: (Q1) (Q2) (Q3) ... </think> <search> (Q1) question </search> <think> reasoning ... </think> <answer> Beijing </answer>.\n'
+    'The search engine will return the results contained in <information> and </information>. \n'
+    'Please follow the loop of think, search, information, think, search, information, and answer until the original question is finally solved. \n'
+    'Note: The retrieval results may not contain the answer or contain noise. You need to tell whether there is a golden answer. If not, you need to correct the search query and search again. Question:{question}\n')
+# Observation rendering per prompt variant. Search-R1 / AutoRefine / StepSearch strip the document block;
+# bounded / official / reseek keep the historical unstripped block (every earlier run used it).
+FORMATS = {
+    "bounded": {"version": PROMPT_VERSION, "tag": "information", "pad": "", "strip": False, "docs": "searchr1"},
+    "official": {"version": OFFICIAL_PROMPT_VERSION, "tag": "information", "pad": "", "strip": False, "docs": "searchr1"},
+    "reseek": {"version": RESEEK_PROMPT_VERSION, "tag": "information", "pad": "", "strip": False, "docs": "searchr1"},
+    "autorefine": {"version": AUTOREFINE_PROMPT_VERSION, "tag": "documents", "pad": "", "strip": True, "docs": "searchr1"},
+    "stepsearch": {"version": STEPSEARCH_PROMPT_VERSION, "tag": "information", "pad": " ", "strip": True, "docs": "stepsearch"},
+}
+VARIANT_OF_VERSION = {f["version"]: v for v, f in FORMATS.items()}
+
+
+def observation_text(documents, variant="bounded"):
+    f = FORMATS[variant]
+    body = format_documents(documents, f["docs"])
+    body = body.strip() if f["strip"] else body
+    return "\n\n<{0}>{1}{2}{1}</{0}>\n\n".format(f["tag"], f["pad"], body)
+
+
+def record_variant(record):
+    return VARIANT_OF_VERSION.get(record.get("prompt_version"), "bounded")
+
 
 def question_prompt(question, max_search_turns, variant="bounded"):
     if variant == "official":
         return OFFICIAL_TEMPLATE.format(question)
     if variant == "reseek":
         return RESEEK_USER_PREFIX.rstrip("\n") + question
+    if variant == "autorefine":
+        return AUTOREFINE_TEMPLATE.replace("{question}", question)
+    if variant == "stepsearch":
+        return STEPSEARCH_TEMPLATE.replace("{question}", question)
     if variant != "bounded":
         raise ValueError("Unknown prompt variant: " + str(variant))
     return ("Answer the given question. You must conduct reasoning inside <think> and </think> "
@@ -67,7 +113,7 @@ def run_sample(sample, generator, retriever, agent, retrieval):
     start = time.monotonic()
     variant = agent.get("prompt_variant", "bounded")
     record = {**sample, "condition": "E0_clean",
-              "prompt_version": OFFICIAL_PROMPT_VERSION if variant == "official" else PROMPT_VERSION,
+              "prompt_version": FORMATS[variant]["version"],
               "status": None, "final_answer": "", "search_calls": 0,
               "generated_tokens": 0, "model_input_tokens": 0, "steps": [], "prefixes": []}
     text = generator.initial_prompt(question_prompt(sample["question"], agent["max_search_turns"], variant))
@@ -117,7 +163,7 @@ def continue_record(record, generator, retriever, agent, retrieval, text, tokens
             visible = candidates[:retrieval["visible_top_k"]]
             if len(visible) < retrieval["visible_top_k"]:
                 raise ValueError("Retriever returned fewer than visible_top_k documents")
-            observation = "\n\n<information>{}</information>\n\n".format(format_documents(visible))
+            observation = observation_text(visible, record_variant(record))
             prefix.update({"candidate_documents": candidates, "visible_documents": visible,
                            "original_document_ids": [d["document_id"] for d in visible],
                            "observed_document_ids": [d["document_id"] for d in visible],

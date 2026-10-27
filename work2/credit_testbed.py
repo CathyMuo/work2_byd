@@ -167,7 +167,7 @@ def batched_continue(rollouts, generator, searcher, agent, retrieval, temperatur
             candidates = docs[query] if query is not None else r["null_docs"]
             visible = candidates[:retrieval["visible_top_k"]]
             r["search_calls"] += 1
-            obs = generator.encode(observation(visible))
+            obs = generator.encode(observation(visible, agent.get("prompt_variant", "bounded")))
             start = len(r["tokens"])
             r["tokens"] += obs
             if r["track"]:
@@ -212,7 +212,7 @@ def run_question(sample, decoy_question, generator, searcher, protocol):
     batched_continue([traj], generator, searcher, agent, retrieval, temp, top_p)
     batched_continue([again], generator, searcher, agent, retrieval, temp, top_p)
     null = null_documents(searcher, decoy_question, sample, retrieval)
-    null_obs = generator.encode(observation(null)) if null is not None else None
+    null_obs = generator.encode(observation(null, agent.get("prompt_variant", "bounded"))) if null is not None else None
     T = traj["search_calls"]
     branches = []
     for j in range(T + 1):

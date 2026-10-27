@@ -16,6 +16,7 @@ from .credit_testbed import spawn
 from .datasets import canonicalize, read_rows
 from .pcr import gpu_list, rank_key
 from .replay import AuditedRetriever
+from .replay import PROMPT_VARIANT_OF
 from .rollout import run_sample
 from .run_baseline import asset_identity, validate_design
 from .selective import exclusions, question_key, sha
@@ -30,7 +31,7 @@ def load_protocol(path):
     p = load_json(path)
     if p.get("protocol") not in (VERSION, FC1_VERSION):
         raise ValueError("Unsupported AC1/FC1 protocol")
-    if p["agent"].get("prompt_variant", "bounded") not in ("bounded", "official"):
+    if p["agent"].get("prompt_variant", "bounded") not in set(PROMPT_VARIANT_OF.values()):
         raise ValueError("Unknown prompt variant")
     validate_design(p)
     return p

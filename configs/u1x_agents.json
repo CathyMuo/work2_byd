@@ -1,0 +1,9 @@
+{
+  "note": "U1x roster (2026-10-27): agents from training recipes other than Search-R1, H1 only. Each label needs configs/local.u1_<label>.json (gitignored) whose agent_checkpoint points to the downloaded weights. prompt_variant selects the verbatim upstream prompt and observation style (work2/rollout.py FORMATS). See research/U1X_PROTOCOL.md.",
+  "agents": [
+    {"label": "zs_llama32_3b", "repo": "Alibaba-NLP/ZeroSearch_wiki_V2_Llama_3.2_3B", "base": "Llama-3.2-3B", "recipe": "ZeroSearch (simulated-search RL with curriculum; REINFORCE by default)", "prompt_variant": "official"},
+    {"label": "zs_qwen25_7b", "repo": "Alibaba-NLP/ZeroSearch_wiki_V2_Qwen2.5_7B", "base": "Qwen2.5-7B", "recipe": "ZeroSearch", "prompt_variant": "official"},
+    {"label": "autorefine_7b", "repo": "yrshi/AutoRefine-Qwen2.5-7B-Base", "base": "Qwen2.5-7B", "recipe": "AutoRefine (GRPO + retrieval-specific reward, <refine> step)", "prompt_variant": "autorefine"},
+    {"label": "stepsearch_7b", "repo": "Zill1/StepSearch-7B-Base", "base": "Qwen2.5-7B (per paper)", "recipe": "StepSearch (StePPO: step-wise information-gain and redundancy rewards)", "prompt_variant": "stepsearch"}
+  ]
+}

@@ -42,12 +42,13 @@ class SearchR1Retriever:
         return documents
 
 
-def format_documents(documents):
-    # Search-R1's document format; never include gold answers or supporting facts.
+def format_documents(documents, style="searchr1"):
+    # Search-R1's document format (StepSearch: "Doc i<## Title: t ##> text"); never include gold answers or supporting facts.
+    pattern = {"searchr1": "Doc {}(Title: {}) {}\n", "stepsearch": "Doc {}<## Title: {} ##> {}\n"}[style]
     parts = []
     for rank, document in enumerate(documents, 1):
         content = document["contents"]
         title = content.split("\n", 1)[0]
         text = content.split("\n", 1)[1] if "\n" in content else ""
-        parts.append("Doc {}(Title: {}) {}\n".format(rank, title, text))
+        parts.append(pattern.format(rank, title, text))
     return "".join(parts)

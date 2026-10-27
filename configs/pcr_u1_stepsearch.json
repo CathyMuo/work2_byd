@@ -1,0 +1,16 @@
+{
+  "protocol": "PCR_placebo_controlled_replay_v1",
+  "seed": 20261022,
+  "target_turns": [1, 2],
+  "arm_group": "h1",
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "stepsearch"
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "scope": "U1 H1 arms only (clean_a/b, perm_1, perm_2, perm1_{review,neutral,budget2,reflect,neutral_reflect}) on U1x sources with the verbatim stepsearch prompt. See research/U1X_PROTOCOL.md."
+}

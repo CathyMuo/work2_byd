@@ -5,18 +5,19 @@ import json
 
 from .common import digest
 from .metrics import lexical_fact_hits
-from .retrieval import format_documents
-from .rollout import OFFICIAL_PROMPT_VERSION, PROMPT_VERSION, continue_record, parse_action, question_prompt
+from .rollout import (FORMATS, PROMPT_VERSION, continue_record, observation_text, parse_action,
+                      question_prompt)
 
-PROMPT_VARIANT_OF = {PROMPT_VERSION: "bounded", OFFICIAL_PROMPT_VERSION: "official"}
+# Replayable sources: every agent format whose prompt is a single user turn (ReSeek needs a system turn; U2 only).
+PROMPT_VARIANT_OF = {f["version"]: v for v, f in FORMATS.items() if v != "reseek"}
 
 
 def token_hash(tokens):
     return digest((",".join(map(str, tokens))).encode())
 
 
-def observation(documents):
-    return "\n\n<information>{}</information>\n\n".format(format_documents(documents))
+def observation(documents, variant="bounded"):
+    return observation_text(documents, variant)
 
 
 def visible_signature(documents):
@@ -70,7 +71,7 @@ def validate_prefix(source, turn, agent, retrieval, generator=None):
         ids = [d["document_id"] for d in visible]
         if ids != prefix["original_document_ids"] or ids != prefix["observed_document_ids"]:
             raise ValueError("Source document IDs were altered")
-        if prefix["observation_text"] != observation(visible):
+        if prefix["observation_text"] != observation(visible, variant):
             raise ValueError("Source observation format/content mismatch")
         if index < turn - 1:
             text += prefix["observation_text"]

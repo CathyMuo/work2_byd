@@ -17,6 +17,11 @@ class TokenizerMixin:
             return self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
         if system is not None:
             raise ValueError("A system message needs a chat template")
+        # Without a chat template the upstream code calls tokenizer.encode(prompt), which prepends BOS for
+        # tokenizers such as Llama-3 (ZeroSearch inference.py); encode() here never adds special tokens.
+        bos = getattr(self.tokenizer, "bos_token", None)
+        if bos and self.tokenizer.encode("x")[:1] == [self.tokenizer.bos_token_id] and not text.startswith(bos):
+            return bos + text
         return text
 
     def user_turn(self, content):

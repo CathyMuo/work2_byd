@@ -1,0 +1,14 @@
+{
+  "protocol": "FC1_harness_fidelity_v1",
+  "seed": 20261019,
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "stepsearch"
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "scope": "U1x sources: greedy E0 rollouts on the U1 frozen questions with the verbatim stepsearch prompt. See research/U1X_PROTOCOL.md."
+}

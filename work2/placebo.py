@@ -12,8 +12,8 @@ import itertools
 import json
 
 from .metrics import gold_list, lexical_fact_hits, normalize
-from .replay import continuation_signature, observation, validate_prefix
-from .rollout import continue_record
+from .replay import PROMPT_VARIANT_OF, continuation_signature, observation, validate_prefix
+from .rollout import FORMATS, continue_record
 from .selective import PROMPTS
 
 VERSION = "PCR_placebo_controlled_replay_v1"
@@ -52,10 +52,10 @@ def _split(document):
     return title, body
 
 
-def render(documents, variant="canonical"):
-    """Observation text. Titles/bodies are byte-identical across variants."""
+def render(documents, variant="canonical", style="bounded"):
+    """Observation text in the agent's style. Titles/bodies are byte-identical across variants."""
     if variant == "canonical":
-        return observation(documents)
+        return observation(documents, style)
     parts = []
     for rank, document in enumerate(documents, 1):
         title, body = _split(document)
@@ -65,7 +65,7 @@ def render(documents, variant="canonical"):
             parts.append("[{}] {}\n{}\n".format(rank, title, body))
         else:
             raise ValueError("Unknown observation format variant: " + variant)
-    return "\n\n<information>{}</information>\n\n".format("".join(parts))
+    return "\n\n<{0}>{1}</{0}>\n\n".format(FORMATS[style]["tag"], "".join(parts))
 
 
 def multiset(documents):
@@ -201,7 +201,7 @@ def run_branch(source, turn, arm, generator, retriever, agent, retrieval, deleti
         raise ValueError("Arm changed the visible document count")
     if arm not in DELETION_ARMS and multiset(documents) != multiset(prefix["visible_documents"]):
         raise ValueError("Placebo/recovery arm changed the document multiset")
-    obs = render(documents, variant)
+    obs = render(documents, variant, PROMPT_VARIANT_OF[source["prompt_version"]])
     record = {key: copy.deepcopy(source[key]) for key in
               ("sample_id", "dataset", "question", "gold_answer", "gold_supporting_facts",
                "initial_prompt", "prompt_version")}

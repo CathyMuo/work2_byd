@@ -1,5 +1,7 @@
 **2026-10-27 U1 / U2 / HR2 已完成**：H1 在 7/7 个智能体上确认，H3 未确认（降为次要分析），U2 两个已发表方法都确认 H1，HR2 只有 PPO 有效。见 [结果与决策](research/U1_U2_HR2_RESULTS_AND_DECISION.md)。
-厂内当前任务：[论文表格（只用 CPU）](docs/PAPER_TABLES_GUIDE.md)。
+厂内当前任务：
+1. [论文表格（只用 CPU）](docs/PAPER_TABLES_GUIDE.md)；
+2. [U1x：在其他训练配方上检验 H1](docs/U1X_FACTORY_GUIDE.md)（ZeroSearch × 2、AutoRefine、StepSearch，只跑 H1），协议见 [U1x 协议](research/U1X_PROTOCOL.md)。
 
 **2026-10-23 U1 之后的两项（代码与指导已就绪）：**
 - **U2 方法审计**：用同状态安慰剂检验 ReSeek（强制 judge）和 MR-Search（反思回合）自己的恢复机制。厂内从 [U2 厂内执行指导](docs/U2_FACTORY_GUIDE.md) 开始，协议见 [U2 协议](research/U2_PROTOCOL.md)。

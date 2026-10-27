@@ -126,13 +126,14 @@ def markdown(r):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--u1-root", type=Path, default=Path("outputs/u1"))
-    p.add_argument("--agents", type=Path, default=Path("configs/u1_agents.json"))
+    p.add_argument("--agents", type=Path, nargs="+", default=[Path("configs/u1_agents.json")],
+                   help="one or more roster files (e.g. configs/u1_agents.json configs/u1x_agents.json)")
     p.add_argument("--output", type=Path, required=True); p.add_argument("--resamples", type=int, default=2000)
     a = p.parse_args()
     try:
         if a.output.exists():
             raise ValueError("Output exists; use a new --output")
-        labels = [x["label"] for x in load_json(a.agents)["agents"]]
+        labels = [x["label"] for f in a.agents for x in load_json(f)["agents"]]
         report = analyze(a.u1_root, labels, a.resamples)
     except (ValueError, KeyError, FileNotFoundError) as exc:
         p.error(str(exc))
