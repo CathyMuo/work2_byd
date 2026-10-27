@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>工作二 进度看板</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f3f2ee;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834;
+  --good: #0ca30c; --good-ink: #006300; --warn: #fab219; --warn-ink: #8a5d00; --bad: #d03b3b; --info: #2a78d6;
+  --accent-wash: #e8f0fb;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926;
+    --good-ink: #0ca30c; --warn-ink: #fab219; --accent-wash: #1c2a3d;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926;
+  --good-ink: #0ca30c; --warn-ink: #fab219; --accent-wash: #1c2a3d;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.65 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+header.top { position: sticky; top: 0; z-index: 5; background: var(--page); border-bottom: 1px solid var(--ring); }
+.bar { max-width: 1120px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.bar b { font-size: 15px; }
+nav { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
+nav a { color: var(--ink-2); text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 14px; }
+nav a:hover { background: var(--surface-2); color: var(--ink); }
+button.theme { border: 1px solid var(--ring); background: var(--surface); color: var(--ink-2); border-radius: 6px; padding: 3px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+main { max-width: 1120px; margin: 0 auto; padding: 8px 16px 64px; }
+section { padding-top: 28px; scroll-margin-top: 60px; }
+h1 { font-size: 28px; line-height: 1.3; margin: 18px 0 6px; }
+h2 { font-size: 20px; margin: 0 0 12px; }
+h3 { font-size: 16px; margin: 0 0 6px; }
+p { margin: 0 0 10px; }
+.sub { color: var(--ink-2); font-size: 16px; margin-bottom: 10px; }
+.meta { color: var(--muted); font-size: 13px; display: flex; gap: 14px; flex-wrap: wrap; }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; padding: 16px; }
+.grid { display: grid; gap: 12px; }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.label { color: var(--muted); font-size: 12px; letter-spacing: .02em; margin-bottom: 4px; }
+.talk { background: var(--accent-wash); border: 1px solid var(--ring); border-radius: 10px; padding: 14px 16px; }
+.talk ol { margin: 6px 0 0; padding-left: 22px; }
+.talk li { margin: 4px 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ring); background: var(--surface-2); white-space: nowrap; }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+.tone-good .dot { background: var(--good); } .tone-good { color: var(--good-ink); }
+.tone-warn .dot { background: var(--warn); } .tone-warn { color: var(--warn-ink); }
+.tone-bad .dot { background: var(--bad); } .tone-bad { color: var(--bad); }
+.tone-neutral .dot { background: var(--muted); } .tone-neutral { color: var(--ink-2); }
+.tone-info .dot { background: var(--info); } .tone-info { color: var(--info); }
+.finding { display: flex; flex-direction: column; gap: 10px; }
+.finding-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.finding ul { margin: 0; padding-left: 20px; color: var(--ink-2); }
+.caveat { color: var(--muted); font-size: 13px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; counter-reset: s; }
+.step { position: relative; }
+.arms { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 12px; }
+.arm-name { font-weight: 600; }
+/* charts */
+.chart { margin-top: 4px; }
+.chart-title { font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink-2); margin-bottom: 6px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.crow { display: grid; grid-template-columns: minmax(110px, 34%) 1fr; gap: 10px; align-items: center; padding: 3px 0; }
+.clabel { font-size: 13px; color: var(--ink-2); text-align: right; overflow-wrap: anywhere; }
+.track { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.plot { position: relative; height: 12px; }
+.gl { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 1px solid var(--grid); }
+.barfill { position: absolute; left: 0; top: 1px; height: 10px; border-radius: 0 4px 4px 0; min-width: 2px; cursor: default; }
+.barfill.over { border-radius: 0; }
+.barval { position: absolute; top: -2px; font-size: 11px; color: var(--ink-2); white-space: nowrap; padding-left: 4px; }
+.refline { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 1.5px dashed var(--ink-2); }
+.axisnote { display: grid; grid-template-columns: minmax(110px, 34%) 1fr; gap: 10px; font-size: 11px; color: var(--muted); }
+.axisnote .ticks { display: flex; justify-content: space-between; width: 80%; }
+details.table { margin-top: 6px; font-size: 13px; color: var(--ink-2); }
+details.table summary { cursor: pointer; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+td.num { font-variant-numeric: tabular-nums; text-align: right; }
+.tip { position: fixed; pointer-events: none; z-index: 20; background: var(--ink); color: var(--page); font-size: 12px; padding: 5px 8px; border-radius: 6px; max-width: 280px; opacity: 0; transition: opacity .1s; }
+/* timeline */
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li { display: grid; grid-template-columns: 120px 18px 1fr; gap: 10px; align-items: start; padding: 6px 0; }
+.tl .d { color: var(--muted); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.tl .m { width: 12px; height: 12px; border-radius: 50%; margin-top: 6px; border: 2px solid var(--axis); background: var(--surface); }
+.tl li.done .m { background: var(--good); border-color: var(--good); }
+.tl li.current .m { background: var(--info); border-color: var(--info); box-shadow: 0 0 0 4px var(--accent-wash); }
+.tl li.current .t { font-weight: 600; }
+/* live */
+.live-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.gpus { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.gpu .big { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.meter { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.meter > div { height: 100%; background: var(--s1); border-radius: 0 3px 3px 0; }
+.pipe { display: grid; gap: 6px; }
+.pipe-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--ring); border-radius: 8px; background: var(--surface); }
+.prog { min-width: 140px; }
+.prog .meter { margin-top: 3px; }
+.small { font-size: 12px; color: var(--muted); }
+.runs-wrap { overflow-x: auto; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: var(--surface-2); }
+pre.log { background: var(--surface-2); border: 1px solid var(--ring); border-radius: 8px; padding: 10px; font: 12px/1.5 ui-monospace, Consolas, monospace; max-height: 360px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+.err { color: var(--bad); font-size: 13px; }
+@media (max-width: 640px) {
+  h1 { font-size: 23px; }
+  .tl li { grid-template-columns: 82px 16px 1fr; }
+  .crow, .axisnote { grid-template-columns: minmax(90px, 38%) 1fr; }
+  header.top { position: static; }
+  nav { margin-left: 0; width: 100%; flex-wrap: nowrap; overflow-x: auto; }
+  nav a { white-space: nowrap; }
+  section { scroll-margin-top: 8px; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <b>工作二 · 进度看板</b>
+    <nav>
+      <a href="#brief">汇报要点</a><a href="#question">研究问题</a><a href="#method">方法</a>
+      <a href="#findings">结果</a><a href="#timeline">进度</a><a href="#live">实时实验</a>
+    </nav>
+    <button class="theme" id="themeBtn" type="button">切换深浅色</button>
+  </div>
+</header>
+<main>
+  <section id="top">
+    <h1 id="title">加载中…</h1>
+    <p class="sub" id="subtitle"></p>
+    <div class="meta"><span id="target"></span><span id="stage"></span><span id="updated"></span></div>
+  </section>
+
+  <section id="brief">
+    <h2>汇报要点</h2>
+    <div class="talk"><div class="label">向导师讲解时可按这个顺序</div><ol id="talk"></ol></div>
+    <div class="grid g4" id="overview" style="margin-top:12px"></div>
+  </section>
+
+  <section id="question">
+    <h2>研究问题</h2>
+    <div class="grid g2">
+      <div class="card"><h3>背景</h3><p id="q-bg"></p></div>
+      <div class="card"><h3>问题在哪</h3><p id="q-problem"></p></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h3>两条待检验的主张</h3>
+      <table><thead><tr><th style="width:56px">编号</th><th>内容</th><th style="width:220px">现状</th></tr></thead><tbody id="claims"></tbody></table>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>方法：同前缀精确重放 + 安慰剂对照</h2>
+    <div class="steps" id="steps"></div>
+    <div class="arms" id="arms"></div>
+    <p class="caveat" id="rigor" style="margin-top:10px"></p>
+  </section>
+
+  <section id="findings">
+    <h2>已有结果</h2>
+    <div class="grid g2" id="findingCards"></div>
+    <h3 style="margin-top:22px">否定结果与方向调整（如实保留）</h3>
+    <div class="card"><table><thead><tr><th>方向</th><th>结论</th><th>留下了什么</th></tr></thead><tbody id="negatives"></tbody></table></div>
+  </section>
+
+  <section id="timeline">
+    <h2>进度与计划</h2>
+    <div class="grid g2">
+      <div class="card"><ul class="tl" id="tl"></ul></div>
+      <div class="card"><h3>风险与应对</h3><ul id="risks" style="margin:0;padding-left:20px;color:var(--ink-2)"></ul>
+        <h3 style="margin-top:14px">术语</h3><table><tbody id="glossary"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="live">
+    <div class="live-head">
+      <h2>实时实验</h2>
+      <span class="small" id="liveMeta">正在读取…</span>
+    </div>
+    <div class="label">GPU</div>
+    <div class="gpus" id="gpus"><div class="empty">读取中…</div></div>
+    <h3 style="margin-top:18px" id="campaignTitle">当前批次</h3>
+    <div class="pipe" id="campaign"></div>
+    <h3 style="margin-top:18px">运行目录（按最近更新排序，点击一行查看日志）</h3>
+    <div class="card runs-wrap">
+      <table><thead><tr><th>实验</th><th>对象</th><th>阶段</th><th>状态</th><th>进度</th><th>速度 / 预计剩余</th><th>最近更新</th></tr></thead>
+      <tbody id="runs"></tbody></table>
+    </div>
+    <div id="logBox" style="margin-top:12px"></div>
+  </section>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+
+// theme toggle (remembered per viewer; storage may be unavailable)
+(function () {
+  let saved = null;
+  try { saved = localStorage.getItem("board-theme"); } catch (e) {}
+  if (saved) document.documentElement.setAttribute("data-theme", saved);
+  $("themeBtn").onclick = () => {
+    const cur = document.documentElement.getAttribute("data-theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("board-theme", next); } catch (e) {}
+  };
+})();
+
+// tooltip
+const tip = $("tip");
+document.addEventListener("mousemove", (e) => {
+  const t = e.target.closest("[data-tip]");
+  if (!t) { tip.style.opacity = 0; return; }
+  tip.textContent = t.getAttribute("data-tip");
+  tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + "px";
+  tip.style.top = (e.clientY + 14) + "px";
+  tip.style.opacity = 1;
+});
+
+const TONE = {good: "tone-good", warn: "tone-warn", bad: "tone-bad", neutral: "tone-neutral", info: "tone-info"};
+const chip = (text, tone) => `<span class="chip ${TONE[tone] || "tone-neutral"}"><span class="dot"></span>${esc(text)}</span>`;
+
+function chart(c) {
+  const colors = ["var(--s1)", "var(--s2)"];
+  const fmt = (v) => v == null ? "无" : (Math.round(v * 1000) / 1000) + (c.unit || "");
+  let h = `<div class="chart"><div class="chart-title">${esc(c.title)}</div>`;
+  if (c.series.length > 1) h += `<div class="legend">${c.series.map((s, i) => `<span><i style="background:${colors[i]}"></i>${esc(s)}</span>`).join("")}</div>`;
+  for (const r of c.rows) {
+    h += `<div class="crow"><div class="clabel">${esc(r.label)}</div><div class="track">`;
+    r.values.forEach((v, i) => {
+      const w = v == null ? 0 : Math.min(v, c.max) / c.max * 80;   // data spans 80%; the rest is the label gutter
+      const over = v != null && v > c.max;
+      const tipText = `${r.label} · ${c.series[i]}：${fmt(v)}${over ? "（超出坐标）" : ""}`;
+      h += `<div class="plot"><div class="gl" style="left:0"></div><div class="gl" style="left:40%"></div><div class="gl" style="left:80%"></div>`;
+      if (c.ref != null) h += `<div class="refline" style="left:${c.ref / c.max * 80}%"></div>`;
+      if (v != null) h += `<div class="barfill${over ? " over" : ""}" style="width:${w}%;background:${colors[i]}" data-tip="${esc(tipText)}"></div>`;
+      h += `<span class="barval" style="left:${w}%">${v == null ? "无定义" : fmt(v) + (over ? " →" : "")}</span></div>`;
+    });
+    h += `</div></div>`;
+  }
+  h += `<div class="axisnote"><span></span><span class="ticks"><span>0</span><span>${c.max / 2}${c.unit || ""}</span><span>${c.max}${c.unit || ""}</span></span></div>`;
+  if (c.ref != null) h += `<div class="small" style="margin-top:4px">虚线：${esc(c.ref_label || c.ref)}</div>`;
+  const notes = c.rows.filter((r) => r.note).map((r) => `<div class="caveat">${esc(r.note)}</div>`).join("");
+  h += notes;
+  h += `<details class="table"><summary>查看数据表</summary><table><thead><tr><th></th>${c.series.map((s) => `<th>${esc(s)}</th>`).join("")}</tr></thead><tbody>` +
+       c.rows.map((r) => `<tr><td>${esc(r.label)}</td>${r.values.map((v) => `<td class="num">${fmt(v)}</td>`).join("")}</tr>`).join("") +
+       `</tbody></table></details></div>`;
+  return h;
+}
+
+function renderResearch(d) {
+  document.title = "工作二 进度看板";
+  $("title").textContent = d.title;
+  $("subtitle").textContent = d.subtitle;
+  $("target").textContent = d.target;
+  $("stage").textContent = "当前阶段：" + d.stage;
+  $("updated").textContent = "内容更新：" + d.updated;
+  $("talk").innerHTML = d.talk_track.map((t) => `<li>${esc(t)}</li>`).join("");
+  $("overview").innerHTML = d.overview.map((o) => `<div class="card"><div class="label">${esc(o.label)}</div><div>${esc(o.text)}</div></div>`).join("");
+  $("q-bg").textContent = d.question.background;
+  $("q-problem").textContent = d.question.problem;
+  $("claims").innerHTML = d.question.claims.map((c) => `<tr><td><b>${esc(c.id)}</b></td><td>${esc(c.text)}</td><td>${chip(c.status, c.status.includes("已确认") ? "good" : "warn")}</td></tr>`).join("");
+  $("steps").innerHTML = d.method.steps.map((s) => `<div class="card step"><h3>${esc(s.title)}</h3><div style="color:var(--ink-2)">${esc(s.text)}</div></div>`).join("");
+  $("arms").innerHTML = d.method.arms.map((a) => `<div class="card"><div class="arm-name">${esc(a.name)}</div><div style="color:var(--ink-2)">${esc(a.text)}</div></div>`).join("");
+  $("rigor").textContent = d.method.rigor;
+  $("findingCards").innerHTML = d.findings.map((f) => `<div class="card finding">
+      <div class="finding-head"><h3>${esc(f.id)} · ${esc(f.title)}</h3>${chip(f.verdict, f.tone)}</div>
+      <p style="color:var(--ink-2);margin:0">${esc(f.summary)}</p>
+      ${f.chart ? chart(f.chart) : ""}
+      ${f.points ? `<ul>${f.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
+      ${f.caveat ? `<div class="caveat">${esc(f.caveat)}</div>` : ""}</div>`).join("");
+  $("negatives").innerHTML = d.negatives.map((n) => `<tr><td>${esc(n.name)}</td><td>${esc(n.result)}</td><td>${esc(n.kept)}</td></tr>`).join("");
+  $("tl").innerHTML = d.timeline.map((t) => `<li class="${t.done ? "done" : ""} ${t.current ? "current" : ""}"><span class="d">${esc(t.date)}</span><span class="m"></span><span class="t">${esc(t.text)}${t.current ? "（进行中）" : ""}</span></li>`).join("");
+  $("risks").innerHTML = d.risks.map((r) => `<li>${esc(r)}</li>`).join("");
+  $("glossary").innerHTML = d.glossary.map((g) => `<tr><td style="white-space:nowrap"><b>${esc(g.term)}</b></td><td>${esc(g.text)}</td></tr>`).join("");
+  $("campaignTitle").textContent = d.campaign ? d.campaign.title : "当前批次";
+}
+
+const STATUS = {
+  completed: ["已完成", "good"], done: ["已完成", "good"], running: ["运行中", "info"], loading: ["加载模型", "info"],
+  failed: ["失败", "bad"], stalled: ["可能已停止（20 分钟无更新）", "warn"], pending: ["未开始", "neutral"], unknown: ["未知", "neutral"]
+};
+const st = (s) => chip(...(STATUS[s] || [s, "neutral"]));
+const dur = (sec) => {
+  if (sec == null || !isFinite(sec)) return "";
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60);
+  return h ? `${h} 小时 ${m} 分` : m ? `${m} 分` : `${sec} 秒`;
+};
+const ago = (t, now) => dur(now - t) + "前";
+const progress = (rec, exp) => {
+  if (rec == null || !exp) return `<span class="small">—</span>`;
+  const p = Math.min(100, rec / exp * 100);
+  return `<div class="prog"><span style="font-variant-numeric:tabular-nums">${rec} / ${exp}</span> <span class="small">${p.toFixed(0)}%</span><div class="meter"><div style="width:${p}%"></div></div></div>`;
+};
+
+let openRun = null;
+async function loadLog(path) {
+  openRun = path;
+  const box = $("logBox");
+  box.innerHTML = `<div class="small">读取日志：${esc(path)}…</div>`;
+  try {
+    const r = await fetch("/api/log?run=" + encodeURIComponent(path));
+    if (!r.ok) throw new Error(await r.text());
+    const logs = await r.json();
+    box.innerHTML = `<div class="live-head"><h3>日志：${esc(path)}</h3><button class="theme" type="button" onclick="openRun=null;document.getElementById('logBox').innerHTML=''">关闭</button></div>` +
+      (logs.length ? logs.map((l) => `<div class="small">${esc(l.file)}</div><pre class="log">${esc(l.lines.join("\n"))}</pre>`).join("") : `<div class="empty">这个运行目录下还没有日志文件。</div>`);
+    box.querySelectorAll("pre.log").forEach((p) => { p.scrollTop = p.scrollHeight; });
+  } catch (e) { box.innerHTML = `<div class="err">日志读取失败：${esc(e.message)}</div>`; }
+}
+
+async function refresh() {
+  try {
+    const r = await fetch("/api/live", {cache: "no-store"});
+    const d = await r.json();
+    const now = d.now;
+    $("liveMeta").textContent = `每 10 秒自动刷新 · 上次刷新 ${new Date(now * 1000).toLocaleTimeString()} · 读取目录 ${d.outputs}`;
+    $("gpus").innerHTML = d.gpus ? d.gpus.map((g) => `<div class="card gpu"><div class="label">GPU ${esc(g.index)} · ${esc(g.name)}</div>
+        <div class="big">${g.util.toFixed(0)}%</div><div class="small">显存 ${(g.mem_used / 1024).toFixed(1)} / ${(g.mem_total / 1024).toFixed(1)} GB</div>
+        <div class="meter" data-tip="显存占用 ${(g.mem_used / g.mem_total * 100).toFixed(0)}%"><div style="width:${g.mem_used / g.mem_total * 100}%"></div></div></div>`).join("")
+      : `<div class="empty">读不到 nvidia-smi（本机没有 GPU，或命令不可用）。</div>`;
+    $("campaign").innerHTML = d.campaign.length ? d.campaign.map((c) => `<div class="pipe-row"><div><div>${esc(c.name)}</div>
+        ${c.eta_seconds ? `<div class="small">预计剩余 ${dur(c.eta_seconds)}</div>` : ""}</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${c.state !== "done" && c.expected ? progress(c.recorded, c.expected) : ""}${st(c.state)}</div></div>`).join("")
+      : `<div class="empty">research.json 里没有定义当前批次。</div>`;
+    $("runs").innerHTML = d.runs.length ? d.runs.map((x) => {
+      const phase = x.phase ? `（阶段 ${esc(x.phase)}）` : "";
+      const speed = x.per_minute ? `${x.per_minute.toFixed(1)} 条/分` + (x.eta_seconds ? ` · 约 ${dur(x.eta_seconds)}` : "") : (x.status === "running" ? "计算中…" : "");
+      const err = x.error || (x.workers.find((w) => w.error) || {}).error;
+      return `<tr class="clickable" data-run="${esc(x.path)}" title="${esc(x.path)}"><td>${esc(x.experiment)}${x.smoke ? ' <span class="small">smoke</span>' : ""}</td><td>${esc(x.subject)}</td><td>${esc(x.stage)}${phase}</td>
+        <td>${st(x.status)}${err ? `<div class="err">${esc(String(err).slice(0, 160))}</div>` : ""}</td><td>${progress(x.recorded, x.expected)}</td><td class="small">${speed}</td><td class="small">${ago(x.updated, now)}</td></tr>`;
+    }).join("") : `<tr><td colspan="7" class="empty">outputs/ 下还没有运行目录。</td></tr>`;
+    if (openRun) loadLog(openRun);
+  } catch (e) {
+    $("liveMeta").innerHTML = `<span class="err">实时数据读取失败：${esc(e.message)}（看板服务是否还在运行？）</span>`;
+  }
+}
+$("runs").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-run]"); if (tr) loadLog(tr.dataset.run); });
+
+fetch("/research.json", {cache: "no-store"}).then((r) => r.json()).then(renderResearch)
+  .catch((e) => { $("title").textContent = "研究说明读取失败：" + e.message; });
+refresh();
+setInterval(refresh, 10000);
+</script>
+</body>
+</html>

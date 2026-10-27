@@ -1,0 +1,178 @@
+{
+  "updated": "2026-10-27",
+  "title": "搜索智能体的干预式审计",
+  "subtitle": "RL 训练的搜索智能体：文献里常见的“恢复 / 反思能修复错误”，加上安慰剂对照后还站得住吗？",
+  "target": "目标：ACL 2027 主会（ARR 截稿 2027-01-04）",
+  "stage": "主线结论已在 7 个智能体上确认；正在补“其他训练配方”的普适性实验（U1x），随后写论文",
+
+  "talk_track": [
+    "做什么：给 RL 训练的搜索智能体（Search-R1 一类）做“审计”。文献常说加一段反思、复查或重试，就能把答错的修回来。我们检查这种修复是方法的功劳，还是统计假象。",
+    "怎么做：从同一条推理轨迹的同一个位置精确分叉，一路跑“方法”，另一路跑“安慰剂”（只换文档顺序，或加一段等长的无意义文字），比较两路各修回多少。",
+    "主要发现：在 7 个模型、5 个数据集上，安慰剂修回的和方法一样多，甚至更多。也就是说，所谓的“修复”主要是均值回归：挑出来的失败样本，随便动一下就会有一部分自己变对。",
+    "已发表方法也一样：MR-Search 的反思回合不超过“再试一次”，而且会把原本答对的题改错；ReSeek 的强制重搜有一小部分真实作用，但在答对的题上伤害更大。",
+    "对企业的意义：评估 Agent 改进时，如果只在失败样本上再测一次，结果天然会显得“变好”。必须配同状态对照，并同时统计“救回”和“改错”两笔账。",
+    "现状：主结论已稳；一条副主张（信用信号）没成立，已如实降级；正在跑另外 3 种训练配方、4 个智能体的普适性实验，之后进入写作。"
+  ],
+
+  "overview": [
+    {"label": "研究问题", "text": "“恢复 / 反思修复了错误”这类说法，扣掉运气和均值回归之后还剩多少？"},
+    {"label": "方法", "text": "同前缀精确重放 + 同状态安慰剂对照：只改一处，其余逐 token 相同。"},
+    {"label": "核心结论", "text": "H1 在 7/7 个智能体上成立：恢复收益主要是均值回归。两个已发表方法也通过审计并支持 H1。"},
+    {"label": "下一步", "text": "U1x：再验证 3 种训练配方（含 Llama）；整理论文主表；11 月中旬开始写作。"}
+  ],
+
+  "question": {
+    "background": "搜索智能体会多轮检索后作答，RL 只按最终答对或答错给奖励。2025–2026 年有大量工作声称：在出错后加反思、复查、重试或判断，就能把相当一部分错误“修复”回来。",
+    "problem": "这些修复率通常是在“已经答错的样本”上测的。但按失败挑出来的样本，本身就带着运气不好的成分，重新跑一次也会有一部分变对，这就是均值回归。如果不扣掉这一部分，方法的作用会被高估。",
+    "claims": [
+      {"id": "H1", "text": "恢复 / 反思类方法在“按失败挑出的状态”上的修复率，主要能被同状态安慰剂复现（均值回归）。", "status": "主张（已确认）"},
+      {"id": "H3", "text": "证据类逐轮信用信号（IGPO 信息增益等）测不到证据的真实因果作用。", "status": "未在多数智能体上成立，已降为次要分析"}
+    ]
+  },
+
+  "method": {
+    "steps": [
+      {"title": "1. 采一条源轨迹", "text": "智能体正常作答：思考、检索、看文档、再检索……最后作答。"},
+      {"title": "2. 制造失败状态", "text": "在第 t 次检索后把文档换个顺序，挑出“原本答对、扰动后答错”的状态。"},
+      {"title": "3. 同一位置分叉", "text": "从逐 token 相同的前缀出发，分别接上“方法”和“安慰剂”，再续跑到作答。"},
+      {"title": "4. 比较修复率", "text": "方法修回的比例 vs 安慰剂修回的比例。两者接近，就说明修复主要来自运气。"}
+    ],
+    "arms": [
+      {"name": "方法臂", "text": "复查提示（review）、反思提示（reflect）、增加检索预算；或已发表方法自己的机制（ReSeek 的判断、MR-Search 的反思回合）"},
+      {"name": "安慰剂 P1", "text": "再换一次文档顺序：不增加任何信息，只给一次“重新来过”的机会"},
+      {"name": "安慰剂 P2", "text": "插入与方法提示等长的无意义文字：控制“多了一段话”本身的影响"}
+    ],
+    "rigor": "每个实验运行前预登记判定规则，结果出来后不改门槛；统计用按题聚类的 bootstrap 95% 置信区间。"
+  },
+
+  "findings": [
+    {
+      "id": "H1", "tone": "good", "verdict": "成立 7/7",
+      "title": "恢复收益主要是均值回归",
+      "summary": "7 个 Search-R1 智能体（3B / 7B / 14B，PPO / GRPO / Instruct 底座）× 5 个数据集（2125 题）。每个智能体上，安慰剂的修复率都不低于方法（比值 ≥ 1）。",
+      "chart": {
+        "title": "安慰剂修复率 ÷ 方法修复率（≥ 1 表示安慰剂修得一样多或更多）",
+        "unit": "", "max": 3, "ref": 1, "ref_label": "1 = 一样多",
+        "series": ["review（复查提示）", "reflect（反思提示）"],
+        "rows": [
+          {"label": "v0.1 7B PPO", "values": [1.098, 1.125]},
+          {"label": "v0.3 3B PPO", "values": [1.5, 1.2]},
+          {"label": "v0.3 3B GRPO", "values": [2.938, 2.35]},
+          {"label": "v0.3 7B PPO（主）", "values": [1.429, 1.395]},
+          {"label": "v0.3 7B GRPO", "values": [1.556, 1.273]},
+          {"label": "v0.3 7B Instruct-GRPO", "values": [1.375, 1.341]},
+          {"label": "v0.3 14B GRPO", "values": [null, 22.0], "note": "14B 上方法几乎修不回来（reflect 比值 22，超出坐标；review 修复率为 0，比值无定义）"}
+        ]
+      },
+      "caveat": "跨 7 个智能体合并的效应量和置信区间，等厂内这轮 CPU 统计回传后补上。"
+    },
+    {
+      "id": "U2", "tone": "good", "verdict": "两个方法都支持 H1",
+      "title": "审计两个已发表的恢复机制",
+      "summary": "ReSeek（ICML 2026，训练出“判断这批文档有没有用”的能力，判 No 就再搜）和 MR-Search（答完后插入反思回合再答一次）。都用作者原文提示词，都通过了保真度检查。",
+      "chart": {
+        "title": "ReSeek：在“答错且模型自判有用”的状态上，各臂最终答对率（%）",
+        "unit": "%", "max": 15,
+        "series": ["答对率"],
+        "rows": [
+          {"label": "自然续写（重采样）", "values": [4.3]},
+          {"label": "强制判 Yes（不再搜）", "values": [5.2]},
+          {"label": "换文档顺序（安慰剂）", "values": [7.6]},
+          {"label": "强制判 No（再搜一次）", "values": [11.4]}
+        ]
+      },
+      "points": [
+        "ReSeek：强制再搜比换顺序多修 3.7 个百分点 [2.0, 5.4]，有一小部分真实作用；但在本来答对的状态上强制再搜，伤害 16.3 个百分点，总体净值为负。",
+        "ReSeek：模型自己判“没用”时照做反而更差，改成强制“有用”答对率更高。它能察觉问题，但按它行事修不好。",
+        "MR-Search：反思回合的修复，被“等长无意义回合”“重开一回合”“只要求再答一次”三种对照全部解释；在答对的题上伤害 4.7 个百分点（7B）和 17.3 个百分点（3B）。"
+      ]
+    },
+    {
+      "id": "FC1", "tone": "neutral", "verdict": "已校准",
+      "title": "评测环境保真度检查",
+      "summary": "确认我们的评测环境没有压低模型：提示词不影响结果；旧的 v0.1 检查点偏弱，主模型已换成 v0.3（与第三方报告一致）。",
+      "chart": {
+        "title": "贪心作答 EM（HotpotQA + 2Wiki，1000 题，%）",
+        "unit": "%", "max": 50,
+        "series": ["EM"],
+        "rows": [
+          {"label": "Qwen2.5-7B-Instruct（未经搜索 RL）", "values": [24.3]},
+          {"label": "Search-R1 v0.1 7B PPO", "values": [25.4]},
+          {"label": "Search-R1 v0.3 3B PPO", "values": [36.0]},
+          {"label": "Search-R1 v0.3 7B GRPO", "values": [38.9]},
+          {"label": "Search-R1 v0.3 7B PPO", "values": [40.8]}
+        ]
+      }
+    },
+    {
+      "id": "H3", "tone": "warn", "verdict": "未成立 3/7",
+      "title": "信用信号是否测得到证据",
+      "summary": "在 3 个智能体上成立；在 2 个 GRPO 智能体上信号与真值相关达 0.37（被证伪）；另外 2 个的真值本身测不稳。已从主张降为次要分析，并取消了基于它的训练实验。",
+      "points": ["一个值得写的现象：在多数智能体上，基于似然的信息增益信号并不比“文档里出现了答案串”这个朴素规则更好。"]
+    },
+    {
+      "id": "HR2", "tone": "neutral", "verdict": "部分有效",
+      "title": "RL 的增益从哪来（交接重放）",
+      "summary": "让 RL 模型和未经 RL 的同族模型互相接手对方的轨迹，拆分增益。PPO：增益 13.8 个百分点，约 44% 来自“搜到更好的证据”，56% 来自“更会用证据”，与证据无关的部分很小。GRPO 那次运行协议有效性没通过（续写格式失败 35–41%），不采信。",
+      "chart": {
+        "title": "v0.3 7B PPO 相对 Instruct 的增益拆分（百分点）",
+        "unit": " pp", "max": 10,
+        "series": ["百分点"],
+        "rows": [
+          {"label": "获取（搜到更好的证据）", "values": [6.1]},
+          {"label": "利用（更会用证据）", "values": [7.7]},
+          {"label": "与证据无关（不显著）", "values": [2.4]}
+        ]
+      },
+      "caveat": "作为论文附录 / 补充分析，不单独成文。"
+    }
+  ],
+
+  "negatives": [
+    {"name": "检索漂移 → 恢复（10-09 ~ 10-12）", "result": "NO-GO", "kept": "留下了精确前缀重放引擎"},
+    {"name": "选择性干预 SI1（10-12 ~ 10-13）", "result": "NO-GO", "kept": "提示类干预大多无效；四卡并行框架"},
+    {"name": "路径运气 PCR（10-15 ~ 10-16）", "result": "NO-GO（运气占比 7.9%，未过 10% 门槛）", "kept": "成为 H1 的开发集证据"},
+    {"name": "逐轮信用检验 CT1（10-16 ~ 10-19）", "result": "NO-GO（真值信度不足；被近期工作抢先）", "kept": "成为 H3 的开发集证据"},
+    {"name": "交接重放 HR1（10-19 ~ 10-20）", "result": "NO-GO（旧检查点没有增益可拆）", "kept": "暴露检查点版本问题 → FC1 校准"}
+  ],
+
+  "timeline": [
+    {"date": "10-09", "text": "立项，搭建同前缀重放引擎", "done": true},
+    {"date": "10-19", "text": "AC1：在新题、两个检查点上确认 H1 / H3", "done": true},
+    {"date": "10-23", "text": "FC1：评测保真度校准，主模型换为 v0.3", "done": true},
+    {"date": "10-27", "text": "U1 / U2 / HR2 完成：H1 7/7；两个已发表方法审计完成", "done": true},
+    {"date": "10-28 ~ 11-04", "text": "U1x：3 种其他训练配方、4 个智能体验证 H1；论文主表统计", "done": false, "current": true},
+    {"date": "11-05 ~ 11-25", "text": "论文主表与图定稿；必要的补充实验", "done": false},
+    {"date": "11-18 ~ 12-23", "text": "写作、内部审阅、投稿前再次查新", "done": false},
+    {"date": "2027-01-04", "text": "ARR 投稿（目标 ACL 2027 主会）", "done": false}
+  ],
+
+  "risks": [
+    "近期已有相近工作（CIR、SearchAuditor 等）：我们的区别在于搜索智能体、同前缀精确重放、明确的均值回归框架，以及审计已发表方法。",
+    "H1 的覆盖面：目前 7 个智能体都来自 Search-R1 配方，正在用 U1x 补另外 3 种配方。",
+    "ReSeek 只放出了 3B 权重；MR-Search 没有权重，审计的是论文自己的测试时版本。"
+  ],
+
+  "campaign": {
+    "title": "当前批次：U1x（其他训练配方上的 H1）",
+    "items": [
+      {"name": "ZeroSearch-Llama-3.2-3B · 源轨迹", "run": "outputs/u1/zs_llama32_3b/sources", "done": "outputs/u1/zs_llama32_3b/sources/sources.jsonl"},
+      {"name": "ZeroSearch-Llama-3.2-3B · H1 分支", "run": "outputs/u1/zs_llama32_3b/pcr", "done": "outputs/u1/zs_llama32_3b/pcr/analysis/pcr_report.json"},
+      {"name": "ZeroSearch-Qwen2.5-7B · 源轨迹", "run": "outputs/u1/zs_qwen25_7b/sources", "done": "outputs/u1/zs_qwen25_7b/sources/sources.jsonl"},
+      {"name": "ZeroSearch-Qwen2.5-7B · H1 分支", "run": "outputs/u1/zs_qwen25_7b/pcr", "done": "outputs/u1/zs_qwen25_7b/pcr/analysis/pcr_report.json"},
+      {"name": "AutoRefine-7B · 源轨迹", "run": "outputs/u1/autorefine_7b/sources", "done": "outputs/u1/autorefine_7b/sources/sources.jsonl"},
+      {"name": "AutoRefine-7B · H1 分支", "run": "outputs/u1/autorefine_7b/pcr", "done": "outputs/u1/autorefine_7b/pcr/analysis/pcr_report.json"},
+      {"name": "StepSearch-7B · 源轨迹", "run": "outputs/u1/stepsearch_7b/sources", "done": "outputs/u1/stepsearch_7b/sources/sources.jsonl"},
+      {"name": "StepSearch-7B · H1 分支", "run": "outputs/u1/stepsearch_7b/pcr", "done": "outputs/u1/stepsearch_7b/pcr/analysis/pcr_report.json"},
+      {"name": "汇总与合并效应量", "run": "", "done": "outputs/paper/h1_pooled_u1x/h1_pooled.md"}
+    ]
+  },
+
+  "glossary": [
+    {"term": "EM", "text": "精确匹配：答案规范化后与标准答案完全一致，记为答对。"},
+    {"term": "均值回归", "text": "按“表现差”挑出的样本，再测一次时平均会变好，与是否施加了方法无关。"},
+    {"term": "安慰剂", "text": "形式上和方法一样“动了一下”，但不提供任何新信息的对照操作。"},
+    {"term": "同前缀精确重放", "text": "从轨迹某一位置起，逐 token 复用前文，只改一处后继续生成，保证比较公平。"},
+    {"term": "PPO / GRPO", "text": "两种常用的强化学习算法；Search-R1 官方同时发布了两种算法训练的模型。"}
+  ]
+}
