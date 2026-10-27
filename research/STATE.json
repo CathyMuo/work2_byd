@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-10-23",
-  "current_stage": "U1_running_U2_HR2_registered",
-  "status": "FC1 done (bounded prompt, main 7B = v0.3 PPO). U1 runs first on 4 GPUs. U2 (ReSeek judge forcing, MR-Search reflection turn) and HR2 (handoff replay on v0.3 PPO/GRPO with evonly_placebo) are implemented, preregistered and have factory guides.",
-  "next_action": "Factory: finish U1 (U1_PROMPT=bounded), then U2 (docs/U2_FACTORY_GUIDE.md), then HR2 (docs/HR2_FACTORY_GUIDE.md). Downloads/configs for U2 may be prepared while U1 runs; do not pull code until U1 finishes. Confirm the four GPUs are free before each run.",
+  "updated_at": "2026-10-27",
+  "current_stage": "U1_U2_HR2_done_paper_tables",
+  "status": "U1 H1 confirmed 7/7, H3 not confirmed 3/7 (demoted). U2 ReSeek and MR-Search pass fidelity and confirm H1 (ReSeek has a small real residual and larger harm). HR2 PPO supplementary; GRPO invalid (G-A1), G-A3(iii) not accepted. Paper narrows to the recovery audit.",
+  "next_action": "Factory CPU step docs/PAPER_TABLES_GUIDE.md (paper_h1 pooled table, full U2 reports, HR2 source statuses); then paper outline. User decides on a non-Search-R1 agent for H1 generality. U3 cancelled.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -954,8 +954,10 @@
       "bamboogle"
     ],
     "CPU_test_count": 159,
-    "factory_results_available": false,
-    "prompt_variant": "bounded"
+    "factory_results_available": true,
+    "prompt_variant": "bounded",
+    "H1": "confirmed 7/7",
+    "H3": "not confirmed 3/7 (2 refute, 2 undetermined E reliability)"
   },
   "u2_scan": {
     "report": "user-local 工作二_U2方法审计候选.md",
@@ -987,7 +989,31 @@
       "evonly_placebo"
     ],
     "gates": "G-A1(b) = evonly - evonly_placebo >= 5 pp (CI lo > 0); EF primary = R-I gap under evonly_placebo; G-A3(iii) PPO vs GRPO share difference >= 20 pp with paired CI excluding 0",
-    "factory_results_available": false
+    "factory_results_available": true,
+    "results": {
+      "ppo": {
+        "G_A1": true,
+        "G_A2": true,
+        "G_A3_i_ii": false,
+        "gain_end": 0.138,
+        "acquisition_share": 0.443,
+        "utilization_share": 0.557,
+        "decision": "supplementary analysis of (a)"
+      },
+      "grpo": {
+        "G_A1": false,
+        "format_fail_R_continued": [
+          0.35,
+          0.408
+        ],
+        "decision": "invalid; not used"
+      },
+      "G_A3_iii": {
+        "mechanical": true,
+        "accepted": false,
+        "reason": "relies on the GRPO run that fails G-A1"
+      }
+    }
   },
   "u2": {
     "protocols": [
@@ -1018,7 +1044,33 @@
     },
     "verdict_rule": "AC1 H1 rule (placebo/method >= 1/3 or corrected net <= 0), only if the fidelity gate passes",
     "prompt_verification": "ReSeek system/user prefix and MR retry_prompt equal upstream strings byte-for-byte (ast)",
-    "factory_results_available": false
+    "factory_results_available": true,
+    "results": {
+      "reseek_3b": {
+        "F": true,
+        "H1_resample": true,
+        "H1_perm": true,
+        "S_fail_force_no_minus_nat": 0.071,
+        "S_fail_force_no_minus_perm": 0.037,
+        "harm_S_ok": -0.163
+      },
+      "mr_v03_7b_ppo": {
+        "F": true,
+        "H1_neutral": true,
+        "H1_fresh": true,
+        "H1_reask": true,
+        "harm_S_right_reflect": -0.047
+      },
+      "mr_v03_3b_ppo": {
+        "F": true,
+        "H1_neutral": true,
+        "H1_fresh": true,
+        "H1_reask": true,
+        "harm_S_right_reflect": -0.173
+      }
+    }
   },
-  "cpu_test_count": 170
+  "cpu_test_count": 171,
+  "u3": "cancelled 2026-10-27 (H3 demoted)",
+  "results_doc": "research/U1_U2_HR2_RESULTS_AND_DECISION.md"
 }

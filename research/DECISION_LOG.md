@@ -1077,3 +1077,35 @@ EM, so U2 states how much of each mechanism's repair on failure-selected states
 same-state placebos reproduce. Real-tokenizer checks on the home server
 (Search-R1 3B, Qwen2.5-7B-Instruct): MR user turn equals retry_str, neutral turn
 142 vs 143 tokens, judge cut exact. CPU tests: all pass.
+
+## 2026-10-27 — U1 / U2 / HR2 results and decisions
+
+Factory runs frozen at factory HEAD 0f74626 (public 37bb169 + a factory-local
+commit). Details: research/U1_U2_HR2_RESULTS_AND_DECISION.md.
+U1 (7 agents x 2125 questions over 5 datasets): H1 confirmed 7/7 (best-placebo /
+method repair >= 1 almost everywhere). H3 confirmed 3/7 (< 6 required): NOT
+confirmed. v03_3b_grpo and v03_14b_grpo refute it (E reliability 0.90/0.97, ig rho
+0.37/0.37); v03_7b_ppo and v03_7b_it_grpo are undetermined (E reliability 0.76/0.67
+< 0.8; the factory quoted 0.75 by mistake). H2 is absent by design (U1 arm group h1
+has no deletion arms). Decision: H1 is the paper's main claim with pooled per-placebo
+effect sizes (new work2/paper_h1.py); H3 is demoted to a secondary analysis
+("checkpoint-dependent, at most moderate, mostly no better than answer_hit"); no
+further compute on E reliability; U3 (training with credit signals) is cancelled.
+U2: all three runs pass fidelity. ReSeek-3B: H1 confirmed under the preregistered
+rule (resample explains 0.38, perm 0.67), but force_no exceeds nat by +7.1 pp
+[5.3, 8.9] and perm by +3.7 pp [2.0, 5.4] on S_fail, while harming S_ok by 16.3 pp;
+forcing Yes beats natural behaviour on S_natNo and on all states (CIs pending).
+MR-Search 7B/3B: H1 confirmed against neutral, fresh and reask; harm on S_right 4.7 /
+17.3 pp. Both enter the paper, reported with the residual effects and harms.
+HR2: PPO passes G-A1 and G-A2, fails G-A3 (i)/(ii) (acquisition 44%, utilization
+56%, placebo-arm evidence-free 2.4 pp [-0.3, 5.2]; the evonly_placebo EF of -8.7 pp is
+the bias anticipated in section 6) -> supplementary analysis of (a). GRPO fails G-A1
+(martingale -3.5 pp [-5.3, -1.7]; GRPO-continued combos 35-41% format failures vs ~1%
+for I). G-A3(iii) is mechanically True but NOT accepted: utilization contrasts GRPO-
+vs I-continuation, exactly the term the format failures depress, and G-A1 exists to
+bar invalid runs; the protocol omitted "(iii) requires both runs to pass G-A1" and the
+intent is applied. No PPO-vs-GRPO mechanism claim. No HR2b scheduled.
+Paper (ACL 2027 main) narrows to the recovery audit: protocol, H1 across 7 agents x 5
+datasets, U2 published mechanisms, rescue/harm accounting; credit signals secondary;
+HR2 PPO in the appendix. Next: factory CPU step docs/PAPER_TABLES_GUIDE.md; the user
+decides on adding a non-Search-R1 agent for generality.
