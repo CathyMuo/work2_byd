@@ -1131,3 +1131,24 @@ before any run (work2/u1x.py); macro gap < -10 pp marks an agent possibly
 mis-harnessed (reported separately, not counted); format failures >= 10% exclude.
 Generality claim: H1 confirmed on >= ceil(0.8 x included unflagged U1x agents);
 pooled effect sizes over U1 + U1x via paper_h1 with both rosters. 177 CPU tests.
+
+## 2026-10-27 — Paper tables back: H1 effect sizes, full U2 numbers
+
+Factory ea6d6bf (CPU only). Pooled over 7 agents / 706 degraded states (semantic):
+repair P1 48.0%, review 29.9%, reflect 33.1%, budget2 ~1.8%; review - P2 +2.1
+[-1.5, 5.8], reflect - P2 +0.8 [-3.0, 4.7] (raw view +1.1 / +0.1), review - P1 -18.1,
+reflect - P1 -14.9. Reading: recovery-prompt repairs equal token-matched content-free
+text; re-drawing the luck repairs more; a no-text change (budget2) repairs ~nothing,
+so repair comes from perturbing the deterministic decode. Per-agent content effects
+range from about -10 pp (3B/14B GRPO) to +16 pp (v0.1 7B review, 3B PPO reflect).
+Harm on stable states: review 26.9% vs P1 5.9% pooled, driven by 14B/3B GRPO; P1 is
+not the matched control, so paper_h1 now adds the P2-matched harm difference.
+ReSeek: nat - force_yes on S_natNo -2.4 [-3.9, -1.1], on all states -1.3 [-2.2,
+-0.4]; judge No rate 21.8% with answer in the observation vs 56.9% without (detects,
+but acting on it hurts). MR-Search S_wrong repair 7B reflect 3.3 / reask 1.9 /
+neutral 1.7 / fresh 9.3; 3B 4.6 / 3.9 / 2.3 / 5.9; reflect - neutral +1.6 / +2.3
+(significant), reflect - fresh -6.0 / -1.3; all-question net 7B ~0, 3B -2.5 pp.
+HR2 GRPO sources: 18.2% failed (102 generation_limit, 7 malformed) -> stays invalid.
+Decision: the paper states H1 as effect sizes against the matched placebo; the
+verdict rule is unchanged. Details: research/U1_U2_HR2_RESULTS_AND_DECISION.md
+section 6.

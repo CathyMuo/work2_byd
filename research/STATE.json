@@ -3,7 +3,7 @@
   "project": "work2_byd",
   "updated_at": "2026-10-27",
   "current_stage": "U1x_registered_paper_tables_pending",
-  "status": "U1 H1 confirmed 7/7, H3 not confirmed 3/7 (demoted). U2 ReSeek and MR-Search pass fidelity and confirm H1 (ReSeek has a small real residual and larger harm). HR2 PPO supplementary; GRPO invalid (G-A1), G-A3(iii) not accepted. Paper narrows to the recovery audit.",
+  "status": "H1 pooled over 7 agents: review - P2 +2.1 [-1.5, 5.8], reflect - P2 +0.8 [-3.0, 4.7], P1 repairs 48%; U2 numbers complete (ReSeek natural trigger harmful, MR-Search reflection < fresh retry). U1x registered.",
   "next_action": "Factory: docs/PAPER_TABLES_GUIDE.md (CPU) and docs/U1X_FACTORY_GUIDE.md (4 agents, H1 only, ~5-7 h on 4 GPUs); then paper outline with pooled H1 over U1 + U1x.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
@@ -1070,7 +1070,7 @@
       }
     }
   },
-  "cpu_test_count": 177,
+  "cpu_test_count": 182,
   "u3": "cancelled 2026-10-27 (H3 demoted)",
   "results_doc": "research/U1_U2_HR2_RESULTS_AND_DECISION.md",
   "u1x": {
@@ -1092,5 +1092,44 @@
     "scope": "H1 only",
     "fidelity_references": "work2/u1x.py REFERENCE_EM (from the papers, before any run)",
     "factory_results_available": false
+  },
+  "paper_tables": {
+    "h1_pooled": {
+      "degraded_states": 706,
+      "P1_repair": 0.48,
+      "review_repair": 0.299,
+      "reflect_repair": 0.331,
+      "review_minus_P2": [
+        0.021,
+        -0.015,
+        0.058
+      ],
+      "reflect_minus_P2": [
+        0.008,
+        -0.03,
+        0.047
+      ],
+      "budget2_repair": 0.018
+    },
+    "reseek_natural_trigger_nat_minus_force_yes": [
+      -0.024,
+      -0.039,
+      -0.011
+    ],
+    "mrsearch_S_wrong_repair": {
+      "7b": {
+        "reflect": 0.033,
+        "reask": 0.019,
+        "neutral": 0.017,
+        "fresh": 0.093
+      },
+      "3b": {
+        "reflect": 0.046,
+        "reask": 0.039,
+        "neutral": 0.023,
+        "fresh": 0.059
+      }
+    },
+    "doc": "research/U1_U2_HR2_RESULTS_AND_DECISION.md section 6"
   }
 }

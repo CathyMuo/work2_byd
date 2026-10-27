@@ -51,7 +51,10 @@ def block(rows, view, resamples):
             "minus_P1": estimate(degraded, mean(lambda r, a=arm: y(r, a) - y(r, "perm_2")), resamples),
             "minus_P2": estimate(degraded, mean(lambda r, a=arm, p=p2: y(r, a) - y(r, p)), resamples),
             "harm_on_stable": rate(stable, lambda r, a=arm: 1 - y(r, a)),
-            "P1_harm_on_stable": rate(stable, lambda r: 1 - y(r, "perm_2"))}
+            "P1_harm_on_stable": rate(stable, lambda r: 1 - y(r, "perm_2")),
+            # Matched harm control (2026-10-27): the same content-free text on the same stable state.
+            "P2_harm_on_stable": rate(stable, lambda r, p=p2: 1 - y(r, p)),
+            "harm_minus_P2": estimate(stable, mean(lambda r, a=arm, p=p2: y(r, p) - y(r, a)), resamples) if stable else None}
     return out
 
 
@@ -106,6 +109,20 @@ def table(rows):
     return L
 
 
+def harm_table(rows):
+    """Harm on stable states (clean right, perm_1 right): each method vs its token-matched P2 on the same state."""
+    L = ["| 智能体 | 稳定态数 | P1 伤害 | review 伤害 | P2 伤害 | review−P2 | reflect 伤害 | P2 伤害 | reflect−P2 |",
+         "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+    for name, b in rows:
+        if not b or not b["methods"]:
+            L.append("| {} | 缺失 | | | | | | | |".format(name)); continue
+        rv, rf = b["methods"]["review"], b["methods"]["reflect"]
+        L.append("| {} | {} | {} | {} | {} | {} | {} | {} | {} |".format(
+            name, b["stable"], pc(rv["P1_harm_on_stable"]), pc(rv["harm_on_stable"]), pc(rv.get("P2_harm_on_stable")),
+            fmt(rv.get("harm_minus_P2")), pc(rf["harm_on_stable"]), pc(rf.get("P2_harm_on_stable")), fmt(rf.get("harm_minus_P2"))))
+    return L
+
+
 def markdown(r):
     L = ["# H1 论文表：恢复方法 vs 各同状态安慰剂（自动生成，供回传）", "",
          "单位：百分点；[] 为按题聚类 bootstrap 95% CI（合并行把同一道题在所有智能体上的状态放在一个簇里）。",
@@ -114,6 +131,9 @@ def markdown(r):
     L += table([(k, v and v["sem"]) for k, v in r["agents"].items()] + [("**合并**", r["pooled"]["sem"])])
     L += ["", "## 原始 EM 口径", ""]
     L += table([(k, v and v["raw"]) for k, v in r["agents"].items()] + [("**合并**", r["pooled"]["raw"])])
+    L += ["", "## 稳定状态上的伤害（语义口径；方法 vs 同状态、等长的 P2）", "",
+          "“方法−P2”= 方法比 P2 多造成的伤害（正值表示方法更伤）。", ""]
+    L += harm_table([(k, v and v["sem"]) for k, v in r["agents"].items()] + [("**合并**", r["pooled"]["sem"])])
     L += ["", "## 合并、分数据集（语义口径）", ""]
     L += table(list(r["pooled_by_dataset"].items()))
     n = r["pooled"]["sem"]["noise"]

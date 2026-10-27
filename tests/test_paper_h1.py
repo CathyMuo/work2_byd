@@ -49,6 +49,9 @@ class PooledTests(unittest.TestCase):
             self.assertIsNone(r["agents"]["missing"])
             self.assertEqual(r["pooled"]["sem"]["degraded"], 16)
             self.assertIn("**合并**", paper_h1.markdown(r))
+            self.assertIn("稳定状态上的伤害", paper_h1.markdown(r))
+            self.assertAlmostEqual(b["methods"]["review"]["harm_minus_P2"]["estimate"], 0.0)
+            self.assertAlmostEqual(b["methods"]["review"]["P2_harm_on_stable"], 0.0)
 
 
 if __name__ == "__main__":

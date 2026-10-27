@@ -111,9 +111,10 @@ tail -f outputs/u1x_all.log
 
 如果某个智能体格式失败 ≥ 10%，或者 EM 与论文差很多，**不要停**，照常跑完，按协议在汇总里单独报告。
 
-全部完成后：
+全部完成后，先拉一次代码，让汇总表带上 10-27 新增的“与 P2 匹配的伤害”列。这时已经没有运行中的实验，可以拉取；只拉取，不要提交。然后再汇总：
 
 ```bash
+git pull --ff-only
 bash scripts/run_u1x.sh summary
 bash scripts/run_u1x.sh pack
 ```
