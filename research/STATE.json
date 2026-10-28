@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-10-27",
-  "current_stage": "U1x_registered_paper_tables_pending",
-  "status": "H1 pooled over 7 agents: review - P2 +2.1 [-1.5, 5.8], reflect - P2 +0.8 [-3.0, 4.7], P1 repairs 48%; U2 numbers complete (ReSeek natural trigger harmful, MR-Search reflection < fresh retry). U1x registered.",
-  "next_action": "Factory: docs/PAPER_TABLES_GUIDE.md (CPU) and docs/U1X_FACTORY_GUIDE.md (4 agents, H1 only, ~5-7 h on 4 GPUs); then paper outline with pooled H1 over U1 + U1x.",
+  "updated_at": "2026-10-28",
+  "current_stage": "experiments_core_complete_paper_outline",
+  "status": "U1x: H1 on 3/3 measurable non-Search-R1 agents (ZeroSearch Llama/Qwen, StepSearch); preregistered generality 3/4 not met because AutoRefine is not measurable for insertion arms (post hoc validity condition). Pooled 11 agents: review - P2 +1.8 [-1.0, 4.6], reflect - P2 +2.0 [-0.9, 5.1].",
+  "next_action": "Factory CPU step docs/U1X_FOLLOWUP_GUIDE.md (10-agent pooled table, AutoRefine arm diagnosis); home: paper outline, main tables and figures. No new GPU experiments planned.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -1070,7 +1070,7 @@
       }
     }
   },
-  "cpu_test_count": 182,
+  "cpu_test_count": 183,
   "u3": "cancelled 2026-10-27 (H3 demoted)",
   "results_doc": "research/U1_U2_HR2_RESULTS_AND_DECISION.md",
   "u1x": {
@@ -1091,7 +1091,9 @@
     ],
     "scope": "H1 only",
     "fidelity_references": "work2/u1x.py REFERENCE_EM (from the papers, before any run)",
-    "factory_results_available": false
+    "factory_results_available": true,
+    "H1": "3/4 mechanical; 3/3 measurable (AutoRefine insertion-invalid, post hoc)",
+    "results_doc": "research/U1X_RESULTS_AND_DECISION.md"
   },
   "paper_tables": {
     "h1_pooled": {

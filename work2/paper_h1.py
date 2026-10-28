@@ -149,12 +149,13 @@ def main():
     p.add_argument("--agents", type=Path, nargs="+", default=[Path("configs/u1_agents.json")],
                    help="one or more roster files (e.g. configs/u1_agents.json configs/u1x_agents.json)")
     p.add_argument("--output", type=Path, required=True); p.add_argument("--resamples", type=int, default=2000)
+    p.add_argument("--exclude", nargs="*", default=[], help="labels left out of the table and the pooled rows (reported in the output)")
     a = p.parse_args()
     try:
         if a.output.exists():
             raise ValueError("Output exists; use a new --output")
-        labels = [x["label"] for f in a.agents for x in load_json(f)["agents"]]
-        report = analyze(a.u1_root, labels, a.resamples)
+        labels = [x["label"] for f in a.agents for x in load_json(f)["agents"] if x["label"] not in a.exclude]
+        report = dict(analyze(a.u1_root, labels, a.resamples), excluded_agents=a.exclude)
     except (ValueError, KeyError, FileNotFoundError) as exc:
         p.error(str(exc))
     a.output.mkdir(parents=True)

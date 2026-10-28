@@ -1152,3 +1152,24 @@ HR2 GRPO sources: 18.2% failed (102 generation_limit, 7 malformed) -> stays inva
 Decision: the paper states H1 as effect sizes against the matched placebo; the
 verdict rule is unchanged. Details: research/U1_U2_HR2_RESULTS_AND_DECISION.md
 section 6.
+
+## 2026-10-28 — U1x results: H1 on 3/3 measurable non-Search-R1 recipes
+
+Factory 9b5ea45, zero commits during the runs. Fidelity fine (format failures 0-2.4%;
+paper EM gap AutoRefine -1.1 pp, StepSearch -3.0 pp). H1 confirmed on zs_llama32_3b,
+zs_qwen25_7b and stepsearch_7b (explained 1.46-2.26). Preregistered generality claim
+NOT met mechanically: 3/4 < ceil(0.8 x 4) = 4. autorefine_7b: review, reflect AND
+both content-free P2 arms repair 0% and break 99-100% of stable states, while P1
+(47.2% repair, 4.2% harm) and budget2 are normal -> inserting any text after the
+observation breaks this agent; its False verdict is the 0/0 edge of the explained
+fraction. Post hoc validity condition, labelled as post hoc in the paper: agents whose
+P2 harm on stable states exceeds 50% are not measurable for insertion arms (only
+AutoRefine triggers it; 14B GRPO's P2 is normal). With it, H1 holds on 3/3 measurable
+U1x agents and 10/10 overall; both the mechanical 3/4 and the condition are reported.
+No AutoRefine prompt adaptation (post hoc tuning); its brittleness is reported as a
+finding. Content effects vary by agent (ZeroSearch-Llama +10.5 / +13.2 pp, D = 38).
+Pooled 11 agents: review - P2 +1.8 [-1.0, 4.6], reflect - P2 +2.0 [-0.9, 5.1]; the
+paper table pools the 10 measurable agents (paper_h1 --exclude, factory CPU step
+docs/U1X_FOLLOWUP_GUIDE.md, with work2/arm_diagnose.py on AutoRefine). Experiments for
+the main claims are complete; next is the paper outline. The user's GPU keep-alive
+was stopped by the factory and left stopped for the user to decide.
