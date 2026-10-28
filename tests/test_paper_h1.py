@@ -50,6 +50,8 @@ class PooledTests(unittest.TestCase):
             self.assertEqual(r["pooled"]["sem"]["degraded"], 16)
             self.assertIn("**合并**", paper_h1.markdown(r))
             self.assertIn("稳定状态上的伤害", paper_h1.markdown(r))
+            self.assertIn("智能体层面汇总", paper_h1.markdown(r))
+            self.assertEqual(paper_h1.agent_level(r)["reflect−P2（修复）"]["agents"], 2)
             self.assertAlmostEqual(b["methods"]["review"]["harm_minus_P2"]["estimate"], 0.0)
             self.assertAlmostEqual(b["methods"]["review"]["P2_harm_on_stable"], 0.0)
 

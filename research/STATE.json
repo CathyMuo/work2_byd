@@ -3,8 +3,8 @@
   "project": "work2_byd",
   "updated_at": "2026-10-28",
   "current_stage": "experiments_core_complete_paper_outline",
-  "status": "U1x: H1 on 3/3 measurable non-Search-R1 agents (ZeroSearch Llama/Qwen, StepSearch); preregistered generality 3/4 not met because AutoRefine is not measurable for insertion arms (post hoc validity condition). Pooled 11 agents: review - P2 +1.8 [-1.0, 4.6], reflect - P2 +2.0 [-0.9, 5.1].",
-  "next_action": "Factory CPU step docs/U1X_FOLLOWUP_GUIDE.md (10-agent pooled table, AutoRefine arm diagnosis); home: paper outline, main tables and figures. No new GPU experiments planned.",
+  "status": "10-agent H1: review - P2 +2.0 [-1.1, 4.9], reflect - P2 +2.2 [-1.2, 5.7]; harm method - P2 > 0 in 6/10 and 8/10 agents, < 0 in none. AutoRefine stops after any inserted text. Validity rule corrected to a format rule (P2 answered rate >= 50%).",
+  "next_action": "Factory CPU step docs/H1_VALIDITY_GUIDE.md; then paper outline.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -1133,5 +1133,6 @@
       }
     },
     "doc": "research/U1_U2_HR2_RESULTS_AND_DECISION.md section 6"
-  }
+  },
+  "h1_validity_rule": "insertion-valid iff well-formed answer rate under content-free P2 on stable states >= 0.5 (post hoc, fixed 2026-10-28 before any 14B diagnosis)"
 }

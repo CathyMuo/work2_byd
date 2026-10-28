@@ -29,6 +29,11 @@ class DiagnoseTests(unittest.TestCase):
             self.assertEqual(d["arms"]["perm_2"]["em"], 1.0)
             self.assertEqual(d["arms"]["perm1_neutral"]["statuses"], {"malformed_action": 5})
             self.assertIn("<|im_end|>", arm_diagnose.markdown("x", d))
+            self.assertFalse(d["insertion_valid"])
+            self.assertIn("插入有效性", arm_diagnose.validity_table({"x": d}))
+            (run.parent.parent / "y" / "pcr").mkdir(parents=True)
+            (run.parent.parent / "y" / "pcr" / "states.jsonl").write_text("".join(json.dumps(state(i, False)) + "\n" for i in range(5)))
+            self.assertTrue(arm_diagnose.diagnose(run.parent.parent / "y" / "pcr")["insertion_valid"])
 
 
 if __name__ == "__main__":

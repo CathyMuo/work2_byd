@@ -123,8 +123,26 @@ def harm_table(rows):
     return L
 
 
+def agent_level(r, view="sem"):
+    """Across agents: how many per-agent CIs are above / below 0, and the median per-agent estimate."""
+    keys = {"review−P2（修复）": ("review", "minus_P2"), "reflect−P2（修复）": ("reflect", "minus_P2"),
+            "review−P1（修复）": ("review", "minus_P1"), "reflect−P1（修复）": ("reflect", "minus_P1"),
+            "review−P2（伤害）": ("review", "harm_minus_P2"), "reflect−P2（伤害）": ("reflect", "harm_minus_P2")}
+    out = {}
+    for name, (m, k) in keys.items():
+        es = [v[view]["methods"][m].get(k) for v in r["agents"].values() if v and v[view]["methods"]]
+        es = [e for e in es if e and e.get("estimate") is not None]
+        vals = sorted(e["estimate"] for e in es)
+        mid = len(vals) // 2
+        out[name] = {"agents": len(es), "ci_above_0": sum(1 for e in es if e["ci95"] and e["ci95"][0] > 0),
+                     "ci_below_0": sum(1 for e in es if e["ci95"] and e["ci95"][1] < 0),
+                     "median": (vals[mid] if len(vals) % 2 else (vals[mid - 1] + vals[mid]) / 2) if vals else None}
+    return out
+
+
 def markdown(r):
     L = ["# H1 论文表：恢复方法 vs 各同状态安慰剂（自动生成，供回传）", "",
+         "排除的智能体：{}".format(", ".join(r.get("excluded_agents") or []) or "无"), "",
          "单位：百分点；[] 为按题聚类 bootstrap 95% CI（合并行把同一道题在所有智能体上的状态放在一个簇里）。",
          "D = 退化状态数（clean 对、perm_1 错）。P1 = 再换一次顺序（perm_2）；P2 = 与方法等长的中性文字。", "",
          "## 语义口径（主，格式翻转已校正）", ""]
@@ -134,6 +152,11 @@ def markdown(r):
     L += ["", "## 稳定状态上的伤害（语义口径；方法 vs 同状态、等长的 P2）", "",
           "“方法−P2”= 方法比 P2 多造成的伤害（正值表示方法更伤）。", ""]
     L += harm_table([(k, v and v["sem"]) for k, v in r["agents"].items()] + [("**合并**", r["pooled"]["sem"])])
+    L += ["", "## 智能体层面汇总（语义口径；每个智能体一个估计）", "",
+          "| 量 | 智能体数 | CI 全在 0 以上 | CI 全在 0 以下 | 中位数（pp） |", "| --- | --- | --- | --- | --- |"]
+    for name, s in agent_level(r).items():
+        L.append("| {} | {} | {} | {} | {} |".format(name, s["agents"], s["ci_above_0"], s["ci_below_0"],
+                                                 "NA" if s["median"] is None else "{:.1f}".format(100 * s["median"])))
     L += ["", "## 合并、分数据集（语义口径）", ""]
     L += table(list(r["pooled_by_dataset"].items()))
     n = r["pooled"]["sem"]["noise"]
@@ -150,12 +173,17 @@ def main():
                    help="one or more roster files (e.g. configs/u1_agents.json configs/u1x_agents.json)")
     p.add_argument("--output", type=Path, required=True); p.add_argument("--resamples", type=int, default=2000)
     p.add_argument("--exclude", nargs="*", default=[], help="labels left out of the table and the pooled rows (reported in the output)")
+    p.add_argument("--validity", type=Path, help="arm_diagnose JSON; agents with insertion_valid false are excluded too")
     a = p.parse_args()
     try:
         if a.output.exists():
             raise ValueError("Output exists; use a new --output")
-        labels = [x["label"] for f in a.agents for x in load_json(f)["agents"] if x["label"] not in a.exclude]
-        report = dict(analyze(a.u1_root, labels, a.resamples), excluded_agents=a.exclude)
+        exclude = list(a.exclude)
+        if a.validity:
+            exclude += [k for k, v in load_json(a.validity).items() if v.get("insertion_valid") is False and k not in exclude]
+        labels = [x["label"] for f in a.agents for x in load_json(f)["agents"] if x["label"] not in exclude]
+        report = dict(analyze(a.u1_root, labels, a.resamples), excluded_agents=exclude,
+                      validity_file=str(a.validity) if a.validity else None)
     except (ValueError, KeyError, FileNotFoundError) as exc:
         p.error(str(exc))
     a.output.mkdir(parents=True)

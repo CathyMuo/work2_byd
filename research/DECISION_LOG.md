@@ -1173,3 +1173,23 @@ paper table pools the 10 measurable agents (paper_h1 --exclude, factory CPU step
 docs/U1X_FOLLOWUP_GUIDE.md, with work2/arm_diagnose.py on AutoRefine). Experiments for
 the main claims are complete; next is the paper outline. The user's GPU keep-alive
 was stopped by the factory and left stopped for the user to decide.
+
+## 2026-10-28 — 10-agent H1 table, matched harm, AutoRefine diagnosis; validity rule corrected
+
+Factory 6944151, CPU only. 10 agents (AutoRefine excluded), 911 degraded states:
+review - P2 +2.0 [-1.1, 4.9], reflect - P2 +2.2 [-1.2, 5.7]; vs P1 -19.8 / -16.9.
+Harm on 8072 stable states, method - P2: review +8.6 [7.9, 9.4], reflect +9.2
+[8.4, 10.0] pooled, dominated by GRPO models; per agent CI > 0 in 6/10 (review) and
+8/10 (reflect), CI < 0 in 0/10, median about +2.1 / +3.4 (the factory's "three
+reversed agents" is a misreading). Asymmetry for the paper: content adds no repair on
+failure states but adds harm on stable states -> net content effect <= 0.
+AutoRefine: after any inserted text it emits 1-2 tokens and stops (malformed) on
+99-100% of stable states; budget2 is 100% normal; v03_7b_ppo answers >= 99% on all
+arms. Correction: the 2026-10-28 claim that only AutoRefine crosses "P2 harm > 50%"
+was wrong (14B GRPO P2 harm 52.7% / 51.6%). The post hoc validity rule is replaced,
+before seeing any 14B diagnosis, by a format rule: an agent is insertion-valid if its
+well-formed answer rate under content-free P2 on stable states is >= 50%
+(work2/arm_diagnose.py VALIDITY_MIN_ANSWERED); harm with well-formed answers is a
+real effect, not invalidity. paper_h1 gains --validity and an agent-level summary.
+Main table = valid agents; sensitivity: 11, 10 and 9 (also without 14B) agents.
+Factory CPU step: docs/H1_VALIDITY_GUIDE.md.

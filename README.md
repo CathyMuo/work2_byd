@@ -2,7 +2,7 @@
 **进度看板**：`bash scripts/run_board.sh` 启动后打开 `http://127.0.0.1:8765/`，可以看研究说明（给导师汇报用）和实时实验进度。见 [看板使用说明](docs/BOARD_GUIDE.md)。
 
 **2026-10-28 U1x 完成**：H1 在 3/3 个可测的非 Search-R1 智能体上成立；AutoRefine 无法用插入文字的方法测量。见 [U1x 结果与决策](research/U1X_RESULTS_AND_DECISION.md)。
-厂内当前任务：[U1x 后续统计（只用 CPU）](docs/U1X_FOLLOWUP_GUIDE.md)。已完成：[论文表格](docs/PAPER_TABLES_GUIDE.md)、[U1x](docs/U1X_FACTORY_GUIDE.md)。
+厂内当前任务：[H1 插入有效性与主表（只用 CPU）](docs/H1_VALIDITY_GUIDE.md)。已完成：[论文表格](docs/PAPER_TABLES_GUIDE.md)、[U1x](docs/U1X_FACTORY_GUIDE.md)、[U1x 后续统计](docs/U1X_FOLLOWUP_GUIDE.md)。
 
 **2026-10-23 U1 之后的两项（代码与指导已就绪）：**
 - **U2 方法审计**：用同状态安慰剂检验 ReSeek（强制 judge）和 MR-Search（反思回合）自己的恢复机制。厂内从 [U2 厂内执行指导](docs/U2_FACTORY_GUIDE.md) 开始，协议见 [U2 协议](research/U2_PROTOCOL.md)。

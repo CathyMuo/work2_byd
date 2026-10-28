@@ -12,6 +12,10 @@ from pathlib import Path
 
 from .datasets import read_rows
 
+# Insertion validity (fixed 2026-10-28 before looking at any agent other than AutoRefine and v0.3 7B PPO):
+# with content-free text inserted (P2), the agent must still produce a well-formed answer on >= half of its stable states.
+VALIDITY_MIN_ANSWERED = 0.5
+P2_ARMS = ("perm1_neutral", "perm1_neutral_reflect")
 ARMS = ("perm_2", "perm1_review", "perm1_neutral", "perm1_reflect", "perm1_neutral_reflect", "perm1_budget2")
 
 
@@ -33,7 +37,18 @@ def diagnose(run_dir, examples=4, chars=300):
                           "final_answer": s["arms"][arm]["final_answer"], "gold": s["gold_answer"],
                           "first_generation": (s["arms"][arm]["post_target_texts"] or [""])[0][:chars]}
                          for s in stable[:examples] if s["arms"].get(arm)]}
+    rates = [out["arms"][a]["answered"] for a in P2_ARMS if a in out["arms"]]
+    out["insertion_valid"] = bool(rates) and min(rates) >= VALIDITY_MIN_ANSWERED
     return out
+
+
+def validity_table(report):
+    L = ["## 插入有效性（P2 无内容文字下，稳定状态的正常作答率 ≥ {:.0%} 才有效）".format(VALIDITY_MIN_ANSWERED), "",
+         "| 智能体 | P2（对应复查）作答率 | P2（对应反思）作答率 | 有效 |", "| --- | --- | --- | --- |"]
+    for label, d in report.items():
+        r = [d["arms"].get(a, {}).get("answered") for a in P2_ARMS]
+        L.append("| {} | {} | {} | {} |".format(label, *["NA" if x is None else "{:.3f}".format(x) for x in r], d["insertion_valid"]))
+    return "\n".join(L) + "\n"
 
 
 def markdown(label, d):
@@ -53,13 +68,18 @@ def markdown(label, d):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--root", type=Path, default=Path("outputs/u1")); p.add_argument("--labels", nargs="+", required=True)
+    p.add_argument("--root", type=Path, default=Path("outputs/u1")); p.add_argument("--labels", nargs="*", default=[])
+    p.add_argument("--agents", type=Path, nargs="*", default=[], help="roster files; every label with a PCR run is diagnosed")
     p.add_argument("--output", type=Path, required=True)
     a = p.parse_args()
-    report = {label: diagnose(a.root / label / "pcr") for label in a.labels}
+    labels = list(a.labels) + [x["label"] for f in a.agents for x in json.loads(Path(f).read_text(encoding="utf-8"))["agents"]
+                               if x["label"] not in a.labels and (a.root / x["label"] / "pcr" / "states.jsonl").is_file()]
+    if not labels:
+        p.error("no labels")
+    report = {label: diagnose(a.root / label / "pcr") for label in labels}
     a.output.parent.mkdir(parents=True, exist_ok=True)
     a.output.write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
-    text = "# PCR 插入臂诊断（自动生成，供回传）\n\n" + "\n".join(markdown(k, v) for k, v in report.items())
+    text = "# PCR 插入臂诊断（自动生成，供回传）\n\n" + validity_table(report) + "\n" + "\n".join(markdown(k, v) for k, v in report.items())
     a.output.with_suffix(".md").write_text(text, encoding="utf-8")
     print(text)
     return 0
