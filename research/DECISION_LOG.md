@@ -1210,3 +1210,25 @@ adds little repair (CI includes 0, upper bound ~6 pp) and adds harm; net content
 effect <= 0; insertion-based recovery presupposes tolerance of foreign text (2/11
 agents fail it). Experiments are closed; writing starts (outline in the user's local
 notes). Further numbers, if needed, come from CPU-only analyses.
+
+## 2026-10-28 — U1L registered: H1 on 32B agents
+
+User decision: add larger agents and make the experiment thorough. Search: the only
+32B RL search agent with public weights that runs on our E5 + Wiki-18 retrieval is
+ReSearch (Agent-RL); Search-R1/ZeroSearch/StepSearch/AutoRefine stop at 14B or 7B;
+ASearcher-Local needs a page-access tool and its own knowledge base. Roster (fixed
+before any run; research/U1L_PROTOCOL.md, configs/u1l_agents.json,
+scripts/run_u1l.sh, docs/U1L_FACTORY_GUIDE.md): research_32b and research_7b
+(ReSearch-Qwen-*-Instruct, RL) and qwen25_32b_inst / qwen25_7b_inst (prompted with the
+verbatim Search-R1 template, no search RL; reported separately, never pooled into the
+RL table). ReSearch format, read with ast from ReCall at 7fcf4d3~1 (the release code):
+system re_search_template_sys + bare question, observation " <result>\n{contents
+joined by blank lines}\n</result>", answer = last \boxed{} inside <answer>. Its own
+harness: top-5, up to 8 searches (upstream has no turn cap), 10240-token context, 1024
+tokens per turn; PCR's budget check now allows 4 or 8. Initial prompts with a system
+message now go through rollout.initial_text in sources and replay. Fidelity references
+(ReSearch Table 2 EM) recorded before any run; validity uses the format rule;
+preregistered readings Q1 (does H1 extend to 32B RL; content effect CI > 0 and >= 10 pp
+would mean scale dependence), Q2 (ReSearch 7B vs 32B, descriptive), Q3 (RL vs prompted
+at equal size, descriptive). Real Qwen2.5-Instruct tokenizer check matches upstream
+rendering. 188 CPU tests pass.

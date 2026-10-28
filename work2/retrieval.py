@@ -44,6 +44,8 @@ class SearchR1Retriever:
 
 def format_documents(documents, style="searchr1"):
     # Search-R1's document format (StepSearch: "Doc i<## Title: t ##> text"); never include gold answers or supporting facts.
+    if style == "contents":   # ReSearch / FlashRAG: raw corpus contents, blank-line separated
+        return "\n\n".join(d["contents"] for d in documents)
     pattern = {"searchr1": "Doc {}(Title: {}) {}\n", "stepsearch": "Doc {}<## Title: {} ##> {}\n"}[style]
     parts = []
     for rank, document in enumerate(documents, 1):

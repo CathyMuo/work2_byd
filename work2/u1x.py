@@ -17,6 +17,9 @@ REFERENCE_EM = {
     "autorefine_7b": {"nq": 0.484, "hotpotqa": 0.451, "2wiki": 0.405, "musique": 0.187, "bamboogle": 0.512},
     # StepSearch (arXiv 2505.15107) main table, Qwen2.5-7b-Base, StepSearch-base row.
     "stepsearch_7b": {"hotpotqa": 0.380, "2wiki": 0.385, "musique": 0.216, "bamboogle": 0.467},
+    # ReSearch (arXiv 2503.19470) Table 2, EM, E5 + 2018 Wikipedia, top-5 (U1L, read before any run).
+    "research_32b": {"hotpotqa": 0.4673, "2wiki": 0.4490, "musique": 0.2640, "bamboogle": 0.5680},
+    "research_7b": {"hotpotqa": 0.4352, "2wiki": 0.4759, "musique": 0.2230, "bamboogle": 0.4240},
 }
 FAIL = ("malformed_action", "generation_limit", "context_limit")
 

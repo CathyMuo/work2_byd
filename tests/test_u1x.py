@@ -73,7 +73,7 @@ class FormatTests(unittest.TestCase):
         self.assertTrue(a.startswith("\n\n<documents>Doc 1(Title: Alpha) Alpha fact.\n") and a.endswith("Gamma text here.</documents>\n\n"))
         s = observation_text(docs, "stepsearch")
         self.assertTrue(s.startswith("\n\n<information> Doc 1<## Title: Alpha ##> Alpha fact.\n") and s.endswith("Gamma text here. </information>\n\n"))
-        self.assertEqual(set(PROMPT_VARIANT_OF.values()), {"bounded", "official", "autorefine", "stepsearch"})
+        self.assertEqual(set(PROMPT_VARIANT_OF.values()), {"bounded", "official", "autorefine", "stepsearch", "research"})
 
     def test_sources_and_h1_arms_replay_in_each_style(self):
         for variant in ("official", "autorefine", "stepsearch"):

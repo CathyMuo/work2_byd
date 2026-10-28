@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-10-28",
-  "current_stage": "experiments_closed_writing",
+  "current_stage": "U1L_registered_writing_in_parallel",
   "status": "Final H1 table (9 insertion-valid agents, 850 degraded / 7043 stable states): review - P2 +2.8 [-0.5, 6.0], reflect - P2 +3.1 [-0.2, 6.4]; vs P1 -18.6 / -15.6; harm method - P2 +4.7 [3.9, 5.4] / +3.9 [3.1, 4.7]. v03_14b_grpo and autorefine_7b insertion-invalid. Sensitivity 11/10/9 agents same direction.",
-  "next_action": "Paper writing (outline in the user's local notes); further numbers only from CPU-only analyses.",
+  "next_action": "Factory: docs/U1L_FACTORY_GUIDE.md (ReSearch 32B/7B, prompted Qwen2.5 32B/7B Instruct; H1 only; ~2.5-3 days); home: paper writing in parallel.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {
@@ -1070,7 +1070,7 @@
       }
     }
   },
-  "cpu_test_count": 183,
+  "cpu_test_count": 188,
   "u3": "cancelled 2026-10-27 (H3 demoted)",
   "results_doc": "research/U1_U2_HR2_RESULTS_AND_DECISION.md",
   "u1x": {
@@ -1172,5 +1172,27 @@
       0.047
     ],
     "doc": "research/U1X_RESULTS_AND_DECISION.md section 6"
+  },
+  "u1l": {
+    "protocol": "research/U1L_PROTOCOL.md",
+    "guide": "docs/U1L_FACTORY_GUIDE.md",
+    "roster": "configs/u1l_agents.json",
+    "script": "scripts/run_u1l.sh",
+    "agents": [
+      "research_32b",
+      "qwen25_32b_inst",
+      "research_7b",
+      "qwen25_7b_inst"
+    ],
+    "rl_agents": [
+      "research_32b",
+      "research_7b"
+    ],
+    "prompted_reference": [
+      "qwen25_32b_inst",
+      "qwen25_7b_inst"
+    ],
+    "research_harness": "top-5, up to 8 searches, 10240-token context",
+    "factory_results_available": false
   }
 }

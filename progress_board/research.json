@@ -3,7 +3,7 @@
   "title": "搜索智能体的干预式审计",
   "subtitle": "RL 训练的搜索智能体：文献里常见的“恢复 / 反思能修复错误”，加上安慰剂对照后还站得住吗？",
   "target": "目标：ACL 2027 主会（ARR 截稿 2027-01-04）",
-  "stage": "实验全部收尾：主表为 9 个可测智能体（4 种训练配方、Qwen 与 Llama），另有两个已发表方法的审计；进入论文写作",
+  "stage": "主表为 9 个可测智能体（4 种训练配方、Qwen 与 Llama）；正在补 32B 智能体（U1L），同时开始写论文",
 
   "talk_track": [
     "做什么：给 RL 训练的搜索智能体（Search-R1 一类）做“审计”。文献常说加一段反思、复查或重试，就能把答错的修回来。我们检查这种修复是方法的功劳，还是统计假象。",
@@ -186,7 +186,8 @@
     {"date": "10-23", "text": "FC1：评测保真度校准，主模型换为 v0.3", "done": true},
     {"date": "10-27", "text": "U1 / U2 / HR2 完成：H1 7/7；两个已发表方法审计完成", "done": true},
     {"date": "10-28", "text": "U1x：3 种其他训练配方（含 Llama）上 H1 在 3/3 个可测智能体上成立", "done": true},
-    {"date": "10-29 ~ 11-25", "text": "论文提纲、主表与图定稿；补充统计", "done": false, "current": true},
+    {"date": "10-29 ~ 11-01", "text": "U1L：32B 智能体（ReSearch-32B 与 Qwen2.5-32B）上检验 H1，回应“只适用于小模型”的质疑", "done": false, "current": true},
+    {"date": "10-29 ~ 11-25", "text": "并行写作：提纲、主表与图定稿", "done": false},
     {"date": "11-18 ~ 12-23", "text": "写作、内部审阅、投稿前再次查新", "done": false},
     {"date": "2027-01-04", "text": "ARR 投稿（目标 ACL 2027 主会）", "done": false}
   ],
@@ -198,17 +199,17 @@
   ],
 
   "campaign": {
-    "title": "当前批次：U1x（其他训练配方上的 H1）",
+    "title": "当前批次：U1L（32B 智能体上的 H1）",
     "items": [
-      {"name": "ZeroSearch-Llama-3.2-3B · 源轨迹", "run": "outputs/u1/zs_llama32_3b/sources", "done": "outputs/u1/zs_llama32_3b/sources/sources.jsonl"},
-      {"name": "ZeroSearch-Llama-3.2-3B · H1 分支", "run": "outputs/u1/zs_llama32_3b/pcr", "done": "outputs/u1/zs_llama32_3b/pcr/analysis/pcr_report.json"},
-      {"name": "ZeroSearch-Qwen2.5-7B · 源轨迹", "run": "outputs/u1/zs_qwen25_7b/sources", "done": "outputs/u1/zs_qwen25_7b/sources/sources.jsonl"},
-      {"name": "ZeroSearch-Qwen2.5-7B · H1 分支", "run": "outputs/u1/zs_qwen25_7b/pcr", "done": "outputs/u1/zs_qwen25_7b/pcr/analysis/pcr_report.json"},
-      {"name": "AutoRefine-7B · 源轨迹", "run": "outputs/u1/autorefine_7b/sources", "done": "outputs/u1/autorefine_7b/sources/sources.jsonl"},
-      {"name": "AutoRefine-7B · H1 分支", "run": "outputs/u1/autorefine_7b/pcr", "done": "outputs/u1/autorefine_7b/pcr/analysis/pcr_report.json"},
-      {"name": "StepSearch-7B · 源轨迹", "run": "outputs/u1/stepsearch_7b/sources", "done": "outputs/u1/stepsearch_7b/sources/sources.jsonl"},
-      {"name": "StepSearch-7B · H1 分支", "run": "outputs/u1/stepsearch_7b/pcr", "done": "outputs/u1/stepsearch_7b/pcr/analysis/pcr_report.json"},
-      {"name": "汇总与合并效应量", "run": "", "done": "outputs/paper/h1_pooled_u1x/h1_pooled.md"}
+      {"name": "ReSearch-32B（RL）· 源轨迹", "run": "outputs/u1/research_32b/sources", "done": "outputs/u1/research_32b/sources/sources.jsonl"},
+      {"name": "ReSearch-32B（RL）· H1 分支", "run": "outputs/u1/research_32b/pcr", "done": "outputs/u1/research_32b/pcr/analysis/pcr_report.json"},
+      {"name": "Qwen2.5-32B-Instruct（只靠提示）· 源轨迹", "run": "outputs/u1/qwen25_32b_inst/sources", "done": "outputs/u1/qwen25_32b_inst/sources/sources.jsonl"},
+      {"name": "Qwen2.5-32B-Instruct（只靠提示）· H1 分支", "run": "outputs/u1/qwen25_32b_inst/pcr", "done": "outputs/u1/qwen25_32b_inst/pcr/analysis/pcr_report.json"},
+      {"name": "ReSearch-7B（RL）· 源轨迹", "run": "outputs/u1/research_7b/sources", "done": "outputs/u1/research_7b/sources/sources.jsonl"},
+      {"name": "ReSearch-7B（RL）· H1 分支", "run": "outputs/u1/research_7b/pcr", "done": "outputs/u1/research_7b/pcr/analysis/pcr_report.json"},
+      {"name": "Qwen2.5-7B-Instruct（只靠提示）· 源轨迹", "run": "outputs/u1/qwen25_7b_inst/sources", "done": "outputs/u1/qwen25_7b_inst/sources/sources.jsonl"},
+      {"name": "Qwen2.5-7B-Instruct（只靠提示）· H1 分支", "run": "outputs/u1/qwen25_7b_inst/pcr", "done": "outputs/u1/qwen25_7b_inst/pcr/analysis/pcr_report.json"},
+      {"name": "汇总与合并效应量", "run": "", "done": "outputs/paper/h1_pooled_u1l/h1_pooled.md"}
     ]
   },
 

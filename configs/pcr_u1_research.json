@@ -1,0 +1,16 @@
+{
+  "protocol": "PCR_placebo_controlled_replay_v1",
+  "seed": 20261022,
+  "target_turns": [1, 2],
+  "arm_group": "h1",
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 10240,
+    "max_generation_tokens_per_turn": 1024,
+    "max_search_turns": 8,
+    "prompt_variant": "research"
+  },
+  "retrieval": {"visible_top_k": 5, "candidate_top_k": 20},
+  "scope": "U1L H1 arms (clean_a/b, perm_1, perm_2, perm1_{review,neutral,budget2,reflect,neutral_reflect}) on ReSearch sources in ReSearch's own harness (top-5, up to 8 searches). See research/U1L_PROTOCOL.md."
+}

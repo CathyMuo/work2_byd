@@ -5,7 +5,7 @@ import json
 
 from .common import digest
 from .metrics import lexical_fact_hits
-from .rollout import (FORMATS, PROMPT_VERSION, continue_record, observation_text, parse_action,
+from .rollout import (FORMATS, PROMPT_VERSION, continue_record, initial_text, observation_text, parse_action,
                       question_prompt)
 
 # Replayable sources: every agent format whose prompt is a single user turn (ReSeek needs a system turn; U2 only).
@@ -36,7 +36,7 @@ def validate_prefix(source, turn, agent, retrieval, generator=None):
     text = source["initial_prompt"]
     tokens = None
     if generator is not None:
-        expected = generator.initial_prompt(question_prompt(source["question"], agent["max_search_turns"], variant))
+        expected = initial_text(generator, source["question"], dict(agent, prompt_variant=variant))
         if text != expected:
             raise ValueError("Source initial prompt differs from the frozen A1 prompt/tokenizer")
         tokens = generator.encode(text)

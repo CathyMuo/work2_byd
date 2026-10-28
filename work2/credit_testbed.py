@@ -24,7 +24,7 @@ from .metrics import answer_scores, lexical_fact_hits
 from .pcr import datasets_of, gpu_list, rank_key, stop
 from .placebo import contains_answer
 from .replay import observation
-from .rollout import PROMPT_VERSION, parse_action, question_prompt
+from .rollout import PROMPT_VERSION, final_answer, parse_action, question_prompt
 from .run_baseline import asset_identity, validate_design
 from .selective import sha
 
@@ -151,7 +151,7 @@ def batched_continue(rollouts, generator, searcher, agent, retrieval, temperatur
                 r["texts"].append(out["text"])
             kind, value = parse_action(out["text"])
             if kind == "answer":
-                r["status"], r["final_answer"] = "answered", value
+                r["status"], r["final_answer"] = "answered", final_answer(value, agent.get("prompt_variant", "bounded"))
             elif kind != "search":
                 r["status"] = "generation_limit" if out["finish_reason"] == "length" else "malformed_action"
             elif r["search_calls"] >= agent["max_search_turns"]:

@@ -54,6 +54,13 @@ STEPSEARCH_TEMPLATE = (
     'The search engine will return the results contained in <information> and </information>. \n'
     'Please follow the loop of think, search, information, think, search, information, and answer until the original question is finally solved. \n'
     'Note: The retrieval results may not contain the answer or contain noise. You need to tell whether there is a golden answer. If not, you need to correct the search query and search again. Question:{question}\n')
+# U1L (2026-10-28): ReSearch (Agent-RL ReSearch release, ReCall repo at 7fcf4d3~1): chat template with this system
+# message and the bare question as the user turn; observation " <result>\n{contents}\n</result>"; the answer is the
+# last \boxed{} inside <answer>...</answer> (verl/utils/reward_score/re_search.py).
+RESEARCH_PROMPT_VERSION = "research_official_sys_v1"
+RESEARCH_SYSTEM = 'You are a helpful assistant that can solve the given question step by step with the help of the wikipedia search tool. Given a question, you need to first think about the reasoning process in the mind and then provide the answer. During thinking, you can invoke the wikipedia search tool to search for fact information about specific topics if needed. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags respectively, and the search query and result are enclosed within <search> </search> and <result> </result> tags respectively. For example, <think> This is the reasoning process. </think> <search> search query here </search> <result> search result here </result> <think> This is the reasoning process. </think> <answer> The final answer is \\[ \\boxed{answer here} \\] </answer>. In the last part of the answer, the final exact answer is enclosed within \\boxed{} with latex format.'
+SYSTEM_OF["research"] = RESEARCH_SYSTEM
+
 # Observation rendering per prompt variant. Search-R1 / AutoRefine / StepSearch strip the document block;
 # bounded / official / reseek keep the historical unstripped block (every earlier run used it).
 FORMATS = {
@@ -62,6 +69,8 @@ FORMATS = {
     "reseek": {"version": RESEEK_PROMPT_VERSION, "tag": "information", "pad": "", "strip": False, "docs": "searchr1"},
     "autorefine": {"version": AUTOREFINE_PROMPT_VERSION, "tag": "documents", "pad": "", "strip": True, "docs": "searchr1"},
     "stepsearch": {"version": STEPSEARCH_PROMPT_VERSION, "tag": "information", "pad": " ", "strip": True, "docs": "stepsearch"},
+    "research": {"version": RESEARCH_PROMPT_VERSION, "tag": "result", "pad": "\n", "strip": True, "docs": "contents",
+                 "before": " ", "after": "", "answer": "boxed"},
 }
 VARIANT_OF_VERSION = {f["version"]: v for v, f in FORMATS.items()}
 
@@ -70,7 +79,35 @@ def observation_text(documents, variant="bounded"):
     f = FORMATS[variant]
     body = format_documents(documents, f["docs"])
     body = body.strip() if f["strip"] else body
-    return "\n\n<{0}>{1}{2}{1}</{0}>\n\n".format(f["tag"], f["pad"], body)
+    return "{3}<{0}>{1}{2}{1}</{0}>{4}".format(f["tag"], f["pad"], body, f.get("before", "\n\n"), f.get("after", "\n\n"))
+
+
+def last_boxed(text):
+    """Content of the last \\boxed{...} (brace-matched), as ReSearch's remove_boxed(last_boxed_only_string(.)); '' if absent."""
+    if "\\boxed " in text:
+        return text.split("\\boxed ")[-1].split("$")[0]
+    i = text.rfind("\\boxed{")
+    if i < 0:
+        return ""
+    depth, start = 0, i + len("\\boxed")
+    for j in range(start, len(text)):
+        depth += text[j] == "{"
+        depth -= text[j] == "}"
+        if depth == 0:
+            return text[start + 1:j]
+    return ""
+
+
+def final_answer(value, variant):
+    return last_boxed(value) if FORMATS[variant].get("answer") == "boxed" else value
+
+
+def initial_text(generator, question, agent):
+    """Rendered initial prompt for an agent format, with its system message if it has one."""
+    variant = agent.get("prompt_variant", "bounded")
+    user = question_prompt(question, agent["max_search_turns"], variant)
+    system = SYSTEM_OF.get(variant)
+    return generator.initial_prompt(user, system=system) if system is not None else generator.initial_prompt(user)
 
 
 def record_variant(record):
@@ -86,6 +123,8 @@ def question_prompt(question, max_search_turns, variant="bounded"):
         return AUTOREFINE_TEMPLATE.replace("{question}", question)
     if variant == "stepsearch":
         return STEPSEARCH_TEMPLATE.replace("{question}", question)
+    if variant == "research":
+        return question
     if variant != "bounded":
         raise ValueError("Unknown prompt variant: " + str(variant))
     return ("Answer the given question. You must conduct reasoning inside <think> and </think> "
@@ -116,7 +155,7 @@ def run_sample(sample, generator, retriever, agent, retrieval):
               "prompt_version": FORMATS[variant]["version"],
               "status": None, "final_answer": "", "search_calls": 0,
               "generated_tokens": 0, "model_input_tokens": 0, "steps": [], "prefixes": []}
-    text = generator.initial_prompt(question_prompt(sample["question"], agent["max_search_turns"], variant))
+    text = initial_text(generator, sample["question"], agent)
     tokens = generator.encode(text)
     record["initial_prompt"] = text
     return continue_record(record, generator, retriever, agent, retrieval, text, tokens, start)
@@ -142,7 +181,7 @@ def continue_record(record, generator, retriever, agent, retrieval, text, tokens
             tokens += generated["token_ids"]
             kind, value = parse_action(generated["text"])
             if kind == "answer":
-                record["final_answer"], record["status"] = value, "answered"
+                record["final_answer"], record["status"] = final_answer(value, record_variant(record)), "answered"
                 break
             if kind != "search":
                 record["status"] = ("generation_limit" if generated["finish_reason"] == "length" else "malformed_action")

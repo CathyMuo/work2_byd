@@ -30,8 +30,9 @@ def load_protocol(path):
     validate_design(p)
     if p.get("protocol") != VERSION or p.get("arm_group") not in ARM_GROUPS:
         raise ValueError("Unsupported PCR protocol or arm group")
-    if p["agent"]["temperature"] != 0 or p["agent"]["max_search_turns"] != 4:
-        raise ValueError("PCR v1 freezes the A1/SI1 cohort: greedy decoding and four searches")
+    # Greedy is fixed; the search budget is 4 for every agent except formats trained without a turn cap (U1L ReSearch: 8).
+    if p["agent"]["temperature"] != 0 or p["agent"]["max_search_turns"] not in (4, 8):
+        raise ValueError("PCR v1 requires greedy decoding and a 4- (or, for uncapped formats, 8-) search budget")
     if not p["target_turns"] or any(t not in (1, 2, 3) for t in p["target_turns"]):
         raise ValueError("Target turns must be a subset of 1..3")
     return p
