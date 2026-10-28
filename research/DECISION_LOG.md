@@ -1232,3 +1232,16 @@ preregistered readings Q1 (does H1 extend to 32B RL; content effect CI > 0 and >
 would mean scale dependence), Q2 (ReSearch 7B vs 32B, descriptive), Q3 (RL vs prompted
 at equal size, descriptive). Real Qwen2.5-Instruct tokenizer check matches upstream
 rendering. 188 CPU tests pass.
+
+## 2026-10-28 — U1L amended before any run: Search-R1 32B GRPO, 14B PPO, 14B IT-GRPO
+
+A direct Hugging Face query (through the home-server proxy) found official Search-R1
+v0.3 checkpoints the first U1L search missed: qwen2.5-32b-em-grpo-v0.3,
+qwen2.5-14b-em-ppo-v0.3 and qwen2.5-14b-it-em-grpo-v0.3. User decision: add all three.
+They share the U1 recipe, bounded prompt and harness (top-3, 4 searches), so no
+adaptation. Roster order: v03_32b_grpo, research_32b, v03_14b_ppo, v03_14b_it_grpo,
+qwen25_32b_inst, research_7b, qwen25_7b_inst. Q1 is read separately for each 32B
+agent; new Q4 lays out Search-R1's size ladder (GRPO 3/7/14/32B, PPO 3/7/14B,
+IT-GRPO 7/14B) descriptively, with insertion-invalid points marked. Third-party
+TreezzZ/Ferret Search-R1 14B is not used (unknown provenance). Estimated 4.5-5 days.
+No U1L run has started; the protocol, roster, guide and board campaign are updated.

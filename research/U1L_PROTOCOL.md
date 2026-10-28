@@ -3,6 +3,8 @@
 登记：2026-10-28　分支：`feat/credit-testbed`　名单：`configs/u1l_agents.json`　脚本：`scripts/run_u1l.sh`
 用户决定（2026-10-28）：补“更大、更强的智能体”这一项，并把实验做充分。本文件在任何 U1L 运行之前冻结。
 
+> **修订（2026-10-28，同日，仍在任何 U1L 运行之前）**：重新查询 Hugging Face 后发现，Search-R1 官方还发布了 **v0.3 32B GRPO**，以及 U1 没有跑过的 **v0.3 14B PPO** 和 **v0.3 14B Instruct-GRPO**，上一版的查新漏掉了它们。用户决定把三者都加入。它们与 U1 的 Search-R1 智能体同一配方、同一 bounded 提示、同一环境（Top-3、最多 4 次检索），不需要任何适配。于是 Search-R1 一家有了完整的规模阶梯：GRPO 3B / 7B / 14B / 32B，PPO 3B / 7B / 14B，Instruct-GRPO 7B / 14B。下文第 2、4、5 节已按修订后的名单更新。
+
 ## 1. 为什么做
 
 目前 H1 主表只到 7B。14B GRPO 因为插入文字后给不出答案而被判为不可测。SearchAuditor 在强模型上得到相反结论（定向修复明显胜过对照）。审稿人最可能的质疑是“结论只适用于小模型”。U1L 直接检验这一点：
@@ -12,19 +14,23 @@
 
 ## 2. 智能体（运行前定死）
 
-**查新结论**：
-- 32B、公开权重、能接入我们 E5 + Wiki-18 本地检索的 RL 搜索智能体，只找到 ReSearch（NeurIPS 2025）一家。
-- Search-R1、ZeroSearch、StepSearch、AutoRefine 最大只到 14B 或 7B。
+**查新结论**（修订后）：
+- 32B 且能接入我们 E5 + Wiki-18 本地检索的 RL 搜索智能体有两家：Search-R1 v0.3 32B GRPO（官方）和 ReSearch-32B（NeurIPS 2025）。
+- ZeroSearch、StepSearch、AutoRefine 最大只到 7B。
 - ASearcher-Local 需要页面访问工具和它自己的知识库，不兼容；ASearcher-Web、WebSailor 等是网页环境。
+- 另有一个第三方的 Search-R1 14B Instruct-PPO（`TreezzZ/Ferret_*`），来源不明，不纳入。
 
 | 标签 | 权重 | 类型 | 提示与格式 |
 | --- | --- | --- | --- |
+| `v03_32b_grpo` | `PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-32b-em-grpo-v0.3` | RL，Search-R1 GRPO | `bounded`（同 U1） |
 | `research_32b` | `agentrl/ReSearch-Qwen-32B-Instruct` | RL（GRPO，MuSiQue 训练） | `research` |
+| `v03_14b_ppo` | `PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-14b-em-ppo-v0.3` | RL，Search-R1 PPO | `bounded` |
+| `v03_14b_it_grpo` | `PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-14b-it-em-grpo-v0.3` | RL，Search-R1 GRPO（Instruct 底座） | `bounded` |
 | `qwen25_32b_inst` | `Qwen/Qwen2.5-32B-Instruct` | 只靠提示，没有搜索 RL | `official`（Search-R1 原文模板） |
 | `research_7b` | `agentrl/ReSearch-Qwen-7B-Instruct` | RL，同一配方的 7B | `research` |
 | `qwen25_7b_inst` | `Qwen/Qwen2.5-7B-Instruct` | 只靠提示 | `official` |
 
-- 运行顺序就是表中的顺序：最重要的 32B RL 先跑。
+- 运行顺序就是表中的顺序：与主表同配方的 Search-R1 32B 先跑，然后是 ReSearch-32B。
 - **只靠提示的两个模型不并入 RL 主表**，单独报告，作为“规模与 RL 的参照”。
 
 ## 3. 格式与 harness
@@ -52,23 +58,24 @@
 - **插入有效性**：沿用 2026-10-28 写定的格式判据，即无内容文字 P2 下稳定状态的正常作答率 ≥ 50%。不满足的智能体不计入 H1，如实报告它的失效形态。
 - **每个智能体的 H1 判定**：与 U1 相同（AC1 写法）。另外报告效应量：方法 − P2（修复）、方法 − P1、方法 − P2（伤害），以及 CI。
 - **预登记的问题与读法**：
-  - **Q1（规模）**：如果 `research_32b` 有效，并且 H1 成立、方法 − P1 的 CI 全在 0 以下，就写“结论延伸到 32B 的 RL 智能体”。如果它的内容效应（方法 − P2 修复）CI 全在 0 以上，并且 ≥ 10 pp，就如实写“在 32B 上内容开始起作用，结论随规模变化”。
+  - **Q1（规模）**：分别对 `v03_32b_grpo` 和 `research_32b` 判读。如果某个 32B 智能体有效，并且 H1 成立、方法 − P1 的 CI 全在 0 以下，就写“结论延伸到这个 32B 的 RL 智能体”。如果它的内容效应（方法 − P2 修复）CI 全在 0 以上，并且 ≥ 10 pp，就如实写“在 32B 上内容开始起作用，结论随规模变化”。两个 32B 结论不一致时，两个都报告。
   - **Q2（同配方，7B → 32B）**：并列报告两个 ReSearch 的内容效应和伤害（不同模型、不同状态，不做配对检验，只描述）。
   - **Q3（RL vs 只靠提示）**：同尺寸下，ReSearch 和 Qwen-Instruct 的效应并列，只描述。
+  - **Q4（Search-R1 规模阶梯）**：把 Search-R1 的 GRPO 3B / 7B / 14B / 32B、PPO 3B / 7B / 14B、Instruct-GRPO 7B / 14B 的内容效应和伤害按尺寸排列，只描述；插入无效的点照常标出。
   - **主表更新**：RL 主表 = 已有的 9 个有效智能体 + U1L 中有效的 RL 智能体。只靠提示的模型单独成表。
 - 机械值由脚本给出，决定由人写进 `DECISION_LOG.md`。
 
 ## 5. 资源（4×H800，只推理）
 
-- 新下载：两个 32B 各约 65 GB，ReSearch-7B 约 15 GB。Qwen2.5-7B-Instruct 在 HR1 时已经下载。
+- 新下载：三个 32B 各约 65 GB，两个 14B 各约 30 GB，ReSearch-7B 约 15 GB，合计约 270 GB。Qwen2.5-7B-Instruct 在 HR1 时已经下载。
 - 32B 在单卡上运行需要 `U1_GPU_MEM=0.92`（权重约 65 GB，留出约 8 GB 给 KV 缓存）。
 - 估算：
-  - 32B：源轨迹约 3–4 小时，PCR 约 20–24 小时。PCR 为了保证 E0 控制逐字复现，是逐条贪心生成的。
-  - 7B：每个约 3–5 小时。
-  - 合计约 2.5–3 天。每跑完一个智能体回报一次，`research_32b` 最先出结果。
+  - 32B：每个约 1 天（ReSearch 检索更多，最慢）。PCR 为了保证 E0 控制逐字复现，是逐条贪心生成的。
+  - 14B：每个约 8–10 小时；7B：每个约 3–5 小时。
+  - 合计约 4.5–5 天。每跑完一个智能体回报一次，Search-R1 32B 最先出结果。
 
 ## 6. 局限
 
-- 32B 的 RL 搜索智能体只有 ReSearch 一家。
+- 32B 的 RL 搜索智能体只有两家（Search-R1、ReSearch），都基于 Qwen2.5。
 - ReSearch 的环境与其他智能体不完全相同（Top-5、8 次检索），但 H1 是同一智能体、同一环境内部的比较。
 - 只靠提示的模型不属于“RL 训练的搜索智能体”，只作参照。

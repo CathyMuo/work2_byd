@@ -80,7 +80,8 @@ class FormatTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 pcr.load_protocol(bad)
         roster = load_json(ROOT / "configs/u1l_agents.json")["agents"]
-        self.assertEqual([a["label"] for a in roster], ["research_32b", "qwen25_32b_inst", "research_7b", "qwen25_7b_inst"])
+        self.assertEqual([a["label"] for a in roster], ["v03_32b_grpo", "research_32b", "v03_14b_ppo", "v03_14b_it_grpo",
+                                                         "qwen25_32b_inst", "research_7b", "qwen25_7b_inst"])
 
 
 class DocBatch(DocRetriever):

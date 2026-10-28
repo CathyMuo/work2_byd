@@ -1,7 +1,10 @@
 {
-  "note": "U1L roster (2026-10-28): larger agents, H1 only. RL-trained ReSearch at 7B and 32B (same recipe), and the prompted (no search RL) Qwen2.5-Instruct at 7B and 32B as a scale reference. Each label needs configs/local.u1_<label>.json (gitignored). prompt_variant selects the verbatim prompt and observation format (work2/rollout.py FORMATS). See research/U1L_PROTOCOL.md.",
+  "note": "U1L roster (2026-10-28, amended the same day before any run): larger agents, H1 only. Search-R1 v0.3 32B GRPO / 14B PPO / 14B Instruct-GRPO (same recipe and bounded prompt as U1), RL-trained ReSearch at 32B and 7B, and the prompted (no search RL) Qwen2.5-Instruct at 32B and 7B as a scale reference. Each label needs configs/local.u1_<label>.json (gitignored). prompt_variant selects the verbatim prompt and observation format (work2/rollout.py FORMATS). See research/U1L_PROTOCOL.md.",
   "agents": [
+    {"label": "v03_32b_grpo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-32b-em-grpo-v0.3", "base": "Qwen2.5-32B", "recipe": "Search-R1 v0.3 GRPO", "prompt_variant": "bounded", "rl": true},
     {"label": "research_32b", "repo": "agentrl/ReSearch-Qwen-32B-Instruct", "base": "Qwen2.5-32B-Instruct", "recipe": "ReSearch (GRPO on MuSiQue, <result> blocks, boxed answers)", "prompt_variant": "research", "rl": true},
+    {"label": "v03_14b_ppo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-14b-em-ppo-v0.3", "base": "Qwen2.5-14B", "recipe": "Search-R1 v0.3 PPO", "prompt_variant": "bounded", "rl": true},
+    {"label": "v03_14b_it_grpo", "repo": "PeterJinGo/SearchR1-nq_hotpotqa_train-qwen2.5-14b-it-em-grpo-v0.3", "base": "Qwen2.5-14B-Instruct", "recipe": "Search-R1 v0.3 GRPO (Instruct base)", "prompt_variant": "bounded", "rl": true},
     {"label": "qwen25_32b_inst", "repo": "Qwen/Qwen2.5-32B-Instruct", "base": "Qwen2.5-32B-Instruct", "recipe": "prompted with the verbatim Search-R1 template, no search RL", "prompt_variant": "official", "rl": false},
     {"label": "research_7b", "repo": "agentrl/ReSearch-Qwen-7B-Instruct", "base": "Qwen2.5-7B-Instruct", "recipe": "ReSearch", "prompt_variant": "research", "rl": true},
     {"label": "qwen25_7b_inst", "repo": "Qwen/Qwen2.5-7B-Instruct", "base": "Qwen2.5-7B-Instruct", "recipe": "prompted with the verbatim Search-R1 template, no search RL", "prompt_variant": "official", "rl": false}
