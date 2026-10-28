@@ -1193,3 +1193,20 @@ well-formed answer rate under content-free P2 on stable states is >= 50%
 real effect, not invalidity. paper_h1 gains --validity and an agent-level summary.
 Main table = valid agents; sensitivity: 11, 10 and 9 (also without 14B) agents.
 Factory CPU step: docs/H1_VALIDITY_GUIDE.md.
+
+## 2026-10-28 — Insertion validity applied; final H1 table; experiments closed
+
+Factory d69cf0f, CPU only. Format rule (fixed before any 14B diagnosis): 9 agents
+answer 0.959-1.000 under content-free P2; v03_14b_grpo 0.484 / 0.500 and
+autorefine_7b 0.009 / 0.092 are insertion-invalid (14B: review 11.6% and reflect
+3.0% answered; P1 and budget2 100%). v03_3b_grpo passes but stops searching after any
+inserted text (post-target searches ~0 vs 0.37), explaining its harm.
+Main table, 9 agents / 850 degraded / 7043 stable states: review - P2 +2.8 [-0.5,
+6.0], reflect - P2 +3.1 [-0.2, 6.4] (P2 reproduces ~0.91 of method repair), vs P1
+-18.6 / -15.6 (CI < 0 in 7/9 and 5/9 agents, > 0 in none); harm method - P2 +4.7
+[3.9, 5.4] / +3.9 [3.1, 4.7] (CI > 0 in 5/9 and 7/9 agents, < 0 in none).
+Sensitivity with 11 and 10 agents gives the same directions. Paper wording: content
+adds little repair (CI includes 0, upper bound ~6 pp) and adds harm; net content
+effect <= 0; insertion-based recovery presupposes tolerance of foreign text (2/11
+agents fail it). Experiments are closed; writing starts (outline in the user's local
+notes). Further numbers, if needed, come from CPU-only analyses.
