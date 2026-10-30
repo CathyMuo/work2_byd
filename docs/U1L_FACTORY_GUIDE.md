@@ -273,5 +273,59 @@ nohup bash scripts/run_u1l.sh agent research_7b > outputs/u1l_research_7b_v3.log
 
    - 前几十个状态内如果仍报 `RetrieverDriftError`，说明检索服务没有恢复成源轨迹当时的配置：停下，回报重启命令和报错，不要继续试。
    - 跑完后照 7.1 做 `crosscheck`（`--a outputs/u1/research_7b/pcr_attempt1_e0stop --b outputs/u1/research_7b/pcr`）。
-4. **`research_7b` 跑完后**：停掉检索服务，改成单卡（`CUDA_VISIBLE_DEVICES=0`）重启，再照 7.2 第 (2)(3) 步跑两个 32B（`U1_GPUS=1,2,3`，`U1_GPU_MEM=0.92`）。两个 32B 的源轨迹和 PCR 全程不要再动检索服务。
+4. **（已被 7.6 更新：先按 7.6 试四卡，不行再用本步）`research_7b` 跑完后**：停掉检索服务，改成单卡（`CUDA_VISIBLE_DEVICES=0`）重启，再照 7.2 第 (2)(3) 步跑两个 32B（`U1_GPUS=1,2,3`，`U1_GPU_MEM=0.92`）。两个 32B 的源轨迹和 PCR 全程不要再动检索服务。
 5. 回传时加一项：**每个智能体的源轨迹和 PCR 分别在几卡检索下跑的**（论文附录要写明检索配置）。
+
+### 7.6 2026-10-30 下午：两个 32B 改为四卡跑（以本节为准，覆盖 7.5 第 4 步、7.2 第 (1)(3) 步，以及第 5 节“32B 加载时 OOM 调到 0.95”）
+
+**为什么四卡装得下**（不用张量并行，不改代码，只改环境变量）：
+
+- 32B 单卡权重约 61 GiB。本实验每次只生成**一条**序列，KV 缓存只要装下一条最长序列：ReSearch 的 `max_context_tokens` 是 10240，Qwen2.5-32B 每个 token 的 KV 约 0.25 MiB，合计约 2.5 GiB（bounded 是 8192，约 2 GiB）。再加激活峰值和 CUDA graph 约 3 GiB，vLLM 自己需要约 66.5 GiB，即 `U1_GPU_MEM` 至少 0.835。
+- vLLM 启动时要求“卡上空闲显存 ≥ 比例 × 整卡”，同卡别的进程占的不会扣掉（7.5 的更正）。0.85 × 79.65 GiB ≈ 67.7 GiB，再加 vLLM 自己的 CUDA 上下文约 0.5 GiB，**同卡检索服务占用不超过约 11.4 GiB 时装得下**。
+- 之前 32B 在 GPU 0/1 上 OOM，是因为当时检索是 2 卡，每卡约 18 GB。7.5 第 2 步把检索恢复成 4 卡后，每卡约 10 GB；GPU 0 还放着查询编码器，会多 1 GB 左右。
+- 好处：research_7b 跑完后**检索服务不用再重启**，两个 32B 与 research_7b 用同一套 4 卡检索；4 个 worker 比 3 个快约三分之一。
+
+**步骤**（在 7.5 第 3 步 `research_7b` 的 PCR 分析和 crosscheck 都结束、四卡上没有推理进程之后）：
+
+```bash
+# (1) 检索服务不动（保持 7.5 第 2 步的 4 卡）。量每张卡上检索服务的占用（此时卡上应只有检索服务）
+nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv
+```
+
+(2) 按第 (1) 步的结果选卡：
+
+| 检索占用 | `U1_GPUS` |
+| --- | --- |
+| 四张卡都 ≤ 11000 MiB | `0,1,2,3` |
+| 只有 GPU 0 超过 11000 MiB | `1,2,3`（检索仍是 4 卡，不重启） |
+| GPU 1/2/3 也超过 11000 MiB | 不用本节，退回 7.5 第 4 步（检索改单卡，`U1_GPUS=1,2,3`，`U1_GPU_MEM=0.92`） |
+
+```bash
+# (3) 清理 32B 之前 OOM 留下的半截目录（同 7.2 第 (2) 步）
+ls outputs/u1/research_32b/ outputs/u1/v03_32b_grpo/ 2>/dev/null
+#     sources/ 存在但没有 sources/sources.jsonl：mv 成 sources_oom_attempt
+#     pcr/ 存在但没有 pcr/states.jsonl：mv 成 pcr_oom_attempt
+
+# (4) 两个 32B 依次跑
+export U1_GPU_MEM=0.85
+export U1_GPUS=0,1,2,3          # 或按第 (2) 步的表改成 1,2,3
+nohup bash -c 'bash scripts/run_u1l.sh agent research_32b && bash scripts/run_u1l.sh agent v03_32b_grpo' \
+  > outputs/u1l_32b.log 2>&1 &
+tail -f outputs/u1l_32b.log
+```
+
+- 两个 32B 用同一组 `U1_GPUS` 和 `U1_GPU_MEM`；从第一个开始到第二个结束，检索服务全程不动。
+- 每个 32B 的源轨迹跑完后，照第 4 节先跑一次保真度表并**立即回传**。
+
+**停止条件**（本节专用）：
+
+- **加载阶段失败**（几分钟内出现，不会产生任何结果）：`Free memory on device ... less than desired GPU memory utilization`、KV 缓存装不下 `max_model_len`（报错里有 `KV cache` 和 `max seq len` / `max_model_len`），或 `torch.OutOfMemoryError`。处理：把失败智能体的 `sources/` 改名为 `sources_oom_4card`（以及 `pcr/` 改名为 `pcr_oom_4card`，如果存在）；若当时用的是 `0,1,2,3`，改成 `U1_GPUS=1,2,3` 再试一次（仍是 0.85，检索不动）；还不行就退回 7.5 第 4 步。**不要试 0.85 以外的数值**：检索同卡时调高比例只会更容易 OOM，调低则装不下 KV。
+- **运行中途**任何报错（包括检索服务自己 OOM、worker 退出）：停下回报日志最后 30 行和 `nvidia-smi`，不要自行续跑或重启检索。
+
+**预计耗时**：单个 32B 原来 2 个 worker 约 13.8 小时，4 个 worker 约 7 小时；KV 缓存变小后前缀缓存命中会少一些，按每个 7–8 小时算，两个共约 15 小时（三卡方案约 18.4 小时，另外还要重启一次检索）。
+
+**回传加三项**：第 (1) 步 `nvidia-smi` 的原始输出；每个 32B 实际用的 `U1_GPUS`；vLLM 启动日志里的 KV 缓存大小：
+
+```bash
+grep -rihE "KV cache|GPU blocks|maximum concurrency" outputs/u1/research_32b/sources | head -8
+```
