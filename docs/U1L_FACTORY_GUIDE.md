@@ -167,7 +167,7 @@ bash scripts/run_u1l.sh pack
 
 第二阶段先 `research_32b`，再 `v03_32b_grpo`，三卡并行，每个约 9 小时（13.8 × 2 / 3）。
 
-### 7.1 现在做（`qwen25_32b_inst` 继续跑，不要动 GPU 2/3，也不要重启检索服务）
+### 7.1 （已被 7.5 更新）现在做（`qwen25_32b_inst` 继续跑，不要动 GPU 2/3，也不要重启检索服务）
 
 这次**例外**允许在 qwen 运行中拉取代码。原因：worker 只在启动和续跑时核对提交，正在跑的 worker 和合并步骤已经把代码载入内存，不受影响；qwen 跑完后的 PCR 分析会用新代码，新代码与它兼容。唯一的代价是：如果 qwen 中途崩溃，就不能 `--resume`，要在第二阶段换新目录重跑（概率很低）。
 
@@ -193,7 +193,7 @@ ls outputs/u1/research_7b/              # 应有 sources/ pcr_plan/ pcr_attempt1
 
 # (4) research_7b 在 GPU 0/1 上重跑（和检索服务同卡，和上次跑 research_7b 时一样）
 export U1_GPUS=0,1
-export U1_GPU_MEM=0.92                  # 用上次跑 research_7b 时的同一个值
+export U1_GPU_MEM=0.75                  # 已更正：7B 与检索同卡用 0.75（见 7.5）
 nohup bash scripts/run_u1l.sh agent research_7b > outputs/u1l_research_7b_v2.log 2>&1 &
 tail -f outputs/u1l_research_7b_v2.log
 ```
@@ -228,13 +228,14 @@ tail -f outputs/u1l_32b.log
 ```
 
 - 每个 32B 的源轨迹跑完后，照第 4 节先跑一次保真度表并**立即回传**。
-- 检索服务单卡：本实验的检索调用大多命中源轨迹里已有的查询（直接用缓存），真正发到服务的请求很少，单卡够用；检索结果不一致时合并会报 `Retrieval drift`，有这道检查兜底。现在没有其他实验在用检索服务，不存在影响别的实验的问题。
+- 检索服务单卡：~~检索调用大多命中缓存~~（**已更正，见 7.5**：每次检索都实时请求并逐条比对，所以同一个智能体的源轨迹和 PCR 必须在同一套检索配置下跑）。现在没有其他实验在用检索服务。
 - qwen 跑完时 `research_7b` 如果还远没跑完（预计还要 4 小时以上），不要等：先在 GPU 2/3 上跑 `research_32b`（先做上面第 (2) 步的清理；`U1_GPUS=2,3`，检索不动）。等 `research_7b` **和** `research_32b` 都结束后，再把检索改到单卡，`v03_32b_grpo` 用 `U1_GPUS=1,2,3`。**任何推理进程在跑时都不要重启检索服务**，否则正在跑的状态会因检索请求失败而中断。
 
 ### 7.3 停止条件的变化
 
 - `E0 control does not reproduce source continuation`：只有旧运行（第 7 节之前冻结的）才会这样报错；新运行改为记录并排除（见上）。
 - `E0 control mismatch rate ... agent not measurable`：停止该智能体并回报，不要重跑。
+- `RetrieverDriftError`：检索服务配置与该智能体生成源轨迹时不同。停下回报，不要重跑（见 7.5）。
 - 其余停止条件不变。
 
 ### 7.4 本轮回传
@@ -243,3 +244,34 @@ tail -f outputs/u1l_32b.log
 2. 每个新跑完的智能体：`outputs/u1/<标签>/pcr/run_manifest.json` 中的 `control_mismatch_states`、`control_mismatch_rate`、`control_mismatch_ids`。有不复现的状态时，从 `pcr/states.jsonl` 里摘出这些行的 `control_mismatch` 字段原文。
 3. `research_7b` 的 crosscheck 输出（终端打印的那段 JSON 和前 10 个不同的状态）。
 4. 照第 6 节回传各智能体的 PCR 分析摘要和耗时；全部跑完后照第 4 节末尾做 `summary` 和 `pack`。
+
+### 7.5 2026-10-30 中午修正（厂内 11:17 回传后，**以本节为准，覆盖 7.1(4) 和 7.2**）
+
+**两处更正**（都是家服写错了，厂内的判断是对的）：
+
+1. **7B 的 `U1_GPU_MEM` 用 0.75**，不是 0.92。vLLM 的这个比例是按整卡算给自己用的，不会扣掉同卡检索服务的占用；`research_7b` 第一次就是用 0.75 跑的。
+2. **检索不走缓存。** `AuditedRetriever` 的每一次检索都实时请求服务，再和源轨迹记下的可见文档逐条比对，不一致就立刻报 `RetrieverDriftError`。检索服务用 `shard=True` + `useFloat16=True`，换了卡数，个别查询的近似并列结果就会换位置。所以：
+
+> **规则：同一个智能体的源轨迹和 PCR 必须在同一套检索服务配置（同样的 GPU 卡数）下跑。只在两个智能体之间、没有任何推理进程时，才可以改检索服务的卡数。**
+
+按这条规则核对：`qwen25_32b_inst` 的源轨迹和 PCR 都在 2 卡检索下跑，没问题；`research_32b`、`v03_32b_grpo` 的源轨迹还没跑，它们会在单卡检索下跑完源轨迹和 PCR，内部一致，也没问题。已完成的智能体的 PCR 都通过了逐条比对（漂移 0），结果有效。
+
+**决策：厂内的方案 B（不停 qwen，不重新生成源轨迹）**，顺序如下：
+
+1. **现在**：什么都不动，等 `qwen25_32b_inst` 跑完（包括 PCR 分析）。这段时间可以做两件只用 CPU 的事：
+   - `git pull`（这次只改了文档；qwen 的 worker 不受影响）；
+   - 回传第一次运行的结束时间：`ls -l --time-style=full-iso outputs/u1/research_7b/pcr_attempt1_e0stop/workers/*/run_manifest.json`，以及两份 worker 日志的最后 5 行。用来确认那次 E0 失败发生在 10-29 20:35 检索服务改到 2 卡**之前**（家服判断是这样，因为检索变化会报 `RetrieverDriftError`，而不是 E0 不复现）。
+2. **qwen 跑完后**：停掉检索服务，按**生成 `research_7b` 源轨迹时（10-29 上午）的原命令**用 4 卡重启（不设 `CUDA_VISIBLE_DEVICES`，或设成 `0,1,2,3`），其余参数一字不改。等服务就绪，`nvidia-smi` 应看到每张卡约 9–10 GB。
+3. `research_7b` 用四卡重跑（新目录；4 卡检索每卡约 10 GB，0.75 留得下）：
+
+```bash
+export U1_GPUS=0,1,2,3
+export U1_GPU_MEM=0.75
+mv outputs/u1/research_7b/pcr outputs/u1/research_7b/pcr_drift_110828_b 2>/dev/null || true   # 如果残留了 pcr/ 目录
+nohup bash scripts/run_u1l.sh agent research_7b > outputs/u1l_research_7b_v3.log 2>&1 &
+```
+
+   - 前几十个状态内如果仍报 `RetrieverDriftError`，说明检索服务没有恢复成源轨迹当时的配置：停下，回报重启命令和报错，不要继续试。
+   - 跑完后照 7.1 做 `crosscheck`（`--a outputs/u1/research_7b/pcr_attempt1_e0stop --b outputs/u1/research_7b/pcr`）。
+4. **`research_7b` 跑完后**：停掉检索服务，改成单卡（`CUDA_VISIBLE_DEVICES=0`）重启，再照 7.2 第 (2)(3) 步跑两个 32B（`U1_GPUS=1,2,3`，`U1_GPU_MEM=0.92`）。两个 32B 的源轨迹和 PCR 全程不要再动检索服务。
+5. 回传时加一项：**每个智能体的源轨迹和 PCR 分别在几卡检索下跑的**（论文附录要写明检索配置）。
