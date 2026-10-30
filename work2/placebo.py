@@ -18,6 +18,11 @@ from .selective import PROMPTS
 
 VERSION = "PCR_placebo_controlled_replay_v1"
 CONTROL_ARMS = ("clean_a", "clean_b")
+# U1L amendment (2026-10-30, before any research_7b arm outcome was analysed): a run frozen with
+# control_mismatch="record" keeps a state whose E0 replay differs from its source, marks it
+# controls_exact=False with a divergence receipt, and every analysis drops it. An agent whose
+# mismatch rate exceeds this bound is not measurable.
+CONTROL_MISMATCH_MAX = 0.02
 PERMUTATION_ARMS = ("perm_1", "perm_2", "perm_3", "perm_4")
 FORMAT_ARMS = ("fmt_1", "fmt_2")
 PLACEBO_ARMS = PERMUTATION_ARMS + FORMAT_ARMS
@@ -236,17 +241,47 @@ def run_branch(source, turn, arm, generator, retriever, agent, retrieval, deleti
             "post_target_fact_ids": [p["visible_lexical_fact_ids"] for p in record["prefixes"][turn:]]}
 
 
-def run_state(source, turn, arms, generator, retriever, agent, retrieval):
-    """All arms of one (question, turn) state; E0/E0 must reproduce the source exactly."""
+def divergence(source, turn, branch, chars=160):
+    """Where an E0 replay first leaves its source continuation (text, step count, query, documents or tokens)."""
+    src = [s["text"] for s in source["steps"][turn:]]
+    rep = branch["post_target_texts"]
+    out = {"source_steps": len(src), "replay_steps": len(rep), "source_em": source["em"], "replay_em": branch["em"],
+           "source_answer": source["final_answer"], "replay_answer": branch["final_answer"]}
+    for i, (a, b) in enumerate(zip(src, rep)):
+        if a != b:
+            k = next((j for j, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
+            return dict(out, kind="text", step=turn + i, char=k, source_text=a[max(0, k - chars):k + chars],
+                        replay_text=b[max(0, k - chars):k + chars])
+    if len(src) != len(rep):
+        return dict(out, kind="step_count", step=turn + min(len(src), len(rep)))
+    if [p["search_query"] for p in source["prefixes"][turn:]] != branch["post_target_queries"]:
+        return dict(out, kind="query")
+    if [p["observed_document_ids"] for p in source["prefixes"][turn:]] != branch["post_target_document_ids"]:
+        return dict(out, kind="documents")
+    return dict(out, kind="tokens_or_status")
+
+
+def run_state(source, turn, arms, generator, retriever, agent, retrieval, on_mismatch="stop"):
+    """All arms of one (question, turn) state; E0/E0 must reproduce the source exactly.
+
+    on_mismatch="stop" raises (pre-registered default); "record" still runs every arm but marks the state
+    controls_exact=False with a divergence receipt so that analyses exclude it (see CONTROL_MISMATCH_MAX)."""
+    if on_mismatch not in ("stop", "record"):
+        raise ValueError("on_mismatch must be stop or record")
     prefix = validate_prefix(source, turn, agent, retrieval, generator)
     deletion = deletion_plan(prefix, source, turn)
     expected = continuation_signature({**source, "target_turn": turn})
-    results = {}
+    results, mismatch = {}, {}
     for arm in arms:
         results[arm] = run_branch(source, turn, arm, generator, retriever, agent, retrieval, deletion)
         if arm in CONTROL_ARMS and results[arm]["continuation_sha256"] != expected:
-            raise ValueError("E0 control does not reproduce source continuation: {} turn {} {}".format(
-                source["sample_id"], turn, arm))
+            if on_mismatch == "stop":
+                raise ValueError("E0 control does not reproduce source continuation: {} turn {} {}".format(
+                    source["sample_id"], turn, arm))
+            mismatch[arm] = divergence(source, turn, results[arm])
+    controls = [results[a] for a in CONTROL_ARMS if a in results]
+    receipt = {"control_mismatch": {"arms": mismatch, "controls_agree": len({c["continuation_sha256"] for c in controls}) == 1}} \
+        if mismatch else {}
     return {"version": VERSION, "sample_id": source["sample_id"], "dataset": source["dataset"],
             "target_turn": turn, "question": source["question"], "gold_answer": source["gold_answer"],
             "source_status": source["status"], "source_em": source["em"], "source_f1": source["f1"],
@@ -259,4 +294,12 @@ def run_state(source, turn, arms, generator, retriever, agent, retrieval):
             "deletion_plan": {k: v for k, v in deletion.items() if k != "arms"},
             "deletion_eligibility": {a: {k: v for k, v in e.items() if k != "documents"}
                                      for a, e in deletion["arms"].items()},
-            "controls_exact": True, "arms": results}
+            "controls_exact": not mismatch, **receipt, "arms": results}
+
+
+def usable_states(rows, manifest=None):
+    """States with exact E0 controls; with a merged manifest, the dropped count must match its receipt."""
+    keep = [r for r in rows if r.get("controls_exact", True)]
+    if manifest is not None and len(rows) - len(keep) != manifest.get("control_mismatch_states", 0):
+        raise ValueError("Control-mismatch states disagree with the merged manifest")
+    return keep

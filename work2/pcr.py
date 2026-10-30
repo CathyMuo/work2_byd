@@ -19,7 +19,7 @@ from pathlib import Path
 
 from .common import file_hash, git_output, load_json, local_path, write_json
 from .datasets import read_rows
-from .placebo import ARM_GROUPS, VERSION, run_state
+from .placebo import ARM_GROUPS, CONTROL_MISMATCH_MAX, VERSION, run_state
 from .replay import PROMPT_VARIANT_OF, AuditedRetriever
 from .run_baseline import asset_identity, validate_design
 from .selective import sha
@@ -147,7 +147,8 @@ def worker(run_dir, index):
     if [(r["sample_id"], r["target_turn"]) for r in done] != [(s["sample_id"], s["target_turn"]) for s in states[:len(done)]]:
         raise ValueError("Existing worker output does not match frozen state order; use a new run dir")
     manifest = {"version": VERSION, "worker_index": index, "gpu": run["gpus"][index], "status": "loading",
-                "expected_states": len(states), "recorded_states": len(done), "resumed_from": len(done)}
+                "expected_states": len(states), "recorded_states": len(done), "resumed_from": len(done),
+                "control_mismatch_states": sum(not r["controls_exact"] for r in done)}
     write_json(folder / "run_manifest.json", manifest)
     from .retrieval import SearchR1Retriever
     from .backends import HFGenerator, VLLMGenerator
@@ -163,13 +164,17 @@ def worker(run_dir, index):
     try:
         with out.open("a", encoding="utf-8") as stream:
             for state in states[len(done):]:
-                row = run_state(sources[state["sample_id"]], state["target_turn"], arms, generator, retriever, agent, retrieval)
+                row = run_state(sources[state["sample_id"]], state["target_turn"], arms, generator, retriever, agent, retrieval,
+                                run.get("control_mismatch", "stop"))
                 stream.write(json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n"); stream.flush()
                 manifest.update(status="running", recorded_states=manifest["recorded_states"] + 1)
+                if not row["controls_exact"]:
+                    manifest["control_mismatch_states"] = manifest.get("control_mismatch_states", 0) + 1
                 write_json(folder / "run_manifest.json", manifest)
-                print("worker {} {}/{} {} t{} clean={} placebo={}".format(
+                print("worker {} {}/{} {} t{} clean={} placebo={}{}".format(
                     index, manifest["recorded_states"], len(states), state["sample_id"], state["target_turn"],
-                    row["arms"]["clean_a"]["em"], [row["arms"][a]["em"] for a in row["arms"] if a.startswith(("perm_", "fmt_"))]), flush=True)
+                    row["arms"]["clean_a"]["em"], [row["arms"][a]["em"] for a in row["arms"] if a.startswith(("perm_", "fmt_"))],
+                    "" if row["controls_exact"] else " E0_MISMATCH(excluded)"), flush=True)
         manifest.update(status="completed", seconds=time.monotonic() - started)
     except BaseException as exc:
         manifest.update(status="failed", error={"type": type(exc).__name__, "message": str(exc)})
@@ -221,19 +226,71 @@ def merge(run_dir):
     order = {q: i for i, q in enumerate(run["question_ids"])}
     ordered = sorted(rows, key=lambda r: (order[r["sample_id"]], r["target_turn"]))
     arms = set(ARM_GROUPS[plan["protocol"]["arm_group"]])
+    record = run.get("control_mismatch", "stop") == "record"
+    mismatched = []
     for r in ordered:
-        if not r["controls_exact"] or set(r["arms"]) != arms:
-            raise ValueError("State missing arms or control receipt: " + r["sample_id"])
-        if r["arms"]["clean_a"]["continuation_sha256"] != r["arms"]["clean_b"]["continuation_sha256"]:
+        if set(r["arms"]) != arms:
+            raise ValueError("State missing arms: " + r["sample_id"])
+        if not r["controls_exact"]:
+            if not (record and r.get("control_mismatch", {}).get("arms")):
+                raise ValueError("State missing control receipt: " + r["sample_id"])
+            mismatched.append(r)
+        elif r["arms"]["clean_a"]["continuation_sha256"] != r["arms"]["clean_b"]["continuation_sha256"]:
             raise ValueError("E0/E0 mismatch: " + r["sample_id"])
+    rate = len(mismatched) / len(ordered) if ordered else 0.0
     with (run_dir / "states.jsonl").open("w", encoding="utf-8") as stream:
         for r in ordered:
             stream.write(json.dumps(r, ensure_ascii=False, allow_nan=False) + "\n")
-    manifest = dict(load_json(run_dir / "run_manifest.json"), status="completed", recorded_states=len(ordered),
-                    states_sha256=file_hash(run_dir / "states.jsonl"), all_controls_exact=True, retrieval_drift=0)
+    reproducible = rate <= CONTROL_MISMATCH_MAX
+    manifest = dict(load_json(run_dir / "run_manifest.json"), status="completed" if reproducible else "control_reproducibility_failed",
+                    recorded_states=len(ordered), states_sha256=file_hash(run_dir / "states.jsonl"),
+                    all_controls_exact=not mismatched, control_mismatch_states=len(mismatched),
+                    control_mismatch_rate=rate, control_mismatch_max=CONTROL_MISMATCH_MAX,
+                    control_mismatch_ids=[[r["sample_id"], r["target_turn"]] for r in mismatched], retrieval_drift=0)
     write_json(run_dir / "run_manifest.json", manifest)
-    print("Merged {} states; all E0/E0 controls exact; retrieval drift 0.".format(len(ordered)))
+    if not reproducible:
+        raise ValueError("E0 control mismatch rate {:.1%} > {:.0%}: agent not measurable".format(rate, CONTROL_MISMATCH_MAX))
+    print("Merged {} states; E0/E0 exact on {}; {} control mismatch(es) excluded ({:.2%}); retrieval drift 0.".format(
+        len(ordered), len(ordered) - len(mismatched), len(mismatched), rate))
     return manifest
+
+
+def run_rows(run_dir):
+    """Merged states, or every worker's partial states for an unfinished/aborted run."""
+    if (run_dir / "states.jsonl").is_file():
+        return read_rows(run_dir / "states.jsonl")
+    return [r for f in sorted((run_dir / "workers").glob("worker_*/states.jsonl")) for r in read_rows(f)]
+
+
+def crosscheck(args):
+    """CPU: do two runs of the same plan produce byte-identical continuations on their shared states?"""
+    a = {(r["sample_id"], r["target_turn"]): r for r in run_rows(args.a)}
+    b = {(r["sample_id"], r["target_turn"]): r for r in run_rows(args.b)}
+    shared = sorted(set(a) & set(b))
+    arms = collections.Counter(); same = collections.Counter(); differing = []
+    for key in shared:
+        diff = []
+        for arm in sorted(set(a[key]["arms"]) & set(b[key]["arms"])):
+            x, y = a[key]["arms"][arm], b[key]["arms"][arm]
+            if x is None or y is None:
+                continue
+            arms[arm] += 1
+            if x["continuation_sha256"] == y["continuation_sha256"]:
+                same[arm] += 1
+            else:
+                diff.append([arm, x["em"], y["em"]])
+        if diff:
+            differing.append({"sample_id": key[0], "target_turn": key[1], "arms": diff})
+    report = {"a": str(args.a), "b": str(args.b), "states_a": len(a), "states_b": len(b), "shared_states": len(shared),
+              "identical_states": len(shared) - len(differing),
+              "arms": {k: {"compared": arms[k], "identical": same[k]} for k in sorted(arms)},
+              "em_changed_arms": sum(d[1] != d[2] for s in differing for d in s["arms"]),
+              "differing_states": differing}
+    if args.output:
+        write_json(args.output, report)
+    print(json.dumps({k: v for k, v in report.items() if k != "differing_states"}, ensure_ascii=False, indent=1))
+    print("differing states (first 10):", json.dumps(differing[:10], ensure_ascii=False))
+    return report
 
 
 def run(args):
@@ -261,8 +318,9 @@ def run(args):
         raise ValueError("Run directory exists; pass --resume to continue the SAME frozen run, or use a new directory")
     if resume:
         frozen = load_json(args.run_dir / "run_plan.json")
-        if frozen["question_ids"] != ids or frozen["gpus"] != gpus or frozen["repository_commit"] != git_output("rev-parse", "HEAD"):
-            raise ValueError("Resume requires identical questions, GPU mapping and code commit")
+        if (frozen["question_ids"] != ids or frozen["gpus"] != gpus or frozen["repository_commit"] != git_output("rev-parse", "HEAD")
+                or frozen.get("control_mismatch", "stop") != args.on_control_mismatch):
+            raise ValueError("Resume requires identical questions, GPU mapping, code commit and --on-control-mismatch")
     else:
         args.run_dir.mkdir(parents=True); (args.run_dir / "logs").mkdir()
         assets = {k: asset_identity(local_path(local[k]), k in ("agent_checkpoint", "retriever_model"))
@@ -271,7 +329,8 @@ def run(args):
             "version": VERSION, "plan_path": str((args.plan_dir / "plan.json").resolve()),
             "plan_sha256": file_hash(args.plan_dir / "plan.json"), "question_ids": ids, "smoke": args.smoke,
             "gpus": gpus, "backend": args.backend, "gpu_memory_utilization": args.gpu_memory_utilization,
-            "request_timeout": args.request_timeout, "local_file": str(args.local.resolve()),
+            "request_timeout": args.request_timeout, "control_mismatch": args.on_control_mismatch,
+            "local_file": str(args.local.resolve()),
             "local_file_sha256": file_hash(args.local), "repository_commit": git_output("rev-parse", "HEAD"),
             "working_tree_dirty": bool(git_output("status", "--porcelain")), "assets": assets,
             "declared_asset_versions": {k: local.get(k) for k in ("checkpoint_version", "corpus_version", "index_version", "actual_index_type")},
@@ -330,13 +389,19 @@ def main():
     q.add_argument("--gpus", default="0,1,2,3"); q.add_argument("--backend", choices=("vllm", "hf"), default="vllm")
     q.add_argument("--gpu-memory-utilization", type=float, default=.75); q.add_argument("--request-timeout", type=float, default=120)
     q.add_argument("--smoke", action="store_true"); q.add_argument("--check-only", action="store_true"); q.add_argument("--resume", action="store_true")
+    q.add_argument("--on-control-mismatch", choices=("stop", "record"), default="stop",
+                   help="stop: abort on any E0 replay mismatch (v1 default); record: exclude and receipt such states (U1L amendment)")
     q = sub.add_parser("worker"); q.add_argument("--run-dir", type=Path, required=True); q.add_argument("--index", type=int, required=True)
     q = sub.add_parser("merge"); q.add_argument("--run-dir", type=Path, required=True)
+    q = sub.add_parser("crosscheck", help="CPU: compare continuations of two runs (merged or partial) on shared states")
+    q.add_argument("--a", type=Path, required=True); q.add_argument("--b", type=Path, required=True)
+    q.add_argument("--output", type=Path)
     a = p.parse_args()
     try:
         if a.command == "prepare": prepare(a)
         elif a.command == "run": run(a)
         elif a.command == "worker": worker(a.run_dir, a.index)
+        elif a.command == "crosscheck": crosscheck(a)
         else: merge(a.run_dir)
     except (ValueError, KeyError, FileNotFoundError) as exc:
         p.error(str(exc))

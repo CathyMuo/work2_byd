@@ -11,7 +11,7 @@ from unittest import mock
 from work2 import pcr, pcr_analysis, phase0_luck
 from work2.common import ROOT, file_hash, load_json, write_json
 from work2.placebo import (ALL_ARMS, FORMAT_ARMS, PERMUTATION_ARMS, REVIEW_PROMPT, deletion_plan, multiset,
-                           neutral_instruction, permutations_for, render, run_state)
+                           neutral_instruction, permutations_for, render, run_state, usable_states)
 from work2.replay import observation, replay_branch, validate_prefix
 from work2.rollout import run_sample
 
@@ -132,6 +132,20 @@ class PlaceboTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             run_state(src, 1, ("clean_a", "clean_b"), OrderGenerator(drift_after=1), DocRetriever(), AGENT, RETRIEVAL)
 
+    def test_control_drift_recorded_and_excluded(self):
+        src = source()
+        row = run_state(src, 1, ("clean_a", "clean_b", "perm_1"), OrderGenerator(drift_after=1), DocRetriever(),
+                        AGENT, RETRIEVAL, on_mismatch="record")
+        self.assertFalse(row["controls_exact"])
+        self.assertEqual(set(row["arms"]), {"clean_a", "clean_b", "perm_1"})
+        receipt = row["control_mismatch"]["arms"]["clean_b"]
+        self.assertEqual((receipt["kind"], receipt["step"], receipt["char"]), ("text", 1, 1))  # <answer> vs <think>
+        self.assertEqual(list(row["control_mismatch"]["arms"]), ["clean_b"])
+        self.assertFalse(row["control_mismatch"]["controls_agree"])
+        self.assertEqual(usable_states([row]), [])
+        with self.assertRaises(ValueError):
+            usable_states([row], {"control_mismatch_states": 0})
+
     def test_second_turn_fork(self):
         src = source(1)
         row = run_state(src, 2, ALL_ARMS, OrderGenerator(), DocRetriever(), AGENT, RETRIEVAL)
@@ -207,6 +221,23 @@ class RunnerTests(unittest.TestCase):
             m = pcr.merge(run_dir)
             self.assertEqual(m["recorded_states"], len(plan["states"]))
             self.assertEqual(m["retrieval_drift"], 0)
+            self.assertEqual(m["control_mismatch_states"], 0)
+            self.assertEqual(pcr.crosscheck(argparse.Namespace(a=run_dir, b=run_dir, output=None))["identical_states"],
+                             len(plan["states"]))
+            # one receipted mismatch: refused under the v1 stop rule, excluded under record but over the 2% bound here
+            path = run_dir / "workers" / "worker_0" / "states.jsonl"
+            rows = [json.loads(x) for x in path.read_text().splitlines()]
+            rows[0].update(controls_exact=False, control_mismatch={"arms": {"clean_a": {"kind": "text"}}, "controls_agree": True})
+            path.write_text("".join(json.dumps(r) + "\n" for r in rows))
+            with self.assertRaises(ValueError):
+                pcr.merge(run_dir)
+            write_json(run_dir / "run_plan.json", dict(load_json(run_dir / "run_plan.json"), control_mismatch="record"))
+            with self.assertRaisesRegex(ValueError, "not measurable"):
+                pcr.merge(run_dir)
+            self.assertEqual(load_json(run_dir / "run_manifest.json")["status"], "control_reproducibility_failed")
+            with mock.patch.object(pcr, "CONTROL_MISMATCH_MAX", 0.5):
+                m = pcr.merge(run_dir)
+            self.assertEqual((m["status"], m["control_mismatch_states"], m["all_controls_exact"]), ("completed", 1, False))
 
 
 class Phase0Tests(unittest.TestCase):

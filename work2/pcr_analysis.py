@@ -14,7 +14,7 @@ from pathlib import Path
 from .common import file_hash, git_output, load_json, write_json
 from .datasets import read_rows
 from .metrics import answer_scores, normalize, primary_gold
-from .placebo import ARM_GROUPS, PERMUTATION_ARMS, PLACEBO_ARMS, VERSION
+from .placebo import ARM_GROUPS, PERMUTATION_ARMS, PLACEBO_ARMS, VERSION, usable_states
 
 FORMAT_F1 = 0.8
 
@@ -278,7 +278,7 @@ def analyze(run_dir, resamples=2000, si1_dir=None):
     manifest = load_json(run_dir / "run_manifest.json")
     if manifest.get("status") != "completed" or file_hash(run_dir / "states.jsonl") != manifest["states_sha256"]:
         raise ValueError("Need a completed, unmodified merged PCR run")
-    states = read_rows(run_dir / "states.jsonl")
+    states = usable_states(read_rows(run_dir / "states.jsonl"), manifest)
     if any(s["version"] != VERSION or not s["controls_exact"] for s in states):
         raise ValueError("Unexpected PCR version or failed control receipt")
     for s in states:
@@ -288,6 +288,7 @@ def analyze(run_dir, resamples=2000, si1_dir=None):
     derived = [derive(s) for s in states]
     report = {"version": VERSION, "analysis_commit": git_output("rev-parse", "HEAD"),
               "states_sha256": manifest["states_sha256"], "states": len(states),
+              "control_mismatch_states_excluded": manifest.get("control_mismatch_states", 0),
               "questions": len({s["sample_id"] for s in states}),
               "format_flip_rule": "EM flip whose two answers are equal after normalization, contain each other, or have token F1 >= {}".format(FORMAT_F1),
               "luck": {"semantic": luck_block(derived, "sem", resamples), "raw_em": luck_block(derived, "raw", resamples)},

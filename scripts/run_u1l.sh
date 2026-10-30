@@ -10,6 +10,8 @@ gpus=${U1_GPUS:-0,1,2,3}
 fresh=${U1_FRESH:-outputs/u1_fresh}
 roster=configs/u1l_agents.json
 mem=${U1_GPU_MEM:-0.92}
+# U1L amendment 2026-10-30: E0 replay mismatches are receipted and excluded (agent unmeasurable above 2%).
+on_mismatch=${U1_ON_CONTROL_MISMATCH:-record}
 root=outputs/u1
 if ! command -v "$py" >/dev/null 2>&1; then printf '%s\n' 'Python 不存在；请设置 U1_PYTHON。' >&2; exit 1; fi
 step() { printf '\n==== [%s] %s ====\n' "$1" "$2"; }
@@ -26,7 +28,7 @@ case "$mode" in
     [[ -f "$d/pcr_plan/plan.json" ]] || "$py" -m work2.pcr prepare --sources "$d/sources/sources.jsonl" --protocol "configs/pcr_u1_${v}.json" --per-dataset "${U1_PCR_PER_DATASET:-400}" --output "$d/pcr_plan"
     if [[ ! -f "$d/pcr/states.jsonl" ]]; then
       if [[ -d "$d/pcr" ]]; then extra=(--resume); else extra=(); fi
-      "$py" -m work2.pcr run --plan-dir "$d/pcr_plan" --run-dir "$d/pcr" --protocol "configs/pcr_u1_${v}.json" --local "$local_cfg" --gpus "$gpus" --gpu-memory-utilization "$mem" ${extra[@]+"${extra[@]}"}
+      "$py" -m work2.pcr run --plan-dir "$d/pcr_plan" --run-dir "$d/pcr" --protocol "configs/pcr_u1_${v}.json" --local "$local_cfg" --gpus "$gpus" --gpu-memory-utilization "$mem" --on-control-mismatch "$on_mismatch" ${extra[@]+"${extra[@]}"}
     fi
     [[ -d "$d/pcr/analysis" ]] || "$py" -m work2.pcr_analysis --run-dir "$d/pcr" --resamples 1000
     ;;

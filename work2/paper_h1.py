@@ -17,6 +17,7 @@ from pathlib import Path
 from .common import file_hash, git_output, load_json, write_json
 from .datasets import read_rows
 from .pcr_analysis import derive, estimate, mean
+from .placebo import usable_states
 
 METHODS = {"review": "perm1_neutral", "reflect": "perm1_neutral_reflect", "budget2": "perm1_neutral"}
 
@@ -25,7 +26,7 @@ def agent_rows(run_dir):
     m = load_json(run_dir / "run_manifest.json")
     if m.get("status") != "completed" or file_hash(run_dir / "states.jsonl") != m["states_sha256"]:
         raise ValueError("Need a completed, unmodified PCR run: " + str(run_dir))
-    return [derive(s) for s in read_rows(run_dir / "states.jsonl")]
+    return [derive(s) for s in usable_states(read_rows(run_dir / "states.jsonl"), m)]
 
 
 def block(rows, view, resamples):

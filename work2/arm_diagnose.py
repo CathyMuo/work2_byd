@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 
 from .datasets import read_rows
+from .placebo import usable_states
 
 # Insertion validity (fixed 2026-10-28 before looking at any agent other than AutoRefine and v0.3 7B PPO):
 # with content-free text inserted (P2), the agent must still produce a well-formed answer on >= half of its stable states.
@@ -20,7 +21,7 @@ ARMS = ("perm_2", "perm1_review", "perm1_neutral", "perm1_reflect", "perm1_neutr
 
 
 def diagnose(run_dir, examples=4, chars=300):
-    states = read_rows(Path(run_dir) / "states.jsonl")
+    states = usable_states(read_rows(Path(run_dir) / "states.jsonl"))
     stable = [s for s in states if s["arms"]["clean_a"]["em"] == 1 and s["arms"]["perm_1"] and s["arms"]["perm_1"]["em"] == 1]
     out = {"states": len(states), "stable_states": len(stable), "arms": {}}
     for arm in ARMS:

@@ -17,6 +17,7 @@ from .audit_confirm import DEFAULT_EXCLUDE, verdicts, write_selection
 from .common import file_hash, git_output, load_json, local_path, write_json
 from .credit_analysis import agreement, reliability, turn_rows
 from .datasets import canonicalize_flashrag, read_rows
+from .placebo import usable_states
 from .pcr import rank_key
 from .pcr_analysis import derive, recovery
 from .selective import exclusions, question_key, sha
@@ -135,7 +136,7 @@ def agent_summary(root, label, resamples):
     out["clean_em"]["all"] = rate([r["em"] for r in sources])
     fail = ("malformed_action", "generation_limit", "context_limit")
     out["format_fail_rate"] = rate([r["status"] in fail for r in sources])
-    pcr_states = read_rows(d / "pcr" / "states.jsonl") if (d / "pcr" / "states.jsonl").exists() else []
+    pcr_states = usable_states(read_rows(d / "pcr" / "states.jsonl")) if (d / "pcr" / "states.jsonl").exists() else []
     ct_records = read_rows(d / "ct" / "records.jsonl") if (d / "ct" / "records.jsonl").exists() else []
     sig_path = d / "ct" / "signals_policy.jsonl"
     signals = {r["sample_id"]: r for r in read_rows(sig_path)} if sig_path.exists() else {}
