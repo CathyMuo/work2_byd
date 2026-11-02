@@ -329,3 +329,60 @@ tail -f outputs/u1l_32b.log
 ```bash
 grep -rihE "KV cache|GPU blocks|maximum concurrency" outputs/u1/research_32b/sources | head -8
 ```
+
+## 8. 2026-11-02 U1L 收尾（只用 CPU，不跑任何推理）
+
+U1L 的 GPU 实验全部结束，不再重跑，也不新增智能体。检索服务和 4 张卡都可以释放。本节只是把论文需要、上次回传里缺的内容补齐。
+
+### 8.1 先核对 09:27 回传里的几处读法（家服已复算，以这里为准）
+
+1. **方法和 P2 的修复差是正的**：review − P2 = +3.3、reflect − P2 = +2.9，意思是方法比等长中性文字**多修复**约 3 个百分点，不是“比中性文字略差”。“更差”只对伤害成立。这个差异现在 CI 不含 0，它**削弱**而不是加强“内容不起作用”的说法。
+2. **智能体的总数**：项目共测了 18 个（U1 7 + U1x 4 + U1L 7），插入无效 2 个，有效 16 个，其中 14 个 RL 智能体进合并表，2 个只靠提示的单独报告。回传第 6 节写的“17 个，H1 17/17”不对。
+3. **`explained` 的定义**是 `max(P1, P2) / 方法修复率`，不是 P1 / 方法；H1 的判据是它 ≥ 1/3，门槛很宽松。“H1 7/7”不等于“方法 − P1 显著为负”。
+4. **预登记的 Q1–Q4 还不能判读**：它们要看每个智能体的方法 − P1、方法 − P2 及 CI，回传里只有合并行。
+
+### 8.2 等 `summary` 跑完，再拉代码
+
+```bash
+cd /root/develop/workspace/work2_byd
+export U1_PYTHON=/root/develop/persistent-miniconda3/envs/searchr1/bin/python
+
+# (1) 确认 summary 已结束（下面的 JSON 都存在，且没有 run_u1l 进程）
+ps -ef | grep -E "run_u1l|work2\." | grep -v grep
+ls -l outputs/u1l_summary.json outputs/paper/arm_diagnose_u1l.json outputs/paper/h1_pooled_u1l/h1_pooled.json outputs/paper/h1_u1l_only/h1_pooled.json
+
+# (2) f08ba8c 不在远端：拉取前先记下厂内的本地提交（回传第 1 项）
+git log --stat --oneline f7ae435..HEAD
+git status --short
+
+# (3) 拉取，测试（有本地提交用 rebase，没有用 git pull --ff-only）
+git fetch origin && git rebase origin/feat/credit-testbed
+bash scripts/run_u1l.sh test      # 期望没有 FAIL / ERROR
+```
+
+### 8.3 跑两个新脚本（都只读已有结果，几分钟到半小时，无须 GPU）
+
+```bash
+# (1) 稳健性：按模型大小、配方家族、每个智能体、去掉一个智能体、全部状态的净效应、E0 不复现的状态放回去
+"$U1_PYTHON" -m work2.paper_robust --agents configs/u1_agents.json configs/u1x_agents.json configs/u1l_agents.json \
+  --validity outputs/paper/arm_diagnose_u1l.json --exclude qwen25_32b_inst qwen25_7b_inst \
+  --output outputs/paper/h1_robust_u1l > /dev/null
+
+# (2) 回执：每次运行冻结的提交、GPU、显存比例和起止时间，E0 不复现的状态原文
+"$U1_PYTHON" scripts/u1l_receipts.py > outputs/paper/u1l_receipts.md
+```
+
+报错就停下回报，不要改代码。
+
+### 8.4 回传（全文贴在一个文本里，不要摘要，不画图）
+
+1. 8.2 第 (2) 步的输出。
+2. `outputs/paper/h1_pooled_u1l/h1_pooled.md` **全文**（含每个智能体的行、原始 EM 口径、智能体层面汇总、分数据集、翻转噪声）。
+3. `outputs/paper/h1_u1l_only/h1_pooled.md` 全文。
+4. `outputs/u1l_summary.md` 全文，`outputs/paper/arm_diagnose_u1l.md` 全文（18 个智能体，论文附录要用）。
+5. `outputs/u1/research_7b/e0_crosscheck.json` 去掉 `differing_states` 之后的全文（上次的表只有 6 个臂，这里应有 9 个，包括 `clean_a`、`clean_b`、`perm1_budget2`）。
+6. `outputs/paper/h1_robust_u1l/h1_robust.md` 全文。
+7. `outputs/paper/u1l_receipts.md` 全文（补上 §7.4 第 2 项和 §7.5 第 1 步还没回传的内容）。
+8. 第 5.2 节检索卡数表里，如果 `u1l_receipts.md` 的起止时间和检索变更时间（10-29 20:35、10-30 15:24）对不上，单独指出。
+
+`outputs/` 下的所有运行目录，包括失败目录，继续保留。

@@ -1245,3 +1245,49 @@ agent; new Q4 lays out Search-R1's size ladder (GRPO 3/7/14/32B, PPO 3/7/14B,
 IT-GRPO 7/14B) descriptively, with insertion-invalid points marked. Third-party
 TreezzZ/Ferret Search-R1 14B is not used (unknown provenance). Estimated 4.5-5 days.
 No U1L run has started; the protocol, roster, guide and board campaign are updated.
+
+## 2026-11-02 — U1L results back: all valid; pool grows to 14 agents; "content adds nothing" no longer holds
+
+Factory report 2026-11-02 09:27 (HEAD f08ba8c, a local commit not on the remote; text only, summary bootstrap still
+running, per-agent repair rows not returned). All 7 agents ran; format failure <= 1.1%; ReSearch fidelity -0.7 pp on
+both sizes; P2 answered >= 0.949, so all insertion-valid. E0 mismatch receipts: research_7b 6 (0.17%), research_32b 10
+(0.29%), v03_32b_grpo 0. research_7b crosscheck against the aborted first run: 1401 shared states identical on the 6
+arms reported. Retrieval: 2 cards for qwen25_7b_inst, v03_14b_ppo, v03_14b_it_grpo, qwen25_32b_inst; 4 cards for
+research_7b, research_32b, v03_32b_grpo (each agent's sources and PCR on the same setting, per the factory's account).
+The 32B agents ran on GPUs 1,2,3 at 0.85 beside the 4-card retrieval (GPU 0 had 11713 MiB, others 10049); KV 1.58x and
+1.96x of one sequence.
+
+Pool (14 RL agents: the 9 + v03_32b_grpo, research_32b, v03_14b_ppo, v03_14b_it_grpo, research_7b), semantic view,
+1396 degraded / 12909 stable: review - P2 +3.3 [0.9, 5.9], reflect - P2 +2.9 [0.1, 5.8]; vs P1 -16.6 [-19.8, -13.4],
+-14.1 [-17.7, -10.5]; harm method - P2 +3.2 [2.7, 3.7], +2.9 [2.4, 3.4]. Home recomputation from the 9-agent table and
+the new per-agent stable counts reproduces these rows (850 + 546 = 1396, 7043 + 5866 = 12909; the 5 new agents alone
+carry excess harm about +1.4 / +1.7 and repair about 39 / 41 vs P1 53).
+
+Decisions:
+1. U1L is accepted as complete, pending the receipts below. No further GPU runs and no new agents.
+2. The point estimates of the content effect barely moved (+2.8 / +3.1 before), but the CIs now exclude 0. The paper
+   stops saying "intervals include zero". Reading: filler reproduces about 90% of method repair; content adds a small,
+   detectable repair of about 3 points, upper bound about 6, far below the 10-point scale-dependence line in the
+   protocol. The factory's reading ("methods are slightly worse than filler") has the sign wrong for repair. reflect's
+   lower bound 0.1 is fragile: two comparisons, no multiplicity correction.
+3. The harm claim is scale-dependent and the paper says so. Pooled excess harm fell from +4.7 / +3.9 to +3.2 / +2.9
+   only because the pool changed composition: it is high on small models and near zero at 32B (0.9 [-0.2, 2.0] / 1.6
+   [0.3, 2.8] and 0.6 [-0.6, 2.0] / -0.2 [-1.5, 1.3]). Across the 5 new agents, CI > 0 in 2/5 (review) and 3/5 (reflect),
+   CI < 0 in none, so 7/14 and 10/14 overall; the "negative for none" wording must become "significantly negative for
+   none" (research_32b reflect has a negative point estimate). Medians replace pooled means as the headline when the
+   per-agent rows are back.
+4. "H1 7/7" is not the headline: AC1 is max(P1, P2) / method >= 1/3. Report effect sizes. The ReSearch pair sits close
+   to 1 (1.111 / 1.129 and 1.306 / 1.032), so method - P1 may not be below 0 for them; qwen25_7b_inst reflect at 0.914
+   is the one cell where the method beats both placebos. Q1 (each 32B), Q2, Q3, Q4 are read only from the per-agent table,
+   and Q1 has a third outcome the protocol did not name: neither "extends" (method - P1 CI below 0) nor "scale
+   dependent" (content CI above 0 and >= 10 pp). If it occurs, it is reported as that, per method and per agent.
+5. "Net content effect <= 0" is not yet supported on all states: D and stable cover clean-correct states only. Counted
+   on those, review's excess repair is about 46 states against about 413 excess harmed, reflect about 40 against 374, but
+   clean-wrong states are missing. New exploratory work2/paper_robust.py (protocol section 8) supplies the unselected
+   comparison, size and family cuts, leave-one-agent-out and the E0 put-back. scripts/u1l_receipts.py collects the frozen
+   run settings, times and verbatim E0 divergences. Guide section 8 lists what to return.
+6. Still unverified: whether the first-run failure state 2wiki:f643f918... recurs among the 6 mismatches, whether the E0
+   divergence looks like a near-tie (controls_agree, position), the first run's end time, and the factory's retrieval
+   account against run timestamps. The E0 explanation in protocol section 7 stays a hypothesis until these are back.
+
+Paper numbers are not changed until the full tables arrive.
