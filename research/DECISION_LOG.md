@@ -1291,3 +1291,69 @@ Decisions:
    account against run timestamps. The E0 explanation in protocol section 7 stays a hypothesis until these are back.
 
 Paper numbers are not changed until the full tables arrive.
+
+## 2026-11-02 — U1L closeout read: Q1-Q4, net effect, E0; corrections to the entry above
+
+Factory report 2026-11-02 10:08 (HEAD f1a0073; local commits are tmp/messages.md and merges only, 221 tests pass).
+Every number below is the semantic view unless noted.
+
+Corrections to the previous entry:
+- Retrieval: only qwen25_32b_inst ran on 2-card retrieval (10-29 23:11 to 10-30 15:07). qwen25_7b_inst, v03_14b_ppo and
+  v03_14b_it_grpo finished by 10-29 20:24, before the 20:35 change, so they used 4 cards. The factory's earlier table was
+  wrong and the run timestamps settle it. Every agent in the 14-agent pool therefore used 4-card retrieval, per the
+  factory's account of the older runs, and each agent's sources and PCR share one setting.
+- "Harm is scale-dependent" was too strong. Pooled excess harm falls 4.3 / 1.9 / 0.8 (review) across <=7B / 14B / 32B, but
+  v03_3b_grpo and v03_7b_grpo carry 61% of the pooled review excess and 36% of the reflect excess. Without them the
+  state-weighted means are about +1.4 / +2.1 and the agent medians +1.7 / +2.6 (home arithmetic on rounded estimates, no
+  CI yet). The 32B cell is two agents. Written as: excess harm is concentrated in two small GRPO models, which collapse in
+  format under inserted text, and is small elsewhere; low at 32B on two agents.
+- Run order differed from protocol section 2 (research_7b first, 32B last) because of the memory failures. Harmless: the
+  agents do not interact. Recorded as a deviation.
+
+Q1 (protocol section 4; semantic view is primary):
+- v03_32b_grpo: extends. review - P1 -21.6 [-32.5, -10.6], reflect - P1 -24.1 [-34.8, -13.3]. Content +7.8 [0.0, 14.7],
+  +7.8 [-1.8, 18.7], neither CI above 0. In the raw view reflect - P2 is +10.2 [0.7, 20.1], which meets the 10-point
+  line; the primary view does not. Reported, not hidden.
+- research_32b: review extends (-12.3 [-22.8, -2.5]; raw -5.6 [-15.0, 4.7]). Reflect is the third outcome the protocol did
+  not name: -1.6 [-13.8, 9.8] vs P1, +5.7 [-4.9, 15.8] vs P2. Distinguishable from neither placebo.
+- Pooled 32B content: +2.1 [-4.6, 9.0], +6.7 [-0.9, 14.2]. No evidence of scale dependence, but 10+ points cannot be
+  excluded for reflect at D=238.
+Q2 ReSearch 7B to 32B (descriptive): content +4.3 / -2.9 to -3.3 / +5.7; vs P1 -5.0 / -5.8 to -12.3 / -1.6; harm +2.0 / +2.9 to
++0.6 / -0.2. No clean size pattern in repair. The ReSearch family sits closest to P1 (-8.4 / -3.8).
+Q3 RL vs prompted (descriptive): 32B content -3.3 / +5.7 vs +12.5 [-5.3, 30.4] / -7.1 (prompted D=56); 7B +4.3 / -2.9 vs +3.4 /
++8.5. Harm 32B +0.6 / -0.2 vs +3.9 / -0.4; 7B +2.0 / +2.9 vs +1.8 / +3.0. No individual content CI excludes 0 and no consistent
+direction. The one cell where a method's point estimate beats both placebos (qwen25_7b_inst reflect) has CIs including 0.
+Q4 Search-R1 ladder (descriptive; review / reflect excess harm): GRPO 3B 18.9 / 15.0, 7B 14.3 / 4.3, 14B invalid, 32B 0.9 / 1.6;
+PPO 3B 1.7 / 2.0, 7B 2.5 / 2.6, 14B 3.3 / 1.4; IT-GRPO 7B 1.8 / 3.8, 14B 0.3 / 2.9. The fall with size is a GRPO story. PPO and
+IT-GRPO are flat.
+
+Net effect: over all 41467 states, method - P2 is -0.7 [-0.9, -0.5] / -0.5 [-0.8, -0.3], method - P1 -1.1 / -1.0. Clean-wrong
+states add +0.3 / +0.4, so the earlier gap is closed and "no net gain" is supported. Not "net loss for every agent": per
+agent CI below 0 in 4 and 4, above 0 in 1 and 1, largest gain +1.5. Without the two GRPO models review's net is about 0 and
+reflect's about -0.2. 32B: +0.1 [-0.5, 0.6], +0.2 [-0.4, 0.9]. Wording: the prompts do not raise accuracy over filler on
+any but one agent per method, and at most by 1.5 points.
+
+Content effect on repair: the factory's "no leave-one-out makes a CI cross zero" is false. Review crosses in 1 of 14 and reflect in
+8 of 14. Sign is positive in 9 and 10 of 14, in all five benchmarks; individual benchmark CIs include 0. Reading kept: small
+and bounded (about 3 points, upper about 6), likely real, not a null, not robustly separated from zero.
+
+P1 gap: the -16.6 / -14.1 compares a fresh order with a method that keeps the failing order, on failure-selected states. On all
+states the gap is -1.1 / -1.0. So it measures how much of the failure is order-specific, not how much worse a method is in
+deployment. The paper says so.
+
+E0 (protocol section 7): all 16 excluded states come from 8 questions on the two ReSearch agents, all clean-wrong, all with empty
+answers and EM 0 on both source and replay; none in D or stable, so the selection risk named in section 7 did not occur, and
+putting them back changes no estimate. Divergence is always kind text, at the last generation steps, inside degenerate
+token-repetition output. The first-run failure state recurs with the rerun, so it is reproducible between processes. First run
+ended 10-29 12:06, before the retrieval change. Crosscheck: 1401 states identical on all 9 arms, same worker mapping. Clean_a and
+clean_b disagree with each other in 13 of 16, so the path dependence appears within one process too. Remaining hypothesis: near-ties
+in degenerate output plus computation-path differences. Prefix caching is a candidate, not tested. The factory's wording "sampling
+instability" is wrong (decoding is greedy), and it read controls_agree backwards.
+
+Decisions:
+1. Experiments stay closed. Guide section 9 is the last CPU request: two more pools for the sensitivity table, the
+   fidelity table for the 11 older agents, and what .backup/ is (working_tree_dirty is True on every run).
+2. Paper updated now from these tables (abstract, setup, results with a scale section, discussion, limitations, appendix). The
+   sentences needing section 9 stay marked pending.
+3. The primary claim is "placebos reproduce most repair and content adds no net accuracy", not "methods lose to P1" and not
+   "H1 x/y".

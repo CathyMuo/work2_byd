@@ -386,3 +386,43 @@ bash scripts/run_u1l.sh test      # 期望没有 FAIL / ERROR
 8. 第 5.2 节检索卡数表里，如果 `u1l_receipts.md` 的起止时间和检索变更时间（10-29 20:35、10-30 15:24）对不上，单独指出。
 
 `outputs/` 下的所有运行目录，包括失败目录，继续保留。
+
+## 9. 2026-11-02 最后一次 CPU 补充（不跑推理，约半小时）
+
+10:08 的回传已收到，数据可用，实验保持关闭。论文还缺下面四项。
+
+**先核对两处读法**（家服已按回传的表复算）：
+
+1. “去掉任何一个智能体都不会让 CI 跨零”不对：`修复−P2` 在 review 上有 1 次跨零（去掉 `v01_7b_ppo`），在 reflect 上有 8 次。其余量（`修复−P1`、`伤害−P2`）确实都不跨零。
+2. E0 那段：解码是贪心的，不是“采样不稳定”。`controls_agree=true` 表示两次重放彼此一致、只和源轨迹不同，不表示“输出不稳定”。另外，第 5.2 节的检索表以第 9 节（按时间戳核对的那张）为准：只有 `qwen25_32b_inst` 用 2 卡。
+
+```bash
+cd /root/develop/workspace/work2_byd
+export U1_PYTHON=/root/develop/persistent-miniconda3/envs/searchr1/bin/python
+git fetch origin && git merge origin/feat/credit-testbed   # 这次只改文档
+
+# (1) 16 个 RL 智能体（把插入无效的两个也算进去）
+"$U1_PYTHON" -m work2.paper_robust --agents configs/u1_agents.json configs/u1x_agents.json configs/u1l_agents.json \
+  --exclude qwen25_32b_inst qwen25_7b_inst --output outputs/paper/h1_robust_16rl > /dev/null
+
+# (2) 12 个智能体（主表去掉 v03_3b_grpo、v03_7b_grpo）
+"$U1_PYTHON" -m work2.paper_robust --agents configs/u1_agents.json configs/u1x_agents.json configs/u1l_agents.json \
+  --validity outputs/paper/arm_diagnose_u1l.json --exclude qwen25_32b_inst qwen25_7b_inst v03_3b_grpo v03_7b_grpo \
+  --output outputs/paper/h1_robust_no_small_grpo > /dev/null
+
+# (3) 另外 11 个智能体的保真度表
+"$U1_PYTHON" -m work2.u1x --root outputs/u1 --roster configs/u1_agents.json --output outputs/u1_fidelity_all.json
+"$U1_PYTHON" -m work2.u1x --root outputs/u1 --roster configs/u1x_agents.json --output outputs/u1x_fidelity_all.json
+
+# (4) .backup/ 是什么（所有运行的 working_tree_dirty 都是 True，要确认只是这个未跟踪目录造成的）
+du -sh .backup; find .backup -maxdepth 2 | head -20; git status --short; git diff --stat
+```
+
+**回传**（全文贴在一个文本里）：
+
+1. `outputs/paper/h1_robust_16rl/h1_robust.md` 的“合并”一节。
+2. `outputs/paper/h1_robust_no_small_grpo/h1_robust.md` 的“合并”和“按模型大小”两节。
+3. `outputs/u1_fidelity_all.md`、`outputs/u1x_fidelity_all.md` 全文。
+4. 第 (4) 步的输出，并说明 `.backup/` 是什么时候、为什么产生的。
+
+报错就停下回报，不要改代码。这一项回来之后，厂内这边没有别的任务了。
