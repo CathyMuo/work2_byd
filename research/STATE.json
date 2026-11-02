@@ -4,7 +4,7 @@
   "updated_at": "2026-11-02",
   "current_stage": "U1L_closed_paper_update",
   "status": "U1L read: Q1 extends for v03_32b_grpo (both methods) and research_32b review; research_32b reflect distinguishable from neither placebo. Pool 14 RL agents: content +3.3 / +2.9 on repair, excess harm +3.2 / +2.9 (61% / 36% from two small GRPO models), all-state method - P2 -0.7 / -0.5.",
-  "next_action": "Factory: docs/U1L_FACTORY_GUIDE.md section 9 (CPU only, last request). Home: paper updated from the tables; fill the section 9 pending items.",
+  "next_action": "Factory: guide section 9 (CPU). User: decide on AS1 and U1N (decision log 2026-11-02). Home: finish the paper.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {

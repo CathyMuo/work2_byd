@@ -1357,3 +1357,38 @@ Decisions:
    sentences needing section 9 stay marked pending.
 3. The primary claim is "placebos reproduce most repair and content adds no net accuracy", not "methods lose to P1" and not
    "H1 x/y".
+
+## 2026-11-02 — Title fixed; submission assessment; two further experiments proposed (not started)
+
+User decision: the title stays "Most Recovery Is Regression to the Mean: Placebo-Controlled Replay Audits of RL-Trained
+Search Agents".
+
+New home analysis from the per-agent tables (CPU only, approximate because agents share questions): random-effects means
+with Hartung-Knapp intervals. Content on repair +3.4 [-0.5, 7.3] / +3.6 [-0.1, 7.3]; without the two small GRPO models +4.7
+[1.3, 8.1] / +4.4 [0.7, 8.0]. Vs P1 -17.0 [-21.6, -12.4] / -14.4 [-19.6, -9.3]. Excess harm +3.3 [0.2, 6.4] / +3.1 [1.2, 4.9];
+without the two +1.4 [0.6, 2.2] / +2.2 [1.3, 3.1]. All states vs P2 -0.7 [-1.9, 0.4] / -0.5 [-1.4, 0.3]; without the two about 0.
+Prediction interval for a new agent, review content: -7.9 to +14.7. The paper now bounds the content effect at about eight
+points, and says net loss is not established, only no net gain.
+
+Direct support for the title: perm_1 turns 1396 of 14305 correct answers wrong and about 1360 of 27162 wrong answers right, so the
+perturbation is close to mean-preserving. The rescue count comes from a rounded 5.0%.
+
+Assessment. Solid: the replay instrument, cross-run reproducibility, repair mostly reproduced by filler, the P1 gap in 10/14 and 7/14
+agents, no net gain. Moderate: size of the content effect, excess harm outside two agents, 32B coverage. Open: (1) assay sensitivity,
+because nothing shows the protocol would detect a large content effect, so "agents ignore inserted text" is not excluded;
+(2) natural failures, because degraded states are built by reordering and the main pool has no clean-order prompt arm (one dev agent
+only, PCR Phase 1, natural-state review -1.0 with CI covering 0).
+
+Proposed, awaiting the user's go-ahead, nothing registered or run:
+- AS1, assay sensitivity: on D plus samples of stable and clean-wrong states of the 14 agents, add an informative hint carrying the gold
+  answer and a failure alert without the answer. Expect filler < review < alert < gold if the instrument is sensitive.
+- U1N, natural failures: clean-order review, reflect and their fillers on about half of the questions of the 14 agents, E0 controls
+  kept. Compares method with filler on genuinely wrong trajectories and over all states.
+Rough cost from measured U1L throughput: AS1 about 5 h, U1N about 15 h on 4 cards, about one day together. Both need small code
+changes, a registered protocol before any run, and the same retrieval deployment as each agent's sources. If U1N shows a sizeable content
+effect on natural failures, the paper's framing has to change; that is the reason to run it.
+Not proposed: greedy-versus-sampling repeat (published audits already sample), more agents (no compatible public checkpoints found).
+
+Rules checked on the ARR CFP: 8 pages for long papers; references, Limitations and ethics discussion do not count; a Limitations section
+is mandatory; key material in appendices risks desk rejection; the responsible NLP checklist is required. The body currently ends on
+page 8 with about a third of a page free.
