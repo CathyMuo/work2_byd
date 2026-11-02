@@ -3,7 +3,7 @@
   "title": "Most Recovery Is Regression to the Mean：搜索智能体的安慰剂对照审计",
   "subtitle": "RL 训练的搜索智能体：文献里常见的“恢复 / 反思能修复错误”，加上安慰剂对照后还站得住吗？",
   "target": "目标：ACL 2027 主会（ARR 截稿 2027-01-04）",
-  "stage": "GPU 实验 U1L 已全部完成：主表扩到 14 个 RL 智能体（3B–32B），论文已更新到这版数据；正在做最后一次 CPU 补充，并评估是否再加两项小实验",
+  "stage": "U1L 已完成，论文已更新到 14 个智能体；正在补最后两项实验：阳性对照（工具是否灵敏）和自然失败（不换顺序时结论是否一样）",
   "talk_track": [
     "做什么：给 RL 训练的搜索智能体（Search-R1 一类）做“审计”。文献常说加一段反思、复查或重试，就能把答错的修回来。我们检查这种修复是方法的功劳，还是统计假象。",
     "怎么做：从同一条推理轨迹的同一个位置精确分叉，一路跑“方法”，另一路跑“安慰剂”（只换文档顺序，或加一段等长的无意义文字），比较两路各修回多少。",
@@ -29,7 +29,7 @@
     },
     {
       "label": "下一步",
-      "text": "厂内最后一次 CPU 补充；评估是否补两项小实验（阳性对照、自然失败）；论文定稿，1 月 4 日投 ARR。"
+      "text": "补两项实验：AS1 阳性对照、U1N 自然失败（判定规则已在运行前登记）；结果出来后论文定稿，1 月 4 日投 ARR。"
     }
   ],
   "question": {
@@ -561,7 +561,7 @@
     },
     {
       "date": "11-02 ~ 11-25",
-      "text": "论文已更新到 14 个智能体；厂内最后一次 CPU 补充；评估阳性对照和自然失败两项小实验",
+      "text": "论文已更新到 14 个智能体；登记并运行 AS1（阳性对照）和 U1N（自然失败），约 1–1.5 天",
       "done": false,
       "current": true
     },
@@ -577,44 +577,159 @@
     }
   ],
   "risks": [
-    "最大的两个质疑还没有数据回答：(1) 智能体是否根本不看插入内容（缺阳性对照）；(2) 失败状态是人工扰动造成的，自然失败上是否一样（主表没有不换顺序的提示臂）。",
+    "AS1 和 U1N 正是为了回答最大的两个质疑：(1) 智能体是否根本不看插入内容；(2) 自然失败上结论是否一样。如果 U1N 显示提示内容在自然失败上有实在作用，论文主张要相应收窄（规则已预先登记）。",
     "H1 的上界不算很紧：把智能体当随机样本时内容效应上界约 7–8 个点，单个模型可以更高；32B 只有两个模型。",
     "近期相近工作增多（CIR、SearchAuditor、Falsification Not Exposure 等，场景和设计不同）：我们的区别在于 RL 搜索智能体、同前缀精确重放、均值回归的直接证据，以及审计已发表方法。投稿前要再查一次新。",
     "模型几乎都基于 Qwen2.5；同前缀重放需要控制 token，前沿 API 模型测不了。SearchAuditor 在前沿模型上看到定向修复有增益，论文要正面讨论。",
     "ReSeek 只放出了 3B 权重；MR-Search 没有权重，审计的是论文自己的测试时版本。"
   ],
   "campaign": {
-    "title": "当前批次：U1L 收尾（只用 CPU，厂内指导第 9 节）",
+    "title": "当前批次：AS1 阳性对照 + U1N 自然失败（14 个智能体，约 1–1.5 天）",
     "items": [
       {
-        "name": "U1L 汇总与合并效应量",
-        "run": "",
-        "done": "outputs/paper/h1_pooled_u1l/h1_pooled.md"
+        "name": "Search-R1 3B PPO · 阳性对照 AS1",
+        "run": "outputs/u1/v03_3b_ppo/as1",
+        "done": "outputs/u1/v03_3b_ppo/as1/states.jsonl"
       },
       {
-        "name": "稳健性分析（14 个智能体）",
-        "run": "",
-        "done": "outputs/paper/h1_robust_u1l/h1_robust.md"
+        "name": "Search-R1 3B GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v03_3b_grpo/as1",
+        "done": "outputs/u1/v03_3b_grpo/as1/states.jsonl"
       },
       {
-        "name": "敏感性：16 个 RL（含插入无效）",
-        "run": "",
-        "done": "outputs/paper/h1_robust_16rl/h1_robust.md"
+        "name": "Search-R1 v0.1 7B PPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_7b_ppo/as1",
+        "done": "outputs/u1/v01_7b_ppo/as1/states.jsonl"
       },
       {
-        "name": "敏感性：去掉两个小 GRPO（12 个）",
-        "run": "",
-        "done": "outputs/paper/h1_robust_no_small_grpo/h1_robust.md"
+        "name": "Search-R1 7B PPO · 阳性对照 AS1",
+        "run": "outputs/u1/v03_7b_ppo/as1",
+        "done": "outputs/u1/v03_7b_ppo/as1/states.jsonl"
       },
       {
-        "name": "旧智能体保真度表（U1）",
-        "run": "",
-        "done": "outputs/u1_fidelity_all.json"
+        "name": "Search-R1 7B GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v03_7b_grpo/as1",
+        "done": "outputs/u1/v03_7b_grpo/as1/states.jsonl"
       },
       {
-        "name": "旧智能体保真度表（U1x）",
+        "name": "Search-R1 7B IT-GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v03_7b_it_grpo/as1",
+        "done": "outputs/u1/v03_7b_it_grpo/as1/states.jsonl"
+      },
+      {
+        "name": "ZeroSearch Llama-3B · 阳性对照 AS1",
+        "run": "outputs/u1/zs_llama32_3b/as1",
+        "done": "outputs/u1/zs_llama32_3b/as1/states.jsonl"
+      },
+      {
+        "name": "ZeroSearch Qwen-7B · 阳性对照 AS1",
+        "run": "outputs/u1/zs_qwen25_7b/as1",
+        "done": "outputs/u1/zs_qwen25_7b/as1/states.jsonl"
+      },
+      {
+        "name": "StepSearch 7B · 阳性对照 AS1",
+        "run": "outputs/u1/stepsearch_7b/as1",
+        "done": "outputs/u1/stepsearch_7b/as1/states.jsonl"
+      },
+      {
+        "name": "Search-R1 14B PPO · 阳性对照 AS1",
+        "run": "outputs/u1/v03_14b_ppo/as1",
+        "done": "outputs/u1/v03_14b_ppo/as1/states.jsonl"
+      },
+      {
+        "name": "Search-R1 14B IT-GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v03_14b_it_grpo/as1",
+        "done": "outputs/u1/v03_14b_it_grpo/as1/states.jsonl"
+      },
+      {
+        "name": "ReSearch 7B · 阳性对照 AS1",
+        "run": "outputs/u1/research_7b/as1",
+        "done": "outputs/u1/research_7b/as1/states.jsonl"
+      },
+      {
+        "name": "Search-R1 32B GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v03_32b_grpo/as1",
+        "done": "outputs/u1/v03_32b_grpo/as1/states.jsonl"
+      },
+      {
+        "name": "ReSearch 32B · 阳性对照 AS1",
+        "run": "outputs/u1/research_32b/as1",
+        "done": "outputs/u1/research_32b/as1/states.jsonl"
+      },
+      {
+        "name": "Search-R1 3B PPO · 自然失败 U1N",
+        "run": "outputs/u1/v03_3b_ppo/u1n",
+        "done": "outputs/u1/v03_3b_ppo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 3B GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v03_3b_grpo/u1n",
+        "done": "outputs/u1/v03_3b_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 v0.1 7B PPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_7b_ppo/u1n",
+        "done": "outputs/u1/v01_7b_ppo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 7B PPO · 自然失败 U1N",
+        "run": "outputs/u1/v03_7b_ppo/u1n",
+        "done": "outputs/u1/v03_7b_ppo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 7B GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v03_7b_grpo/u1n",
+        "done": "outputs/u1/v03_7b_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 7B IT-GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v03_7b_it_grpo/u1n",
+        "done": "outputs/u1/v03_7b_it_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "ZeroSearch Llama-3B · 自然失败 U1N",
+        "run": "outputs/u1/zs_llama32_3b/u1n",
+        "done": "outputs/u1/zs_llama32_3b/u1n/states.jsonl"
+      },
+      {
+        "name": "ZeroSearch Qwen-7B · 自然失败 U1N",
+        "run": "outputs/u1/zs_qwen25_7b/u1n",
+        "done": "outputs/u1/zs_qwen25_7b/u1n/states.jsonl"
+      },
+      {
+        "name": "StepSearch 7B · 自然失败 U1N",
+        "run": "outputs/u1/stepsearch_7b/u1n",
+        "done": "outputs/u1/stepsearch_7b/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 14B PPO · 自然失败 U1N",
+        "run": "outputs/u1/v03_14b_ppo/u1n",
+        "done": "outputs/u1/v03_14b_ppo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 14B IT-GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v03_14b_it_grpo/u1n",
+        "done": "outputs/u1/v03_14b_it_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "ReSearch 7B · 自然失败 U1N",
+        "run": "outputs/u1/research_7b/u1n",
+        "done": "outputs/u1/research_7b/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 32B GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v03_32b_grpo/u1n",
+        "done": "outputs/u1/v03_32b_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "ReSearch 32B · 自然失败 U1N",
+        "run": "outputs/u1/research_32b/u1n",
+        "done": "outputs/u1/research_32b/u1n/states.jsonl"
+      },
+      {
+        "name": "汇总与预登记判定",
         "run": "",
-        "done": "outputs/u1x_fidelity_all.json"
+        "done": "outputs/paper/as1_u1n/as1_u1n.md"
       }
     ]
   },

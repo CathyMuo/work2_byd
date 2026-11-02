@@ -1,0 +1,22 @@
+{
+  "protocol": "PCR_placebo_controlled_replay_v1",
+  "seed": 20261022,
+  "target_turns": [
+    1,
+    2
+  ],
+  "arm_group": "assay",
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 10240,
+    "max_generation_tokens_per_turn": 1024,
+    "max_search_turns": 8,
+    "prompt_variant": "research"
+  },
+  "retrieval": {
+    "visible_top_k": 5,
+    "candidate_top_k": 20
+  },
+  "scope": "AS1 assay-sensitivity arms (clean_a/b, perm_1, perm1_{review,neutral,alert,neutral_alert,hint,neutral_hint}) on states selected from the agent's H1 run. See research/AS1_U1N_PROTOCOL.md."
+}

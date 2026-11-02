@@ -1,0 +1,22 @@
+{
+  "protocol": "PCR_placebo_controlled_replay_v1",
+  "seed": 20261022,
+  "target_turns": [
+    1,
+    2
+  ],
+  "arm_group": "natural",
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "bounded"
+  },
+  "retrieval": {
+    "visible_top_k": 3,
+    "candidate_top_k": 20
+  },
+  "scope": "U1N natural-failure arms (clean_a/b, perm_1, review, neutral, reflect, neutral_reflect) on the unperturbed observation. See research/AS1_U1N_PROTOCOL.md."
+}

@@ -19,7 +19,7 @@ from pathlib import Path
 
 from .common import file_hash, git_output, load_json, local_path, write_json
 from .datasets import read_rows
-from .placebo import ARM_GROUPS, CONTROL_MISMATCH_MAX, VERSION, run_state
+from .placebo import ARM_GROUPS, CONTROL_MISMATCH_MAX, VERSION, run_state, usable_states
 from .replay import PROMPT_VARIANT_OF, AuditedRetriever
 from .run_baseline import asset_identity, validate_design
 from .selective import sha
@@ -65,11 +65,32 @@ def rank_key(seed, sample_id):
     return hashlib.sha256("{}:{}".format(seed, sample_id).encode()).hexdigest()
 
 
+def select_states(run_dir, seed, stable_n, wrong_n):
+    """AS1: every degraded state of a finished H1 run (semantic or raw view), plus hash-ordered samples of its stable
+    (both views) and clean-wrong states. Uses only y0 and perm_1, which the H1 run already measured."""
+    from .pcr_analysis import derive
+    m = load_json(run_dir / "run_manifest.json")
+    if m.get("status") != "completed" or file_hash(run_dir / "states.jsonl") != m["states_sha256"]:
+        raise ValueError("Need a completed, unmodified H1 run: " + str(run_dir))
+    groups = {"degraded": [], "stable": [], "clean_wrong": []}
+    for r in (derive(s) for s in usable_states(read_rows(run_dir / "states.jsonl"), m)):
+        views = (r["sem"]["perm_1"], r["raw"]["perm_1"])
+        key = "clean_wrong" if r["y0"] == 0 else "stable" if views == (1, 1) else "degraded"
+        groups[key].append({"sample_id": r["sample_id"], "dataset": r["dataset"], "target_turn": r["turn"], "stratum": key})
+    order = lambda s: rank_key(seed, "{}|{}".format(s["sample_id"], s["target_turn"]))
+    picked = groups["degraded"] + sorted(groups["stable"], key=order)[:stable_n] + sorted(groups["clean_wrong"], key=order)[:wrong_n]
+    receipt = {"h1_run": str(run_dir.resolve()), "h1_states_sha256": m["states_sha256"],
+               "available": {k: len(v) for k, v in groups.items()}, "selected": {k: sum(s["stratum"] == k for s in picked) for k in groups}}
+    return picked, receipt
+
+
 def prepare(args):
     protocol = load_protocol(args.protocol)
     rows = source_rows(args.sources)
     if args.output.exists():
         raise ValueError("Plan directory exists; keep frozen selections")
+    if getattr(args, "select_from", None):
+        return prepare_selected(args, protocol, rows)
     questions, unreachable, short = [], collections.Counter(), {}
     datasets = datasets_of(rows)
     for dataset in datasets:
@@ -100,6 +121,30 @@ def prepare(args):
             "created_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()}
     write_json(args.output / "plan.json", plan)
     print("Frozen {} questions / {} states (unreachable by turn: {}).".format(len(questions), len(states), dict(unreachable)))
+
+
+def prepare_selected(args, protocol, rows):
+    picked, receipt = select_states(args.select_from, protocol["seed"], args.stable_sample, args.wrong_sample)
+    by_id = {r["sample_id"]: r for r in rows}
+    if any(s["sample_id"] not in by_id or len(by_id[s["sample_id"]]["prefixes"]) < s["target_turn"] for s in picked):
+        raise ValueError("Selected states are not in these sources")
+    datasets = datasets_of([by_id[s["sample_id"]] for s in picked])
+    questions = []
+    for dataset in datasets:
+        ids = sorted({s["sample_id"] for s in picked if s["dataset"] == dataset}, key=lambda q: rank_key(protocol["seed"], q))
+        questions.extend(ids)
+    states = sorted(({k: s[k] for k in ("sample_id", "dataset", "target_turn")} for s in picked),
+                    key=lambda s: (questions.index(s["sample_id"]), s["target_turn"]))
+    smoke_ids = [q for d in datasets for q in [x for x in questions if by_id[x]["dataset"] == d][:2]]
+    args.output.mkdir(parents=True)
+    plan = {"version": VERSION, "protocol": protocol, "protocol_sha256": sha(protocol),
+            "sources_path": str(args.sources.resolve()), "sources_sha256": file_hash(args.sources),
+            "question_ids": questions, "smoke_question_ids": smoke_ids, "states": states, "unreachable_by_turn": {},
+            "datasets": datasets, "short_datasets": {}, "selected_from": receipt,
+            "selection": "AS1: all degraded H1 states plus sha256(seed:sample_id|turn)-ordered samples of stable and clean-wrong states",
+            "created_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()}
+    write_json(args.output / "plan.json", plan)
+    print("Frozen {} questions / {} states from {} ({}).".format(len(questions), len(states), args.select_from, receipt["selected"]))
 
 
 def gpu_list(text):
@@ -382,6 +427,8 @@ def main():
     q.add_argument("--protocol", type=Path, default=Path("configs/pcr_v1.json"))
     q.add_argument("--per-dataset", type=int, default=300, help="0 = all searchable questions")
     q.add_argument("--output", type=Path, required=True)
+    q.add_argument("--select-from", type=Path, help="AS1: a completed H1 run dir; states come from it instead of --per-dataset")
+    q.add_argument("--stable-sample", type=int, default=100); q.add_argument("--wrong-sample", type=int, default=100)
     q = sub.add_parser("run")
     q.add_argument("--plan-dir", type=Path, required=True); q.add_argument("--run-dir", type=Path, required=True)
     q.add_argument("--protocol", type=Path, default=Path("configs/pcr_v1.json"))

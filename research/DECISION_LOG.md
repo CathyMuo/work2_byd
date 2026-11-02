@@ -1392,3 +1392,22 @@ Not proposed: greedy-versus-sampling repeat (published audits already sample), m
 Rules checked on the ARR CFP: 8 pages for long papers; references, Limitations and ethics discussion do not count; a Limitations section
 is mandatory; key material in appendices risks desk rejection; the responsible NLP checklist is required. The body currently ends on
 page 8 with about a third of a page free.
+
+## 2026-11-02 — AS1 and U1N registered: assay sensitivity and natural failures
+
+User decision: run both proposed experiments. Protocol research/AS1_U1N_PROTOCOL.md, frozen before any run; home had seen only the H1
+tables (h1_pooled_u1l, h1_robust_u1l) and no output of the new arms.
+
+- AS1: on each of the 14 main agents, all H1 degraded states (semantic or raw) plus hash-ordered samples of 100 stable and 100
+  clean-wrong states; arms clean_a/b, perm_1, perm1_review, perm1_neutral, perm1_alert, perm1_hint and token-matched fillers for
+  alert and hint. A1 (instrument sensitive): pooled hint - filler repair >= 20 pp with CI > 0 and the same in >= 12 of 14 agents;
+  agents that fail are reported, and their H1 "content does not help" becomes "cannot tell". A2 dose ordering is descriptive. A3:
+  perm_1, perm1_review, perm1_neutral and clean_a must reproduce the H1 run (>= 99%).
+- U1N: the H1 question order cut to 150 per dataset (Bamboogle in full), turns 1 and 2; arms clean_a/b, perm_1, review, neutral,
+  reflect, neutral_reflect on the unperturbed observation. N1 content repairs natural failures: pooled rescue - filler CI > 0 and
+  >= 3 pp. N2 net gain: all-state method - filler CI > 0. N3 luck explains: max(filler, perm_1) / method rescue >= 2/3. N1 or N2
+  true means the paper is revised (claim narrowed, "no net gain" withdrawn).
+Code: placebo.py arms and groups "assay" and "natural" (the H1 arms are byte-identical, tested); pcr.py prepare --select-from;
+work2/as1u1n.py analysis with mechanical readings; scripts/run_as1u1n.sh; configs/{as1,u1n}_{bounded,official,research,stepsearch}.json;
+docs/AS1_U1N_FACTORY_GUIDE.md. Token-matched fillers checked on the real Qwen2.5 and Llama-3.2 tokenizers for every length from 33 to
+101 tokens. 197 CPU tests pass. Estimated 1 to 1.5 days on 4xH800, all AS1 before any U1N, same 4-card retrieval as the sources.

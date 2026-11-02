@@ -30,6 +30,10 @@ RECOVERY_ARMS = ("review", "neutral", "budget2", "perm1_review", "perm1_neutral"
 DELETION_ARMS = ("drop_support", "drop_nonsupport")
 # AC1 (2026-10-19): a second, more specific reflection method with its own token-matched placebo.
 REFLECT_ARMS = ("reflect", "neutral_reflect", "perm1_reflect", "perm1_neutral_reflect")
+# AS1 (2026-11-02, research/AS1_U1N_PROTOCOL.md): assay-sensitivity arms on the perm_1 observation. alert flags the current
+# line of reasoning as likely wrong without saying why; hint states the gold answer (an oracle, not a method). Each has its
+# own token-matched filler.
+ASSAY_ARMS = ("perm1_alert", "perm1_neutral_alert", "perm1_hint", "perm1_neutral_hint")
 ALL_ARMS = CONTROL_ARMS + PLACEBO_ARMS + RECOVERY_ARMS + DELETION_ARMS
 ARM_GROUPS = {"core": CONTROL_ARMS + PLACEBO_ARMS,
               "recovery": CONTROL_ARMS + PLACEBO_ARMS + RECOVERY_ARMS,
@@ -38,12 +42,20 @@ ARM_GROUPS = {"core": CONTROL_ARMS + PLACEBO_ARMS,
               "audit": ALL_ARMS + REFLECT_ARMS,
               # U1 (2026-10-22): only what H1 needs (selected-fragile design + both methods and their placebos).
               "h1": CONTROL_ARMS + ("perm_1", "perm_2", "perm1_review", "perm1_neutral", "perm1_budget2",
-                                    "perm1_reflect", "perm1_neutral_reflect")}
+                                    "perm1_reflect", "perm1_neutral_reflect"),
+              # AS1 / U1N (2026-11-02): positive controls on H1 states; the prompts on the unperturbed observation.
+              "assay": CONTROL_ARMS + ("perm_1", "perm1_review", "perm1_neutral") + ASSAY_ARMS,
+              "natural": CONTROL_ARMS + ("perm_1", "review", "neutral", "reflect", "neutral_reflect")}
 REVIEW_PROMPT = PROMPTS["review"]  # identical text to SI1 review, for cross-checks
 REFLECT_PROMPT = ("\n\nBefore continuing, reflect: state which part of the original question is still unresolved, "
                   "check whether the information already shown actually resolves it, and if something is missing, "
                   "issue one more specific search within the remaining original budget; otherwise give the answer. "
                   "Use the original <search> or <answer> protocol.\n\n")
+ALERT_PROMPT = ("\n\nBefore continuing, note: an external check indicates that the current line of reasoning is likely to "
+                "lead to a wrong answer. Re-examine the original question and the information already shown, and search again "
+                "or answer within the remaining original budget. Use the original <search> or <answer> protocol.\n\n")
+HINT_TEMPLATE = ("\n\nBefore continuing, note: a verified reference states that the answer to the original question is "
+                 "\"{}\". Use the original <search> or <answer> protocol.\n\n")
 NEUTRAL_SEED = ("\n\nNote: this line is a neutral layout separator and carries no task "
                 "information or instruction. ")
 NEUTRAL_FILLER = (" ok", " .", " -", " note", " line")
@@ -165,10 +177,10 @@ def arm_spec(arm, prefix, source, turn, encode, deletion):
     perms = permutations_for(source["sample_id"], turn, len(visible))
     permuted = lambda k: [copy.deepcopy(visible[i]) for i in perms[k]]
     review_tokens = len(encode(REVIEW_PROMPT))
-    reflect_tokens = len(encode(REFLECT_PROMPT))
-    instructions = {"review": REVIEW_PROMPT, "neutral": neutral_instruction(encode, review_tokens),
-                    "reflect": REFLECT_PROMPT, "neutral_reflect": neutral_instruction(encode, reflect_tokens)}
-    matched = {"review": review_tokens, "neutral": review_tokens, "reflect": reflect_tokens, "neutral_reflect": reflect_tokens}
+    # Each content prompt and the filler matched to it; "neutral" is the review-matched filler (H1 naming).
+    prompts = {"review": REVIEW_PROMPT, "reflect": REFLECT_PROMPT, "alert": ALERT_PROMPT,
+               "hint": HINT_TEMPLATE.format(gold_list(source["gold_answer"])[0])}
+    method_of = {"neutral": "review", "neutral_reflect": "reflect", "neutral_alert": "alert", "neutral_hint": "hint"}
     if arm in CONTROL_ARMS:
         return visible, "canonical", "", 0, {"family": "E0_control"}
     if arm in PERMUTATION_ARMS:
@@ -176,17 +188,19 @@ def arm_spec(arm, prefix, source, turn, encode, deletion):
         return permuted(k), "canonical", "", 0, {"family": "N1_permutation", "order": perms[k]}
     if arm in FORMAT_ARMS:
         return visible, arm, "", 0, {"family": "N2_format_null", "variant": arm}
-    if arm in RECOVERY_ARMS or arm in REFLECT_ARMS:
+    if arm in RECOVERY_ARMS or arm in REFLECT_ARMS or arm in ASSAY_ARMS:
         base = arm.split("_", 1)[1] if arm.startswith("perm1_") else arm
         documents = permuted(0) if arm.startswith("perm1_") else visible
         meta = {"family": "recovery", "base_observation": "perm_1" if arm.startswith("perm1_") else "clean",
                 "operation": base, "order": perms[0] if arm.startswith("perm1_") else list(range(len(visible)))}
         if base == "budget2":
             return documents, "canonical", "", 2, dict(meta, extra_search_budget=2)
-        text = instructions[base]
+        method = method_of.get(base, base)
+        matched = len(encode(prompts[method]))
+        text = neutral_instruction(encode, matched) if base in method_of else prompts[method]
         return documents, "canonical", text, 0, dict(meta, instruction=text,
                                                       instruction_tokens=len(encode(text)),
-                                                      matched_tokens=matched[base], review_tokens=review_tokens)
+                                                      matched_tokens=matched, review_tokens=review_tokens)
     if arm in DELETION_ARMS:
         entry = deletion["arms"][arm]
         if not entry["eligible"]:
