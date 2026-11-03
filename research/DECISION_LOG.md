@@ -1411,3 +1411,17 @@ Code: placebo.py arms and groups "assay" and "natural" (the H1 arms are byte-ide
 work2/as1u1n.py analysis with mechanical readings; scripts/run_as1u1n.sh; configs/{as1,u1n}_{bounded,official,research,stepsearch}.json;
 docs/AS1_U1N_FACTORY_GUIDE.md. Token-matched fillers checked on the real Qwen2.5 and Llama-3.2 tokenizers for every length from 33 to
 101 tokens. 197 CPU tests pass. Estimated 1 to 1.5 days on 4xH800, all AS1 before any U1N, same 4-card retrieval as the sources.
+
+## 2026-11-03 — U1L section 9 back; AS1/U1N test import fixed; go
+
+Factory 313a084, CPU only. 16 RL agents (with the two insertion-invalid ones): review/reflect - P2 repair +2.6 [0.2, 5.0] /
++2.2 [-0.5, 4.7], vs P1 -19.1 / -16.8, excess harm +5.3 / +6.3. 12 agents (main without v03_3b_grpo and v03_7b_grpo): +4.3
+[1.5, 7.2] / +3.3 [0.1, 6.4], vs P1 -15.2 / -13.3, excess harm +1.4 [0.9, 1.9] / +2.1 [1.6, 2.6], all states -0.0 / -0.2. The
+direction holds in every pool; the content effect on repair depends on which agents are pooled and stays secondary to the P1
+gap and to the absence of a net gain. Fidelity: format failures <= 2.4% for every agent. working_tree_dirty on every run is
+only the untracked .backup/ (two git bundles from 10-12); no tracked change.
+The AS1/U1N test failed at the factory because the searchr1 environment ships a site-packages module named tests that shadows
+the repository's tests/. Home had run the suite with the system Python. Fixed to `from test_pcr import`, as in test_audit.py;
+the suite now passes in the searchr1 environment from the repository root. Experiment code unchanged. From now on, home runs the
+tests in the factory's Python environment. Paper: sensitivity rows and the fidelity table filled; one pending mark left (link
+to the anonymized code).

@@ -6,9 +6,9 @@ import unittest
 from pathlib import Path
 
 from work2 import as1u1n, pcr
-from work2.common import file_hash, write_json
+from work2.common import ROOT, file_hash, write_json
 from work2.placebo import ARM_GROUPS, run_state
-from tests.test_pcr import AGENT, RETRIEVAL, DocRetriever, OrderGenerator, source
+from test_pcr import AGENT, RETRIEVAL, DocRetriever, OrderGenerator, source
 
 
 class HintReader(OrderGenerator):
@@ -66,7 +66,7 @@ class SelectionTests(unittest.TestCase):
             (root / "sources.jsonl").write_text("".join(json.dumps(s) + "\n" for s in sources))
             states = [run_state(s, 1, ARM_GROUPS["h1"], OrderGenerator(), DocRetriever(), AGENT, RETRIEVAL) for s in sources]
             write_run(root / "pcr", states)
-            protocol = dict(json.loads(Path("configs/pcr_u1_bounded.json").read_text()), arm_group="assay")
+            protocol = dict(json.loads((ROOT / "configs" / "pcr_u1_bounded.json").read_text()), arm_group="assay")
             (root / "as1.json").write_text(json.dumps(protocol))
             args = argparse.Namespace(protocol=root / "as1.json", sources=root / "sources.jsonl", output=root / "plan",
                                       select_from=root / "pcr", stable_sample=1, wrong_sample=0, per_dataset=0)

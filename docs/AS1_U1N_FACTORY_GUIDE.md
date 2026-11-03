@@ -79,3 +79,9 @@ bash scripts/run_as1u1n.sh summary
 3. 每个运行 `run_manifest.json` 里的 `control_mismatch_states`、`control_mismatch_rate`。
 4. `outputs/paper/as1_u1n/as1_u1n.md` 全文（含开头的“预登记判定”）。
 5. 冒烟测试有没有问题。
+
+## 6. 2026-11-03 更新：测试导入已修复，可以开跑
+
+- 厂内报的 `ModuleNotFoundError: No module named 'tests.test_pcr'` 是家服写错了：`searchr1` 环境的 site-packages 里有一个第三方包也叫 `tests`，把仓库的 `tests/` 遮住了。`tests/test_as1u1n.py` 已改成与 `test_audit.py` 相同的写法（`from test_pcr import ...`）。实验代码没有改。家服已用同一个 `searchr1` 环境、从仓库根目录跑通全部测试。
+- U1L 第 9 节的回传已收到，内容完整。
+- **按上文第 1–5 节开跑**：拉代码 → `bash scripts/run_as1u1n.sh test`（期望没有 FAIL / ERROR）→ 冒烟 → `all` → `summary`。
