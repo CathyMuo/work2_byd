@@ -18,7 +18,9 @@ from .placebo import usable_states
 
 SAMPLED_AGENTS = ("v03_3b_ppo", "v03_7b_grpo", "v03_14b_ppo", "v03_32b_grpo")
 VARIANTS = {"prose": "perm1_fill_prose", "protocol": "perm1_fill_protocol", "shuffled": "perm1_fill_shuffled",
-            "punct": "perm1_fill_punct"}
+            "punct": "perm1_fill_punct", "syntax": "perm1_fill_syntax"}
+ORDERS = ("perm_1", "perm_2", "perm_3", "perm_4", "perm_5")   # amendment 1: every non-identity order of a top-3 observation
+I1_PP = 0.02
 GRADED = {"pointer": ("perm1_pointer", "perm1_neutral_pointer"), "evidence": ("perm1_evidence", "perm1_neutral_evidence")}
 LADDER = {"review": ("perm1_review", "perm1_neutral"), "alert": ("perm1_alert", "perm1_neutral_alert"),
           "hint": ("perm1_hint", "perm1_neutral_hint")}           # joined from AS1 on the same states
@@ -28,7 +30,7 @@ F1_PP, F2_PP = 0.03, 0.02
 G1_PP, G2_PP = 0.08, 0.20
 S1_PP, EXPLAINED = 0.05, 2 / 3
 REPRO_MIN = 0.99
-REPRO_ARMS = {"as2": ("clean_a", "perm_1", "perm1_review", "perm1_neutral"), "as2s": ("clean_a", "perm_1")}
+REPRO_ARMS = {"as2": ("clean_a", "perm_1", "perm1_review", "perm1_neutral"), "as2s": ("clean_a", "perm_1", "perm_2")}
 
 
 def mean(xs):
@@ -102,6 +104,39 @@ def filler_block(rows, resamples, view="sem"):
     return out
 
 
+def interface_block(rows, resamples, view="sem"):
+    """Amendment 1: the review prompt and its filler inside the observation block vs after it (the H1 position)."""
+    deg, st, wr = split(rows, view)
+    have = lambda g: [r for r in g if "perm1_review_inobs" in r[view] and "perm1_neutral_inobs" in r[view]]
+    d, s = have(deg), have(st)
+    inside = lambda r: r[view]["perm1_review_inobs"] - r[view]["perm1_neutral_inobs"]
+    after = lambda r: r[view]["perm1_review"] - r[view]["perm1_neutral"]
+    return {"degraded": len(d), "stable": len(s),
+            "repair_content_inside": boot(d, inside, resamples), "repair_content_after": boot(d, after, resamples),
+            "harm_content_inside": boot(s, lambda r: -inside(r), resamples), "harm_content_after": boot(s, lambda r: -after(r), resamples),
+            "harm_content_inside_minus_after": boot(s, lambda r: after(r) - inside(r), resamples),
+            "review_inside_minus_after_harm": contrast(s, "perm1_review", "perm1_review_inobs", view, resamples),
+            "filler_inside_minus_after_harm": contrast(s, "perm1_neutral", "perm1_neutral_inobs", view, resamples)}
+
+
+def luck_block(rows, resamples, view="sem"):
+    """Amendment 1: with all five non-identity orders, each re-draw perm_k (k = 2..5) is exchangeable with perm_1, so its repair on
+    D should equal harm_S(perm_k) * |S| / |D| and the four repair rates should agree."""
+    rows = [r for r in rows if all(a in r[view] for a in ORDERS)]
+    deg, st, _ = split(rows, view)
+    out = {"degraded": len(deg), "stable": len(st), "orders": {}}
+    for a in ORDERS[1:]:
+        rep, harm = rate(deg, lambda r, a=a: r[view][a]), rate(st, lambda r, a=a: 1 - r[view][a])
+        out["orders"][a] = {"repair": boot(deg, lambda r, a=a: r[view][a], resamples), "harm": harm,
+                            "predicted_repair": (harm * len(st) / len(deg)) if deg and harm is not None else None}
+    reps = [v["repair"]["estimate"] for v in out["orders"].values() if v["repair"]]
+    out["repair_spread"] = (max(reps) - min(reps)) if reps else None
+    out["mean_redraw_repair"] = boot(deg, lambda r: mean(r[view][a] for a in ORDERS[1:]), resamples)
+    # share of degraded states that every one of the four re-draws leaves wrong (order-insensitive failures after selection)
+    out["never_repaired"] = rate(deg, lambda r: float(all(r[view][a] == 0 for a in ORDERS[1:])))
+    return out
+
+
 def graded_block(rows, resamples, view="sem"):
     deg, st, wr = split(rows, view)
     out = {"degraded": len(deg), "contents": {}}
@@ -168,6 +203,16 @@ def readings(r):
         out["G2"] = above(g["contents"]["evidence"]["repair_minus_filler"], G2_PP)
         out["G_reading"] = ("information ladder" if out["G1"] and out["G2"] else "only answer-bearing content clears the bound"
                             if out["G2"] else "report as is; positive control shows oracle-level content only")
+    i = r["interface"]["pooled"]["sem"] if r["interface"]["pooled"] else None
+    if i:
+        e = i["harm_content_inside_minus_after"]
+        out["I1"] = bool(e and e["estimate"] <= -I1_PP and e["ci95"][1] < 0)   # less excess harm inside: interface explains part
+    lk = r["luck"]["pooled"]["sem"] if r["luck"]["pooled"] else None
+    if lk:
+        cis = [v["repair"]["ci95"] for v in lk["orders"].values() if v["repair"]]
+        out["L1"] = bool(cis) and max(c[0] for c in cis) <= min(c[1] for c in cis)   # the four re-draws' intervals overlap
+        out["L2"] = all(v["predicted_repair"] is not None and v["repair"]["ci95"][0] <= v["predicted_repair"] <= v["repair"]["ci95"][1]
+                        for v in lk["orders"].values() if v["repair"])
     s = r["sampled"]["pooled"]["sem"] if r["sampled"]["pooled"] else None
     if s:
         out["S1"] = any(above(m["repair_minus_filler"], S1_PP) for m in s["methods"].values())
@@ -184,11 +229,11 @@ def analyze(root, labels, sampled_labels, resamples):
               "bootstrap": {"unit": "question (all agents' states of a question together)", "strata": "dataset", "resamples": resamples},
               "reproduction": {"as2": {}, "as2s": {}}}
     pooled = {"as2": [], "as2s": []}
-    per = {"filler": {}, "graded": {}, "sampled": {}}
+    per = {"filler": {}, "graded": {}, "interface": {}, "sampled": {}, "luck": {}}
     for label in labels:
         d = root / label / "as2"
         if not (d / "states.jsonl").is_file():
-            per["filler"][label] = per["graded"][label] = None
+            per["filler"][label] = per["graded"][label] = per["interface"][label] = None
             continue
         rows = run_rows(d)
         as1 = root / label / "as1"
@@ -199,19 +244,22 @@ def analyze(root, labels, sampled_labels, resamples):
         pooled["as2"] += rows
         per["filler"][label] = {v: filler_block(rows, resamples, v) for v in ("sem", "raw")}
         per["graded"][label] = {v: graded_block(rows, resamples, v) for v in ("sem", "raw")}
+        per["interface"][label] = {v: interface_block(rows, resamples, v) for v in ("sem", "raw")}
         report["reproduction"]["as2"][label] = reproduced(root / label / "pcr", d, REPRO_ARMS["as2"])
     for label in sampled_labels:
         d = root / label / "as2s"
         if not (d / "states.jsonl").is_file():
-            per["sampled"][label] = None
+            per["sampled"][label] = per["luck"][label] = None
             continue
         rows = run_rows(d)
         pooled["as2s"] += rows
         per["sampled"][label] = {v: sampled_block(rows, resamples, v) for v in ("sem", "raw")}
+        per["luck"][label] = {v: luck_block(rows, resamples, v) for v in ("sem", "raw")}
         report["reproduction"]["as2s"][label] = reproduced(root / label / "pcr", d, REPRO_ARMS["as2s"])
     if not pooled["as2"] and not pooled["as2s"]:
         raise ValueError("No completed AS2 run under " + str(root))
-    for part, key, block in (("filler", "as2", filler_block), ("graded", "as2", graded_block), ("sampled", "as2s", sampled_block)):
+    for part, key, block in (("filler", "as2", filler_block), ("graded", "as2", graded_block), ("interface", "as2", interface_block),
+                             ("sampled", "as2s", sampled_block), ("luck", "as2s", luck_block)):
         report[part] = {"agents": per[part], "pooled": {v: block(pooled[key], resamples, v) for v in ("sem", "raw")} if pooled[key] else None}
     report["readings"] = readings(report)
     return report
@@ -272,6 +320,28 @@ def markdown(r):
                 cells += ["{} / {}".format(pc(x["repair"]), pc(x["filler_repair"])), fmt(x["repair_minus_filler"]),
                           "NA" if x["explained"] is None else "{:.2f}".format(x["explained"]), fmt(x["harm_minus_filler"])]
             L.append("| " + " | ".join(cells) + " |")
+        L.append("")
+    if r["interface"]["pooled"]:
+        L += ["## 修订 1：插入位置（观测块内 vs 块后）", "",
+              "| 智能体 | D / 稳定 | 修复内容效应 块内 | 块后 | 伤害内容效应 块内 | 块后 | 伤害差（块内 − 块后） |", "| --- | --- | --- | --- | --- | --- | --- |"]
+        for name, v in list(r["interface"]["agents"].items()) + [("**合并**", r["interface"]["pooled"])]:
+            if not v:
+                L.append("| {} | 缺失 |".format(name)); continue
+            b = v["sem"]
+            L.append("| {} | {} / {} | {} | {} | {} | {} | {} |".format(
+                name, b["degraded"], b["stable"], fmt(b["repair_content_inside"]), fmt(b["repair_content_after"]),
+                fmt(b["harm_content_inside"]), fmt(b["harm_content_after"]), fmt(b["harm_content_inside_minus_after"])))
+        L.append("")
+    if r["luck"]["pooled"]:
+        L += ["## 修订 1：全部 5 种非原始顺序（贪心；退化状态上每次重抽的修复率 vs 运气模型预测）", "",
+              "| 智能体 | D | " + " | ".join("{} 修复 / 预测".format(a) for a in ORDERS[1:]) + " | 四次都没修好 |",
+              "| --- | --- | " + " | ".join("---" for _ in ORDERS[1:]) + " | --- |"]
+        for name, v in list(r["luck"]["agents"].items()) + [("**合并**", r["luck"]["pooled"])]:
+            if not v:
+                L.append("| {} | 缺失 |".format(name)); continue
+            b = v["sem"]
+            L.append("| {} | {} | {} | {} |".format(name, b["degraded"], " | ".join(
+                "{} / {}".format(fmt(o["repair"]), pc(o["predicted_repair"])) for o in b["orders"].values()), pc(b["never_repaired"])))
         L.append("")
     return "\n".join(L)
 

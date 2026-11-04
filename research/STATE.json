@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-11-04",
+  "updated_at": "2026-11-05",
   "current_stage": "as2_registered_factory_pending",
-  "status": "Paper revised after two reviews (luck null model, power, gating, citations). AS2 registered before any run: filler variants and graded positive controls on the AS1 states of 14 agents, sampled decoding on 4 Search-R1 agents.",
-  "next_action": "Factory: docs/AS2_FACTORY_GUIDE.md (test, smoke, all, summary) and section 6 (arm_diagnose full text, CPU).",
+  "status": "AS2 amended before any run (third review): structure-matched filler, prompt inside the observation block, all five orders on the sampled agents, MR-Search greedy re-check, and CPU analyses on existing outputs (work2/review_cpu.py).",
+  "next_action": "Factory: docs/AS2_FACTORY_GUIDE.md section 2 (CPU) first, then sections 3-4 (GPU), return per section 6.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {

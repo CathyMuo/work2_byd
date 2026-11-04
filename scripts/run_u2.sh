@@ -14,7 +14,8 @@ target() {  # target METHOD LABEL -> protocol, local_cfg, d
   case "${1:-}" in
     reseek) protocol=configs/u2_reseek.json ;;
     mr)     protocol=configs/u2_mrsearch.json ;;
-    *) printf '%s\n' '方法必须是 reseek 或 mr。' >&2; exit 1 ;;
+    mrg)    protocol=configs/u2_mrsearch_greedy.json ;;   # AS2 amendment 1: MR-Search audit with greedy episode 2
+    *) printf '%s\n' '方法必须是 reseek、mr 或 mrg。' >&2; exit 1 ;;
   esac
   label=${2:-}
   [[ -n "$label" ]] || { printf '%s\n' '缺少智能体标签（例如 reseek_3b、v03_7b_ppo）。' >&2; exit 1; }
@@ -45,5 +46,5 @@ case "$mode" in
     done
     "$py" scripts/pack_feedback.py "${args[@]}" ;;
   *) printf '%s\n' 'U2 modes: test | prepare | check METHOD LABEL | smoke METHOD LABEL | run METHOD LABEL | pack'
-     printf '%s\n' 'METHOD = reseek | mr；LABEL 例：reseek_3b、v03_3b_ppo、v03_7b_ppo。环境变量：U2_PYTHON U2_GPUS U1_FRESH U2_PER_DATASET。详见 docs/U2_FACTORY_GUIDE.md' ;;
+     printf '%s\n' 'METHOD = reseek | mr | mrg（mrg：MR-Search 贪心复核，AS2 修订 1）；LABEL 例：reseek_3b、v03_3b_ppo、v03_7b_ppo。环境变量：U2_PYTHON U2_GPUS U1_FRESH U2_PER_DATASET。详见 docs/U2_FACTORY_GUIDE.md' ;;
 esac

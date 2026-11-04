@@ -65,7 +65,10 @@ def load_protocol(path):
     if p["agent"].get("prompt_variant") != VARIANT[p["protocol"]]:
         raise ValueError("U2 {} requires prompt_variant {}".format(p["protocol"], VARIANT[p["protocol"]]))
     s = p["sampling"]
-    if not 0 < s["temperature"] <= 2 or not 0 < s["top_p"] <= 1 or s["k"] < 2:
+    # AS2 amendment 1 (2026-11-05): MR-Search's own evaluation decodes greedily, so its audit may also run with temperature 0
+    # and exactly one continuation per arm; sampled runs keep k >= 2.
+    greedy = p["protocol"] == MRSEARCH and s["temperature"] == 0 and s["k"] == 1
+    if not greedy and (not 0 < s["temperature"] <= 2 or not 0 < s["top_p"] <= 1 or s["k"] < 2):
         raise ValueError("Invalid sampling settings")
     if tuple(p["arms"]) != ARMS[p["protocol"]]:
         raise ValueError("Arms are fixed by the U2 protocol: " + ", ".join(ARMS[p["protocol"]]))

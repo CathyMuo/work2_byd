@@ -1481,3 +1481,23 @@ the agent temperature is non-zero (every greedy path unchanged; h1 / assay arms 
 sampling block only with arm group as2s, work2/as2.py analysis. 206 tests pass in the searchr1 environment; the new fillers match
 the review length on the Qwen2.5 and Llama-3.2 tokenizers for 1,200 states. Factory guide: docs/AS2_FACTORY_GUIDE.md, which also asks
 for the full arm_diagnose output (CPU) to split excess harm into format failures and wrong answers.
+
+## 2026-11-05 — AS2 amendment 1 (third review), before any AS2 run
+
+A third simulated review (2.5 / 5, major revision) asked mainly for analyses of existing outputs and a few small runs. AS2 had not
+run, so the additions are registered as amendment 1 (research/AS2_PROTOCOL.md section 8) without having seen any new arm:
+- as2: perm1_fill_syntax (the prompts' imperative frame and protocol reminder, asking for nothing; joins F1/F3), and the review
+  prompt and its P2 filler inside the observation block (perm1_review_inobs, perm1_neutral_inobs; reading I1 = interface share of
+  excess harm). Token counts inside the block are equal on the Qwen2.5 and Llama-3.2 tokenizers.
+- as2s: greedy perm_2..perm_5 so that all five non-identity orders of a top-3 observation are run (perm_5 extends
+  permutations_for to count=5; perm_1..perm_4 unchanged). Readings L1 (the four re-draws agree) and L2 (each matches the luck
+  null model's prediction).
+- MR-Search greedy re-check (configs/u2_mrsearch_greedy.json; u2.load_protocol allows temperature 0 with k = 1 for MR-Search only),
+  as in MR-Search's own evaluation.
+- work2/review_cpu.py on existing H1 / AS1 / U1N outputs: four-way tables (overlap of method and filler repairs), state- / agent- /
+  recipe-weighted pooling with Bonferroni per-agent intervals, alert vs review paired, a question-level policy (intervene once after
+  the first retrieval; no-search questions keep their outcome; EM, searches, tokens), and a semantic-view audit with the changed
+  cases exported for hand review. Plus the full arm_diagnose output and the existing MR-Search u2_report.md files.
+Not added: an anchoring ablation that removes the first answer (the MR-Search prompt asks to reflect on that answer); the paper
+will say "consistent with anchoring". A different retriever / top-k (ReSearch already uses top-5 and eight searches).
+Tests pass in the searchr1 environment; factory guide rewritten (CPU first, then GPU).

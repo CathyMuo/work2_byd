@@ -40,7 +40,13 @@ ASSAY_ARMS = ("perm1_alert", "perm1_neutral_alert", "perm1_hint", "perm1_neutral
 # answer): pointer says which shown document contains the answer, evidence adds one answer-bearing candidate passage; each
 # has its own matched filler and is None where the state is not eligible. Experiment 3: sampled continuations (k per arm)
 # of the H1 arms from the same token prefix.
-FILLER_VARIANT_ARMS = ("perm1_fill_prose", "perm1_fill_protocol", "perm1_fill_shuffled", "perm1_fill_punct")
+# AS2 amendment 1 (2026-11-05, before any AS2 run): a structure-matched filler (the prompts' imperative frame and protocol
+# reminder, but no request to check anything); the review prompt and its P2 filler placed INSIDE the observation block instead
+# of after it (interface vs content); and, for the sampled agents, all five non-identity orders of a top-3 observation (perm_5
+# completes perm_1..perm_4).
+FILLER_VARIANT_ARMS = ("perm1_fill_prose", "perm1_fill_protocol", "perm1_fill_shuffled", "perm1_fill_punct", "perm1_fill_syntax")
+INOBS_ARMS = ("perm1_review_inobs", "perm1_neutral_inobs")
+EXTRA_PERMUTATION_ARMS = ("perm_5",)
 GRADED_ARMS = ("perm1_pointer", "perm1_neutral_pointer", "perm1_evidence", "perm1_neutral_evidence")
 SAMPLED_ARMS = ("s_perm1", "s_perm2", "s_perm1_review", "s_perm1_neutral", "s_perm1_reflect", "s_perm1_neutral_reflect")
 SAMPLED_BASE = {"s_perm1": "perm_1", "s_perm2": "perm_2"}
@@ -57,8 +63,8 @@ ARM_GROUPS = {"core": CONTROL_ARMS + PLACEBO_ARMS,
               "assay": CONTROL_ARMS + ("perm_1", "perm1_review", "perm1_neutral") + ASSAY_ARMS,
               "natural": CONTROL_ARMS + ("perm_1", "review", "neutral", "reflect", "neutral_reflect"),
               # AS2 (2026-11-04): filler variants and graded positive controls on AS1 states; sampled H1 arms.
-              "as2": CONTROL_ARMS + ("perm_1", "perm1_review", "perm1_neutral") + FILLER_VARIANT_ARMS + GRADED_ARMS,
-              "as2s": CONTROL_ARMS + ("perm_1",) + SAMPLED_ARMS}
+              "as2": CONTROL_ARMS + ("perm_1", "perm1_review", "perm1_neutral") + FILLER_VARIANT_ARMS + INOBS_ARMS + GRADED_ARMS,
+              "as2s": CONTROL_ARMS + PERMUTATION_ARMS + EXTRA_PERMUTATION_ARMS + SAMPLED_ARMS}
 REVIEW_PROMPT = PROMPTS["review"]  # identical text to SI1 review, for cross-checks
 REFLECT_PROMPT = ("\n\nBefore continuing, reflect: state which part of the original question is still unresolved, "
                   "check whether the information already shown actually resolves it, and if something is missing, "
@@ -83,6 +89,8 @@ PROSE_FILLER = ("The morning was quiet and the light came in slowly over the roo
                 "streets were busier, the air was warmer, and the sound of conversation filled the open square. Nothing in "
                 "particular happened, and the afternoon passed in the same unhurried way as the morning had.")
 PROTOCOL_SENTENCE = " Use the original <search> or <answer> protocol."
+SYNTAX_HEAD = "\n\nBefore continuing, note: this line only separates the information above from your next step."
+SYNTAX_UNITS = (" It", " asks", " for", " nothing.")
 ORDINALS = ("first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth")
 POINTER_TEMPLATE = ("\n\nBefore continuing, note: a verified reference indicates that the {} of the documents shown above contains "
                     "the answer to the original question. Use the original <search> or <answer> protocol.\n\n")
@@ -173,7 +181,18 @@ def filler_variant(arm, encode, target_tokens, sample_id, turn):
         return fill_to(encode, target_tokens, "\n\n", [" " + w for w in words], "\n\n")
     if arm == "perm1_fill_punct":
         return fill_to(encode, target_tokens, "\n\n", [" ."], "\n\n")
+    if arm == "perm1_fill_syntax":
+        return fill_to(encode, target_tokens, SYNTAX_HEAD, SYNTAX_UNITS, PROTOCOL_SENTENCE + "\n\n")
     raise ValueError("Unknown filler variant: " + arm)
+
+
+def inside_observation(obs, text, tag):
+    """Place an inserted text inside the observation block, just before its closing tag (AS2 amendment 1)."""
+    close = "</{}>".format(tag)
+    i = obs.rfind(close)
+    if i < 0:
+        raise ValueError("Observation has no closing </{}> tag".format(tag))
+    return obs[:i] + "\n" + text.strip("\n") + "\n" + obs[i:]
 
 
 def sample_seed(sample_id, turn, arm, index):
@@ -275,8 +294,18 @@ def arm_spec(arm, prefix, source, turn, encode, deletion):
     if arm in PERMUTATION_ARMS:
         k = PERMUTATION_ARMS.index(arm)
         return permuted(k), "canonical", "", 0, {"family": "N1_permutation", "order": perms[k]}
+    if arm in EXTRA_PERMUTATION_ARMS:  # perm_5: the fifth non-identity order; perm_1..perm_4 are its first four
+        five = permutations_for(source["sample_id"], turn, len(visible), count=5)
+        if five[:4] != perms:
+            raise ValueError("perm_5 must extend perm_1..perm_4")
+        return [copy.deepcopy(visible[i]) for i in five[4]], "canonical", "", 0, {"family": "N1_permutation", "order": five[4]}
     if arm in FORMAT_ARMS:
         return visible, arm, "", 0, {"family": "N2_format_null", "variant": arm}
+    if arm in INOBS_ARMS:  # the review prompt or its P2 filler, inside the observation block (run_branch places it)
+        text = REVIEW_PROMPT if arm == "perm1_review_inobs" else neutral_instruction(encode, review_tokens)
+        return permuted(0), "canonical", "", 0, {
+            "family": "inside_observation", "base_observation": "perm_1", "operation": arm.split("_", 1)[1], "order": perms[0],
+            "inside_text": text, "instruction_tokens": len(encode(text)), "matched_tokens": review_tokens, "review_tokens": review_tokens}
     if arm in FILLER_VARIANT_ARMS:
         text = filler_variant(arm, encode, review_tokens, source["sample_id"], turn)
         return permuted(0), "canonical", text, 0, {
@@ -327,6 +356,8 @@ def run_branch(source, turn, arm, generator, retriever, agent, retrieval, deleti
     if arm not in DELETION_ARMS and multiset(documents) != multiset(prefix["visible_documents"]):
         raise ValueError("Placebo/recovery arm changed the document multiset")
     obs = render(documents, variant, PROMPT_VARIANT_OF[source["prompt_version"]])
+    if "inside_text" in meta:
+        obs = inside_observation(obs, meta["inside_text"], FORMATS[PROMPT_VARIANT_OF[source["prompt_version"]]]["tag"])
     record = {key: copy.deepcopy(source[key]) for key in
               ("sample_id", "dataset", "question", "gold_answer", "gold_supporting_facts",
                "initial_prompt", "prompt_version")}

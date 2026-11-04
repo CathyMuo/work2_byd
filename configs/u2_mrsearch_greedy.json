@@ -1,0 +1,17 @@
+{
+  "protocol": "U2_mrsearch_reflection_audit_v1",
+  "seed": 20261023,
+  "agent": {
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "official"
+  },
+  "retrieval": {"visible_top_k": 3, "candidate_top_k": 20},
+  "sampling": {"temperature": 0.0, "top_p": 1.0, "k": 1},
+  "arms": ["reflect", "reask", "neutral", "fresh"],
+  "source": "as configs/u2_mrsearch.json, but episode 2 is decoded greedily (one continuation per arm), matching MR-Search's own evaluation setting (appendix A.1.3)",
+  "reference": "MR-Search arXiv 2603.11327; code tengxiao1/MR-Search; test-time Search-R1-S setting",
+  "scope": "AS2 amendment 1 (research/AS2_PROTOCOL.md section 8): v03_7b_ppo and v03_3b_ppo on the U2 plan, reusing the U1 local files."
+}

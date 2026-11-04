@@ -1,9 +1,9 @@
 {
-  "updated": "2026-11-04",
+  "updated": "2026-11-05",
   "title": "Most Recovery Is Regression to the Mean：搜索智能体的安慰剂对照审计",
   "subtitle": "RL 训练的搜索智能体：文献里常见的“恢复 / 反思能修复错误”，加上安慰剂对照后还站得住吗？",
   "target": "目标：ACL 2027 主会（ARR 截稿 2027-01-04）",
-  "stage": "审稿意见回应：补三项预登记实验 AS2（填充变体、分级阳性对照、采样解码），厂内待跑；论文修订已完成，2027-01-04 投 ARR",
+  "stage": "审稿意见回应：AS2（含修订 1）待厂内运行——填充变体、观测块内插入、分级阳性对照、采样解码、5 种顺序枚举、MR-Search 贪心复核，另有 CPU 分析；2027-01-04 投 ARR",
   "talk_track": [
     "做什么：给 RL 训练的搜索智能体（Search-R1 一类）做“审计”。文献常说加一段反思、复查或重试，就能把答错的修回来。我们检查这种修复是方法的功劳，还是统计假象。",
     "怎么做：从同一条推理轨迹的同一个位置精确分叉，一路跑“方法”，另一路跑“安慰剂”（只换文档顺序，或加一段等长的无意义文字），比较两路各修回多少。",
@@ -30,7 +30,7 @@
     },
     {
       "label": "下一步",
-      "text": "厂内跑 AS2（约 1–1.5 天）并回传 arm_diagnose 全文；结果写入论文；匿名代码与预登记记录、负责任 NLP 清单、投稿前再查一次新。"
+      "text": "厂内先做 CPU 分析（四格表、加权、问题级策略、语义口径核查、arm_diagnose），再跑 AS2 GPU 部分（约 1.5–2 天）；结果写入论文。"
     }
   ],
   "question": {
@@ -662,8 +662,8 @@
       "done": true
     },
     {
-      "date": "11-05 ~ 11-07",
-      "text": "厂内跑 AS2：4 种无意义文字变体 + 分级阳性对照（14 个智能体）、采样解码（4 个智能体）",
+      "date": "11-05 ~ 11-08",
+      "text": "厂内跑 AS2（含修订 1）：CPU 分析 + 填充变体、观测块内插入、分级阳性对照（14 个智能体）、采样解码与 5 种顺序（4 个智能体）、MR-Search 贪心复核",
       "done": false,
       "current": true
     },
@@ -686,7 +686,7 @@
     "ReSeek 只放出了 3B 权重；MR-Search 没有权重，审计的是论文自己的测试时版本。"
   ],
   "campaign": {
-    "title": "当前批次：AS2 填充变体 + 分级阳性对照 + 采样解码（回应审稿意见）",
+    "title": "当前批次：AS2（含修订 1）——回应三份审稿意见",
     "items": [
       {
         "name": "Search-R1 3B PPO · 填充变体与分级对照 AS2",
@@ -777,6 +777,16 @@
         "name": "Search-R1 32B GRPO · 采样解码 AS2-S",
         "run": "outputs/u1/v03_32b_grpo/as2s",
         "done": "outputs/u1/v03_32b_grpo/as2s/states.jsonl"
+      },
+      {
+        "name": "MR-Search 贪心复核 · Search-R1 7B PPO",
+        "run": "outputs/u2/mrg_v03_7b_ppo",
+        "done": "outputs/u2/mrg_v03_7b_ppo/records.jsonl"
+      },
+      {
+        "name": "MR-Search 贪心复核 · Search-R1 3B PPO",
+        "run": "outputs/u2/mrg_v03_3b_ppo",
+        "done": "outputs/u2/mrg_v03_3b_ppo/records.jsonl"
       }
     ]
   },

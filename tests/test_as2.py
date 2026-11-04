@@ -5,9 +5,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from work2 import as2, pcr
+import itertools
+
+from work2 import as2, pcr, u2
 from work2.common import ROOT, file_hash, write_json
-from work2.placebo import (ARM_GROUPS, FILLER_VARIANT_ARMS, REVIEW_PROMPT, SAMPLED_ARMS, permutations_for, run_state)
+from work2.placebo import (ARM_GROUPS, FILLER_VARIANT_ARMS, REVIEW_PROMPT, SAMPLED_ARMS, inside_observation, permutations_for,
+                           run_state)
 from work2.rollout import run_sample
 from test_pcr import AGENT, RETRIEVAL, DocRetriever, OrderGenerator, sample, source
 
@@ -56,6 +59,24 @@ class FillerTests(unittest.TestCase):
         shuffled = texts["perm1_fill_shuffled"].split()
         self.assertNotEqual(shuffled[:5], REVIEW_PROMPT.split()[:5])
         self.assertLessEqual(collections.Counter(shuffled[:-1]), collections.Counter(REVIEW_PROMPT.split()))
+        syntax = texts["perm1_fill_syntax"]
+        self.assertTrue(syntax.startswith("\n\nBefore continuing, note:"))
+        self.assertIn("<search> or <answer> protocol.", syntax)
+        for word in ("review", "check", "reflect", "wrong"):
+            self.assertNotIn(word, syntax.lower())
+
+    def test_inside_observation_arms(self):
+        self.assertEqual(inside_observation("\n\n<information>A</information>\n\n", "\n\nNote x\n\n", "information"),
+                         "\n\n<information>A\nNote x\n</information>\n\n")
+        with self.assertRaises(ValueError):
+            inside_observation("<result>A</result>", "x", "information")
+        arms = run_state(source(), 1, ARM_GROUPS["as2"], OrderGenerator(), DocRetriever(), AGENT, RETRIEVAL)["arms"]
+        for inside, after in (("perm1_review_inobs", "perm1_review"), ("perm1_neutral_inobs", "perm1_neutral")):
+            self.assertTrue(arms[inside]["observation_changed"])
+            self.assertEqual(arms[inside]["em"], arms[after]["em"])        # the stub reads the text wherever it is
+            self.assertNotEqual(arms[inside]["observation_sha256"], arms[after]["observation_sha256"])
+        self.assertEqual(arms["perm1_review_inobs"]["metadata"]["inside_text"], REVIEW_PROMPT)
+        self.assertEqual(arms["perm1_neutral_inobs"]["metadata"]["inside_text"], arms["perm1_neutral"]["metadata"]["instruction"])
 
     def test_shared_arms_identical_to_h1(self):
         a = run_state(source(), 1, ARM_GROUPS["h1"], OrderGenerator(), DocRetriever(), AGENT, RETRIEVAL)["arms"]
@@ -107,6 +128,12 @@ class SampledTests(unittest.TestCase):
         again = run_state(source(), 1, ARM_GROUPS["as2s"], SampleGenerator(), DocRetriever(), AGENT, RETRIEVAL, sampling=self.SAMPLING)
         self.assertEqual(json.dumps(again["arms"], sort_keys=True), json.dumps(row["arms"], sort_keys=True))
 
+    def test_five_orders_enumerate_every_non_identity_permutation(self):
+        row = run_state(source(), 1, ARM_GROUPS["as2s"], SampleGenerator(), DocRetriever(), AGENT, RETRIEVAL, sampling=self.SAMPLING)
+        orders = [tuple(row["arms"]["perm_{}".format(k)]["metadata"]["order"]) for k in range(1, 6)]
+        self.assertEqual(set(orders), set(itertools.permutations(range(3))) - {(0, 1, 2)})
+        self.assertEqual([list(o) for o in orders[:4]], permutations_for(source()["sample_id"], 1, 3))
+
     def test_sampled_arm_needs_configuration(self):
         with self.assertRaises(ValueError):
             run_state(source(), 1, ARM_GROUPS["as2s"], SampleGenerator(), DocRetriever(), AGENT, RETRIEVAL)
@@ -125,6 +152,19 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual((s["sampling"]["temperature"], s["sampling"]["k"]), (1.0, 4))
         self.assertEqual(s["seed"], json.loads((ROOT / "configs" / "as1_bounded.json").read_text())["seed"])
         self.assertEqual(s["agent"]["temperature"], 0)
+
+    def test_mrsearch_greedy_config(self):
+        p = u2.load_protocol(ROOT / "configs" / "u2_mrsearch_greedy.json")
+        self.assertEqual((p["sampling"]["temperature"], p["sampling"]["k"]), (0.0, 1))
+        base = json.loads((ROOT / "configs" / "u2_mrsearch.json").read_text())
+        text = ("sampling", "source", "scope", "reference")
+        self.assertEqual({k: v for k, v in p.items() if k not in text}, {k: v for k, v in base.items() if k not in text})
+        with tempfile.TemporaryDirectory() as tmp:
+            for bad in ({"temperature": 1.0, "top_p": 1.0, "k": 1}, {"temperature": 0.0, "top_p": 1.0, "k": 2}):
+                path = Path(tmp) / "p.json"
+                path.write_text(json.dumps(dict(base, sampling=bad)))
+                with self.assertRaises(ValueError):
+                    u2.load_protocol(path)
 
     def test_sampling_block_only_with_as2s(self):
         base = json.loads((ROOT / "configs" / "as2s_bounded.json").read_text())
@@ -162,17 +202,19 @@ class AnalysisTests(unittest.TestCase):
             for i in range(20):
                 ds = "hotpotqa" if i % 2 else "nq"
                 base = {"clean_a": arm(1, "c"), "perm_1": arm(0, "p"), "perm1_review": arm(i % 2, "r"), "perm1_neutral": arm(i % 2, "n")}
-                h1.append(st(i, ds, dict(base)))
+                h1.append(st(i, ds, dict(base, perm_2=arm(int(i < 10), "q2"))))
                 # degraded states: punct filler never repairs (so P2 - punct = 0.5), other fillers repair like P2;
                 # pointer eligible on even states and always repairs, its filler never; evidence never eligible
                 a2.append(st(i, ds, dict(base, perm1_fill_prose=arm(i % 2), perm1_fill_protocol=arm(i % 2),
-                                          perm1_fill_shuffled=arm(i % 2), perm1_fill_punct=arm(0),
+                                          perm1_fill_shuffled=arm(i % 2), perm1_fill_punct=arm(0), perm1_fill_syntax=arm(i % 2),
+                                          perm1_review_inobs=arm(1), perm1_neutral_inobs=arm(i % 2),
                                           perm1_pointer=arm(1) if i % 2 == 0 else None,
                                           perm1_neutral_pointer=arm(0) if i % 2 == 0 else None,
                                           perm1_evidence=None, perm1_neutral_evidence=None)))
                 a1.append(st(i, ds, dict(base, perm1_alert=arm(0), perm1_neutral_alert=arm(0), perm1_hint=arm(1), perm1_neutral_hint=arm(0))))
                 samples = lambda p: {"samples": [arm(int(j < p)) for j in range(4)]}
                 a2s.append(st(i, ds, {"clean_a": arm(1, "c"), "clean_b": arm(1, "c"), "perm_1": arm(0, "p"),
+                                      **{"perm_{}".format(k): arm(int(i < 10), "q{}".format(k)) for k in range(2, 6)},
                                       "s_perm1": samples(3), "s_perm2": samples(2), "s_perm1_review": samples(3),
                                       "s_perm1_neutral": samples(2), "s_perm1_reflect": samples(2), "s_perm1_neutral_reflect": samples(2)}))
             write_run(root / "v03_7b_ppo" / "pcr", h1)
@@ -193,7 +235,16 @@ class AnalysisTests(unittest.TestCase):
             self.assertAlmostEqual(s["review"]["repair_minus_filler"]["estimate"], 0.25)
             self.assertAlmostEqual(s["review"]["explained"], 1.0)              # the plain resample repairs as much
             self.assertAlmostEqual(s["review"]["repair_minus_resample"]["estimate"], 0.0)
+            i = r["interface"]["pooled"]["sem"]
+            self.assertAlmostEqual(i["repair_content_inside"]["estimate"], 0.5)
+            self.assertAlmostEqual(i["repair_content_after"]["estimate"], 0.0)
+            lk = r["luck"]["pooled"]["sem"]
+            self.assertAlmostEqual(lk["orders"]["perm_3"]["repair"]["estimate"], 0.5)
+            self.assertAlmostEqual(lk["never_repaired"], 0.5)
+            self.assertEqual(lk["repair_spread"], 0.0)
             x = r["readings"]
+            self.assertTrue(x["L1"])
+            self.assertFalse(x["I1"])
             self.assertEqual(x["F1_variants"], ["punct"])
             self.assertTrue(x["G1"]); self.assertFalse(x["G2"])
             self.assertTrue(x["S1"]); self.assertTrue(x["S2"])
