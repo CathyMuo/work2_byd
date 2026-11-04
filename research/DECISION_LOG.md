@@ -1425,3 +1425,36 @@ the repository's tests/. Home had run the suite with the system Python. Fixed to
 the suite now passes in the searchr1 environment from the repository root. Experiment code unchanged. From now on, home runs the
 tests in the factory's Python environment. Paper: sensitivity rows and the fidelity table filled; one pending mark left (link
 to the anonymized code).
+
+## 2026-11-04 — AS1 and U1N results: instrument sensitive; natural failures match; experiments closed
+
+Factory c8720a2. All 28 runs completed, no retrieval drift; control mismatches 4 of 1,425 U1N states on research_32b, 0 elsewhere.
+The /data volume was lost before the run and the 14 checkpoints were re-downloaded to a new path. The re-run arms reproduced the H1
+continuations on >= 99.4% of states in every agent and every E0 control reproduced its source (except the 4 above), so the new
+files behave identically to the ones that produced the sources.
+
+Home checks: AS1 degraded counts and review effects equal the H1 per-agent values exactly; filler repair under the hint is 32.8%.
+
+Readings (mechanical, protocol section 3-4): A1 true (14/14 sensitive; smallest hint - filler +41.1 pp), A3 true (min 99.4%).
+Pooled hint +52.7 [49.8, 55.7] (repair 85.5%), alert +4.7 [1.6, 7.7], review +3.3 [0.7, 5.7]. Random effects: hint +54.4
+[47.0, 61.9], alert +4.5 [1.1, 7.9], review +3.4 [-0.6, 7.4]. Alert beats review in 8/14 agents and has a CI above zero in 2. Alert
+still harms stable states (+2.9 pooled, +1.8 [0.3, 3.4] random effects).
+U1N, review / reflect: N1 false, N2 false, N3 true (ratios 1.10 / 0.93) -> "same as H1". Natural-failure rescue: review 4.3, reflect
+5.1, fillers 3.8 / 4.0, re-draw 4.7; content +0.6 [0.2, 0.9] / +1.1 [0.7, 1.5] (random effects +0.5 [-0.0, 1.1] / +1.0 [0.5, 1.4]).
+Harm on natural successes +3.4 / +2.7. All states -0.8 [-1.2, -0.4] / -0.2 [-0.6, 0.2]; random effects -0.8 [-2.0, 0.5] / -0.2
+[-0.8, 0.4]; without v03_3b_grpo and v03_7b_grpo -0.06 / -0.01. One agent gains (zs_qwen25_7b review +2.3 [0.6, 3.9]); two lose
+(the small GRPO models). Re-draw rescues at least as much as review in 10/14 agents.
+
+Interpretation for the paper: the instrument is sensitive and agents use inserted information; a perfectly accurate failure signal
+adds about as much as a generic review prompt. Natural failures are rarely recovered by any arm, so the luck share is small but so is
+recovery; the claim "placebos reproduce most of the repair" holds on both kinds of failure, and "no net gain" holds.
+
+Decisions:
+1. No further GPU experiments. Experiments are closed for the ARR January cycle.
+2. Paper updated (local commit in work2_paper): new Table 2 with the positive control and natural-failure contrasts, two results
+   paragraphs, abstract, introduction, discussion (detection vs information; positive control added to the checklist), limitations,
+   appendix (protocol, per-agent tables, preregistration item 11). The detailed scale readings moved to the appendix; the body still
+   ends on page 8.
+3. Factory: back up every result file to a second location (the /data loss showed the risk); docs/AS1_U1N_FACTORY_GUIDE.md section 7.
+4. Remaining before submission: anonymized code and registration log, responsible-NLP checklist, a full read by the user, a final
+   related-work search in late December.
