@@ -2,9 +2,9 @@
   "schema_version": 1,
   "project": "work2_byd",
   "updated_at": "2026-11-04",
-  "current_stage": "experiments_closed_paper_finalization",
-  "status": "All experiments closed. H1 on 14 RL agents; AS1 positive control sensitive in 14/14 (hint +52.7 pp); U1N natural failures read same as H1 (content +0.6 / +1.1, no net gain).",
-  "next_action": "Factory: AS1/U1N guide section 7 (backup). Home: paper finalization, anonymized code, checklist, final related-work search.",
+  "current_stage": "as2_registered_factory_pending",
+  "status": "Paper revised after two reviews (luck null model, power, gating, citations). AS2 registered before any run: filler variants and graded positive controls on the AS1 states of 14 agents, sampled decoding on 4 Search-R1 agents.",
+  "next_action": "Factory: docs/AS2_FACTORY_GUIDE.md (test, smoke, all, summary) and section 6 (arm_diagnose full text, CPU).",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {

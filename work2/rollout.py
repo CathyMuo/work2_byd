@@ -172,7 +172,11 @@ def continue_record(record, generator, retriever, agent, retrieval, text, tokens
                 record["status"] = "context_limit"
                 break
             allowed = min(agent["max_generation_tokens_per_turn"], agent["max_context_tokens"] - len(tokens))
-            generated = generator.generate(tokens, allowed, agent["seed"])
+            if agent.get("temperature", 0):  # AS2 experiment 3 only; every greedy path is unchanged
+                step_seed = (agent["seed"] + 1000003 * len(record["steps"])) % (2 ** 31)
+                generated = generator.generate_sampled(tokens, allowed, step_seed, agent["temperature"], agent.get("top_p", 1.0))
+            else:
+                generated = generator.generate(tokens, allowed, agent["seed"])
             step = {"input_tokens": len(tokens), **generated}
             record["model_input_tokens"] += len(tokens)
             record["generated_tokens"] += len(generated["token_ids"])

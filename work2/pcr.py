@@ -35,6 +35,12 @@ def load_protocol(path):
         raise ValueError("PCR v1 requires greedy decoding and a 4- (or, for uncapped formats, 8-) search budget")
     if not p["target_turns"] or any(t not in (1, 2, 3) for t in p["target_turns"]):
         raise ValueError("Target turns must be a subset of 1..3")
+    # AS2 experiment 3: sampled arms carry their own decoding settings; controls and every other arm stay greedy.
+    s = p.get("sampling")
+    if (s is not None) != (p["arm_group"] == "as2s"):
+        raise ValueError("A sampling block is required for, and only allowed with, arm group as2s")
+    if s is not None and (not 0 < s["temperature"] <= 2 or not 0 < s["top_p"] <= 1 or not isinstance(s["k"], int) or s["k"] < 2):
+        raise ValueError("Invalid sampling settings")
     return p
 
 
@@ -210,7 +216,7 @@ def worker(run_dir, index):
         with out.open("a", encoding="utf-8") as stream:
             for state in states[len(done):]:
                 row = run_state(sources[state["sample_id"]], state["target_turn"], arms, generator, retriever, agent, retrieval,
-                                run.get("control_mismatch", "stop"))
+                                run.get("control_mismatch", "stop"), sampling=protocol.get("sampling"))
                 stream.write(json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n"); stream.flush()
                 manifest.update(status="running", recorded_states=manifest["recorded_states"] + 1)
                 if not row["controls_exact"]:
@@ -317,8 +323,8 @@ def crosscheck(args):
         diff = []
         for arm in sorted(set(a[key]["arms"]) & set(b[key]["arms"])):
             x, y = a[key]["arms"][arm], b[key]["arms"][arm]
-            if x is None or y is None:
-                continue
+            if x is None or y is None or "continuation_sha256" not in x or "continuation_sha256" not in y:
+                continue  # ineligible or sampled (AS2) arms
             arms[arm] += 1
             if x["continuation_sha256"] == y["continuation_sha256"]:
                 same[arm] += 1

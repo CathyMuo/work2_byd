@@ -52,6 +52,10 @@ class VLLMGenerator(TokenizerMixin):
         return {"text": result.text, "token_ids": list(result.token_ids),
                 "finish_reason": result.finish_reason}
 
+    def generate_sampled(self, tokens, max_tokens, seed, temperature, top_p=1.0):
+        """One sampled generation step with its own seed (AS2 experiment 3)."""
+        return self.sample_batch([tokens], [max_tokens], [seed], temperature, top_p)[0]
+
     def sample_batch(self, prompts, max_tokens, seeds, temperature, top_p=1.0, stop=None):
         """One batched vLLM call; each request has its own seed (CT1 on-policy sampling)."""
         params = [self.sampling_class(temperature=temperature, top_p=top_p, max_tokens=m, seed=s,
@@ -82,6 +86,9 @@ class HFGenerator(TokenizerMixin):
                 return any(input_ids.shape[1] >= len(p)
                            and input_ids[0, -len(p):].tolist() == p for p in patterns)
         self.stop = StopAction()
+
+    def generate_sampled(self, tokens, max_tokens, seed, temperature, top_p=1.0):
+        raise NotImplementedError("Sampled continuations (AS2 experiment 3) require the vLLM backend")
 
     def generate(self, tokens, max_tokens, seed):
         from transformers import StoppingCriteriaList

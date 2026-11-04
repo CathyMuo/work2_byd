@@ -1458,3 +1458,26 @@ Decisions:
 3. Factory: back up every result file to a second location (the /data loss showed the risk); docs/AS1_U1N_FACTORY_GUIDE.md section 7.
 4. Remaining before submission: anonymized code and registration log, responsible-NLP checklist, a full read by the user, a final
    related-work search in late December.
+
+## 2026-11-04 — Two reviews of the paper; AS2 registered (filler variants, graded positive controls, sampled decoding)
+
+The paper received two reviews (a strict one at 3.0 / Findings; an automated one recommending acceptance). The paper was revised
+without new runs (work2_paper 899fe3e..e1e2ae9): motivation split into fix-rate and full-question evidence; a parameter-free luck
+null model for P1 (pi_1, pi_2 exchangeable => |D| repair(P1) = |S| harm(P1); predicted 52.7%, observed 51.3%, chi2 = 20.5 on 14 df);
+minimum detectable effects (pooled about 4 pp, per agent about 14 pp for repair, 1-2 pp for all-state); an oracle-gate bound
+(+0.3 / +0.4 pp); the Search-R1 paper comparison; ReSeek on our dataset mix (-1.3 pp); twelve added references.
+
+Three review points need runs. The user chose to run all three (2026-11-04). research/AS2_PROTOCOL.md was frozen before any run:
+1. Four content-free texts token-matched to the review prompt (prose, filler + the protocol sentence with action tags, the review
+   prompt's words shuffled, punctuation only). Readings F1-F3.
+2. Graded positive controls between alert and hint: pointer (which shown document contains the answer) and evidence (one more
+   answer-bearing retrieval candidate), each with its own matched filler; None where ineligible. The questions are FlashRAG rows
+   without supporting facts or decompositions, so a bridge-entity hint was not possible. Readings G1-G2; AS1 alert / hint joined
+   on the same states.
+3. Sampled continuations (T = 1.0, k = 4) of the H1 arms on four Search-R1 agents (3B PPO, 7B GRPO, 14B PPO, 32B GRPO); controls
+   and perm_1 stay greedy. Readings S1-S2.
+States are the AS1 states (same selection and seed). Code: placebo.py arms, a sampling hook in rollout.continue_record used only when
+the agent temperature is non-zero (every greedy path unchanged; h1 / assay arms byte-identical in tests), pcr.load_protocol accepts a
+sampling block only with arm group as2s, work2/as2.py analysis. 206 tests pass in the searchr1 environment; the new fillers match
+the review length on the Qwen2.5 and Llama-3.2 tokenizers for 1,200 states. Factory guide: docs/AS2_FACTORY_GUIDE.md, which also asks
+for the full arm_diagnose output (CPU) to split excess harm into format failures and wrong answers.

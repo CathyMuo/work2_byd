@@ -1,0 +1,27 @@
+{
+  "protocol": "PCR_placebo_controlled_replay_v1",
+  "seed": 20261022,
+  "target_turns": [
+    1,
+    2
+  ],
+  "arm_group": "as2s",
+  "agent": {
+    "temperature": 0.0,
+    "seed": 42,
+    "max_context_tokens": 8192,
+    "max_generation_tokens_per_turn": 512,
+    "max_search_turns": 4,
+    "prompt_variant": "bounded"
+  },
+  "retrieval": {
+    "visible_top_k": 3,
+    "candidate_top_k": 20
+  },
+  "scope": "AS2 experiment 3: greedy clean_a/b and perm_1, then k=4 sampled continuations (T=1.0) of s_perm1, s_perm2, s_perm1_{review,neutral,reflect,neutral_reflect} on the AS1 states. See research/AS2_PROTOCOL.md.",
+  "sampling": {
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "k": 4
+  }
+}
