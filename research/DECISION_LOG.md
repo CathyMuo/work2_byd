@@ -1544,3 +1544,43 @@ Decisions:
    placebo-dependent (0.5-3.3 against five benign fillers, 10.7 against a destructive one); about half the excess harm comes from
    the protocol sentence and the small GRPO models' harm from the insertion interface; graded controls reported as is; conclusions
    unchanged under sampling.
+
+## 2026-11-06 (afternoon) — Amendment 2 results; AS2 closed; no further GPU experiments
+
+Factory report 2026-11-06 14:53 (local head c0f4c64 containing b596471). as2l on the four agents: every degraded and every stable
+state (selected = available, clean-wrong 0), seven greedy arms; zero control mismatches, zero retrieval drift, reproduction 1.0.
+32B at four GPUs and 0.92 ran out of memory (about 10 GiB of retrieval resident on every GPU; 0.92 x 79.18 = 72.85 GiB > about 69
+free); single-GPU retrieval cannot load the index (32 GB temporary buffer). 32B ran on GPUs 1-3 at 0.85, its historical setting.
+Script default reverted; guide corrected. One test used Counter <= (Python 3.10+); rewritten for the factory's Python 3.9.
+
+Readings (registered, section 9.4): L2_full_gap_covers_zero true (primary) -> "luck model confirmed on every re-draw"; L2_full
+(point rule) false. Pooled gaps observed - predicted: perm_2 +4.3 [-5.2, 13.3], perm_3 +9.6 [-0.2, 18.6], perm_4 +5.0 [-4.6,
+13.7], perm_5 -0.7 [-11.4, 8.6]; 177-205 harm events per order. Per agent, 3 of 16 cells exclude zero, in opposite directions
+(32B +20.7 on perm_2 and perm_3; 14B -23.9 on perm_5).
+
+Interpretation (home):
+- The |S|/|D| scaling is the model, not an error: with (pi_1, pi_k) an outcome-blind random pair of distinct orders, E[#(y1=0,
+  yk=1)] = E[#(y1=1, yk=0)] given y0 = 1 for ANY agent, i.e. |D| repair = |S| harm. The identity is guaranteed by the
+  randomization, so per-agent deviations can only be sampling noise (|D| 88-116), and the pooled agreement is a consistency
+  check of design and data rather than independent evidence for a mechanism. The paper says so. Substantive evidence that the
+  failure-selected repair is luck: only 15.6% of degraded states stay wrong under all four re-draws; resampling the failed order
+  at T = 1 with nothing inserted repairs 27.5%; re-drawing the order at the first retrieval leaves question-level accuracy
+  unchanged (0.0 [-0.6, 0.6]); placebos achieve about 90% of the prompts' repair rate.
+- Title: kept ("Most Recovery Is Regression to the Mean"), per the registered rule; the text keeps the conditional framing.
+
+CPU returns (review_cpu, arm_diagnose, MR-Search reports) recorded in the paper:
+- Four-way: review vs filler both 19.8, review only 14.9, filler only 11.6; 57% of the prompt's repairs also made by filler.
+- Weighting: content effect on repair agent-equal 3.7 / 3.5, recipe-equal 2.4 [-1.2, 5.8] / 4.8 [1.0, 8.5]; with Bonferroni no
+  single agent's repair effect excludes zero; excess harm above zero for 4 / 6 agents.
+- Alert vs review: repair +4.2 [1.3, 6.9], but content effects differ by only +1.4 [-2.1, 4.8].
+- Question-level policy (intervene once after the first retrieval; 10,156 agent-questions): EM 34.5 (none), 32.4 review, 33.3
+  reflect, 33.5 / 33.6 their fillers; review -2.0 [-2.5, -1.5] vs none, -1.1 [-1.6, -0.6] vs filler; reflect -1.2 / -0.3. The loss
+  is concentrated in 3B and 7B GRPO; no agent gains significantly.
+- Semantic view: 3,258 of 290,269 arm outcomes changed (1.1%), similar across prompts and fillers. Hand check of the 58 distinct
+  answer pairs in the first 200 exported cases (all Search-R1 32B GRPO): 69% surface variants, 17% differ in specificity, 14% name
+  a different referent. Remaining 641 cases requested (not urgent).
+- MR-Search greedy re-check: 7B reflect vs first answer +0.5 [-0.3, 1.2], vs content-free turn -0.1 [-0.9, 0.8]; 3B -1.8 [-3.4,
+  -0.2] and -0.8 [-2.2, 0.7], with a small repair effect over the content-free turn on wrong first answers (+2.8 [1.7, 4.1]) and
+  harm on right ones (-15.7). Under greedy decoding a fresh episode nearly repeats episode 1, so H1_mr_fresh is uninformative there.
+
+Decision: AS2 closed. No further GPU experiments for the January ARR cycle. Paper integration next (work2_paper).

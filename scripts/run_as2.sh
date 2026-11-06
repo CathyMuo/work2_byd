@@ -18,9 +18,9 @@ variant_of() {  # U1 agents use the bounded prompt (FC1 decision, 2026-10-23); t
 v={a['label']:a['prompt_variant'] for f in ('configs/u1x_agents.json','configs/u1l_agents.json') for a in json.load(open(f))['agents']}
 print(v.get(sys.argv[1],'bounded'))" "$1"
 }
-resources() {  # factory report 2026-11-06: 32B fits on all four GPUs beside the 4-card retrieval at 0.92 (fallback in the guide)
+resources() {  # 32B: GPUs 1-3 at 0.85 beside the 4-card retrieval (the only setting that fits: four GPUs at 0.92 ran out of memory on 11-06)
   case "$1" in
-    *32b*) gpus=${AS_GPUS_32B:-0,1,2,3}; mem=${AS_GPU_MEM_32B:-0.92} ;;
+    *32b*) gpus=${AS_GPUS_32B:-1,2,3}; mem=${AS_GPU_MEM_32B:-0.85} ;;
     *)     gpus=${AS_GPUS:-0,1,2,3};     mem=${AS_GPU_MEM:-0.75} ;;
   esac
 }

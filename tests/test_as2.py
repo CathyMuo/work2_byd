@@ -58,7 +58,8 @@ class FillerTests(unittest.TestCase):
         self.assertFalse(any(c.isalpha() for c in texts["perm1_fill_punct"]))
         shuffled = texts["perm1_fill_shuffled"].split()
         self.assertNotEqual(shuffled[:5], REVIEW_PROMPT.split()[:5])
-        self.assertLessEqual(collections.Counter(shuffled[:-1]), collections.Counter(REVIEW_PROMPT.split()))
+        have, ref = collections.Counter(shuffled[:-1]), collections.Counter(REVIEW_PROMPT.split())
+        self.assertTrue(all(n <= ref[w] for w, n in have.items()))     # sub-multiset; Counter <= needs Python 3.10
         syntax = texts["perm1_fill_syntax"]
         self.assertTrue(syntax.startswith("\n\nBefore continuing, note:"))
         self.assertIn("<search> or <answer> protocol.", syntax)
