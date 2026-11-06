@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-11-05",
-  "current_stage": "as2_registered_factory_pending",
-  "status": "AS2 amended before any run (third review): structure-matched filler, prompt inside the observation block, all five orders on the sampled agents, MR-Search greedy re-check, and CPU analyses on existing outputs (work2/review_cpu.py).",
-  "next_action": "Factory: docs/AS2_FACTORY_GUIDE.md section 2 (CPU) first, then sections 3-4 (GPU), return per section 6.",
+  "updated_at": "2026-11-06",
+  "current_stage": "as2_amendment2_factory_pending",
+  "status": "AS2 B/C/D done (F1 F2 I1 L1 S2 true; F3 G1 G2 S1 false; L2 false from a home code error, corrected). Amendment 2 registered: five orders on full stable sets of four agents.",
+  "next_action": "Factory: docs/AS2_FACTORY_GUIDE.md section 7 (CPU returns, re-summary, as2l run). Home: paper integration after.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {

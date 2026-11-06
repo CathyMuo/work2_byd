@@ -1,6 +1,6 @@
 # AS2 厂内执行指导
 
-更新：2026-11-05（含修订 1）　协议：`research/AS2_PROTOCOL.md`（第 1–7 节和第 8 节修订 1，都在运行前冻结）　脚本：`scripts/run_as2.sh`、`scripts/run_u2.sh`
+更新：2026-11-06（含修订 1、修订 2；修订 2 见第 7 节）　协议：`research/AS2_PROTOCOL.md`（第 1–7 节和第 8 节修订 1，都在运行前冻结）　脚本：`scripts/run_as2.sh`、`scripts/run_u2.sh`
 
 **为什么又有 GPU 实验**：AS1 指导第 7 节说过“之后不再安排 GPU 实验”。之后论文收到三份审稿意见，用户决定补实验来回应。本批次一次做完：
 
@@ -104,3 +104,71 @@ bash scripts/run_as2.sh summary
 4. `outputs/paper/as2/as2.md` 全文（含开头的“预登记判定”和“复现”）。
 5. `outputs/u2/mrg_v03_7b_ppo/analysis/u2_report.md` 和 `outputs/u2/mrg_v03_3b_ppo/analysis/u2_report.md` 全文。
 6. 冒烟测试有没有问题。
+
+## 7. 2026-11-06：AS2 回传已收到；修订 2（一项小的 GPU 运行 + 补传 CPU 结果）
+
+**先说结论**：B、C、D 三部分都完整、干净（控制失配 0、复现率 ≥ 99.4%），谢谢。
+
+**更正一处读法**：回传第 5.5 节“运气模型预测远低于实测，说明换顺序能修不是运气”，是家服分析代码的错误造成的，不是数据的问题。
+
+- 预测公式里的 |S| 应是**全部**稳定状态数（每个智能体约 1000 个）。
+- 代码用了 AS1 抽样后的稳定状态数（约 100 个），预测因此被低估约 9 倍。
+- 已修正（`stable_weights`、`luck_block`）。修正后的预测约 33–52%，实测约 48–54%。
+- 但这个预测只建立在每个智能体约 100 个稳定状态上，区间宽约 ±18 个点，判断不了任何东西。所以有下面这次补跑（协议第 9 节，运行前登记）。
+
+### 7.1 资源配置（采纳厂内 6b 的建议，已写进脚本）
+
+`scripts/run_as2.sh` 的 32B 默认改为 **`0,1,2,3` + `0.92`**。
+
+- 若启动报 `Free memory on device ... less than desired`，或报含 `KV cache` / `max_model_len` 的错误：
+  1. 检索服务改为单卡重启（`CUDA_VISIBLE_DEVICES=0`，其余参数一字不改）；
+  2. 32B 改用 `AS_GPUS_32B=1,2,3 AS_GPU_MEM_32B=0.92 bash scripts/run_as2.sh luck`。
+- 注意：检索服务换成单卡后，近似并列的检索结果可能换位置，会报 `RetrieverDriftError`（10-30 发生过）。真遇到时停下回报，不要继续。
+- 其他报错：停下回报，不要自行调比例。
+
+### 7.2 拉代码与测试
+
+```bash
+cd /root/develop/workspace/work2_byd
+export U1_PYTHON=/root/develop/persistent-miniconda3/envs/searchr1/bin/python
+git status --short
+git fetch origin && git merge origin/feat/credit-testbed
+bash scripts/run_as2.sh test            # 期望没有 FAIL / ERROR
+```
+
+### 7.3 先补传 CPU 结果（不用 GPU，可以马上做）
+
+1. `outputs/paper/review_cpu/review_cpu.md` **全文**（上次只贴了四格表）。
+2. `outputs/paper/review_cpu/semantic_cases.jsonl`（作为文件发送；只能贴文本时，先贴 `wc -l` 和前 200 行）。
+3. `outputs/paper/arm_diagnose_all.md` **全文**（AS2 指导第 2 节 A2；如果还没跑，按那里的命令跑）。
+4. 下面四个文件的**全文**（只有判定值不够，论文要用各臂的数值和区间）：
+   - `outputs/u2/mr_v03_7b_ppo/analysis/u2_report.md`
+   - `outputs/u2/mr_v03_3b_ppo/analysis/u2_report.md`
+   - `outputs/u2/mrg_v03_7b_ppo/analysis/u2_report.md`
+   - `outputs/u2/mrg_v03_3b_ppo/analysis/u2_report.md`
+5. 用修正后的代码重新汇总一次 AS2（只用 CPU，写到新目录，不覆盖原结果）：
+
+```bash
+bash scripts/run_as2.sh summary outputs/paper/as2_v2
+```
+
+### 7.4 修订 2 的 GPU 运行（约 5–7 小时）
+
+4 个智能体（3B PPO、7B GRPO、14B PPO、32B GRPO）的**全部**退化状态和**全部**稳定状态，只跑 5 种文档顺序，全部贪心。
+
+```bash
+bash scripts/run_as2.sh smoke v03_3b_ppo as2l          # 冒烟，约 10 分钟
+nohup bash scripts/run_as2.sh luck > outputs/as2l.log 2>&1 &
+tail -f outputs/as2l.log
+# 全部完成后：
+bash scripts/run_as2.sh summary outputs/paper/as2_v3
+```
+
+**冒烟后请核对**：`outputs/u1/v03_3b_ppo/as2l_plan/plan.json` 里，`selected_from.selected` 的 `stable` 应等于 `available` 的 `stable`，`clean_wrong` 应为 0。
+
+### 7.5 回传
+
+1. 第 7.3 节的 1–5 项。
+2. `git rev-parse HEAD`、各运行耗时、32B 用了几张卡和多大显存比例、是否降级。
+3. 每个 `as2l_plan/plan.json` 的 `selected_from`；每个 `as2l` 运行的 `control_mismatch_states`。
+4. `outputs/paper/as2_v3/as2.md` 全文（开头的判定里应有 `L2_full`、`L2_full_gap_covers_zero`、`L_full_reading`）。

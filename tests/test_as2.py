@@ -177,6 +177,39 @@ class ConfigTests(unittest.TestCase):
                     pcr.load_protocol(path)
 
 
+class LuckTests(unittest.TestCase):
+    """Amendment 2: the luck model's |S| is the full stable set; sampled stable states are weighted up."""
+    @staticmethod
+    def row(i, perm1, y, raw_perm1=None):
+        sem = dict({"perm_1": perm1}, **{"perm_{}".format(k): y for k in range(2, 6)})
+        return {"dataset": "nq", "sample_id": "nq:{}".format(i), "y0": 1, "sem": sem,
+                "raw": dict(sem, perm_1=perm1 if raw_perm1 is None else raw_perm1)}
+
+    def test_weights_prediction_and_gap(self):
+        deg = [self.row(i, 0, int(i < 5)) for i in range(10)]                       # observed repair 0.5
+        stab = [self.row(10 + i, 1, int(i > 0)) for i in range(5)] + [self.row(20, 1, 1, raw_perm1=0)]
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = Path(tmp) / "plan.json"
+            write_json(plan, {"selected_from": {"available": {"stable": 10}, "selected": {"stable": 5}}})
+            w = as2.stable_weights(deg + stab, plan)
+        self.assertEqual(w["weight"], 2.0)
+        self.assertEqual([r["w"] for r in stab], [2.0] * 5 + [1.0])                 # raw-degraded state was kept whole
+        b = as2.luck_block(deg + stab, 200)
+        o = b["orders"]["perm_3"]
+        self.assertAlmostEqual(b["stable_represented"], 11.0)
+        self.assertAlmostEqual(o["predicted_repair"], 0.2)                            # 1 break x weight 2 / |D| = 10
+        self.assertAlmostEqual(o["gap"]["estimate"], 0.3)
+        self.assertEqual(o["harm_events_in_sample"], 1)
+        self.assertLessEqual(o["gap"]["ci95"][0], 0.3)
+
+    def test_as2l_group_and_config(self):
+        p = pcr.load_protocol(ROOT / "configs" / "as2l_bounded.json")
+        self.assertEqual(p["arm_group"], "as2l")
+        self.assertNotIn("sampling", p)
+        self.assertEqual(ARM_GROUPS["as2l"], ("clean_a", "clean_b", "perm_1", "perm_2", "perm_3", "perm_4", "perm_5"))
+        self.assertEqual(p["seed"], json.loads((ROOT / "configs" / "as2s_bounded.json").read_text())["seed"])
+
+
 def arm(em, sha="x", **extra):
     return dict({"em": em, "status": "answered", "final_answer": "Paris" if em else "Rome", "continuation_sha256": sha,
                  "metadata": {}}, **extra)
@@ -221,6 +254,8 @@ class AnalysisTests(unittest.TestCase):
             write_run(root / "v03_7b_ppo" / "as2", a2)
             write_run(root / "v03_7b_ppo" / "as1", a1)
             write_run(root / "v03_7b_ppo" / "as2s", a2s)
+            (root / "v03_7b_ppo" / "as2s_plan").mkdir()
+            write_json(root / "v03_7b_ppo" / "as2s_plan" / "plan.json", {"selected_from": {"available": {"stable": 0}, "selected": {"stable": 0}}})
             r = as2.analyze(root, ["v03_7b_ppo", "research_32b"], ["v03_7b_ppo"], 50)
             f = r["filler"]["pooled"]["sem"]
             self.assertAlmostEqual(f["variants"]["punct"]["p2_minus_v"]["estimate"], 0.5)

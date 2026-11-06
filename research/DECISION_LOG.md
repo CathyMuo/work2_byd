@@ -1501,3 +1501,46 @@ run, so the additions are registered as amendment 1 (research/AS2_PROTOCOL.md se
 Not added: an anchoring ablation that removes the first answer (the MR-Search prompt asks to reflect on that answer); the paper
 will say "consistent with anchoring". A different retriever / top-k (ReSearch already uses top-5 and eight searches).
 Tests pass in the searchr1 environment; factory guide rewritten (CPU first, then GPU).
+
+## 2026-11-06 — AS2 results received; L2 code error corrected; amendment 2 registered (L2 on full stable sets)
+
+Factory report 2026-11-06 08:53 (branch head 6a9fffa locally, containing 8dc56ef). B (as2, 14 agents), C (as2s, 4 agents) and D
+(MR-Search greedy, 2 agents) completed; no failures, no retrieval drift, zero control mismatches, reproduction >= 99.4% (min:
+research_32b perm_1 and perm1_review); as2s reproduction 1.0.
+
+Mechanical readings: F1 true (shuffled only), F2 true, F3 false, G1 false, G2 false, I1 true, L1 true, L2 false, S1 false, S2 true.
+- Fillers (pooled, D = 1,396): review minus filler is +3.3 [0.7, 5.7] for P2, +0.5 prose, +2.2 protocol, +1.4 punctuation, +1.3
+  syntax (all four intervals include zero), and +10.7 [8.0, 13.5] for shuffled prompt words, which themselves harm stable states
+  +28.8 [25.8, 31.9] more than P2. Prose filler also harms (+9.6). F1 as registered: the content effect depends on the placebo; the
+  paper reports all six and states the largest with its harm. F2 as registered: the protocol sentence alone adds +2.4 [1.2, 3.5]
+  harm, about half of the prompts' excess harm on these states.
+- Interface (I1): inside the observation block, excess harm +1.7 vs +4.6 after it (difference -2.9 [-4.6, -1.3]), almost all in the
+  two small GRPO models (-16.0, -18.9); repair content similar (+4.0 vs +3.3).
+- Graded controls: pointer +1.5 [-2.8, 5.7] (bar > 8), evidence +16.8 [11.7, 21.8] (bar 20; 3B GRPO breaks: -31.0 repair, +81.2
+  harm). Ladder on the same states: review 4.0 / 6.3, alert 5.2 / 3.6, hint 55.3 / 56.1. Registered reading: report as is; the
+  positive controls that clear their bars are oracle-level. The audit detects an answer-bearing passage below the bar.
+- Sampling (T = 1.0, k = 4): review -3.7 [-6.6, -0.9], reflect -0.4 [-3.1, 2.4]; explained 1.82 / 1.60; harm +12.7 / +7.0, driven by
+  7B GRPO (review -19.9 repair, +50.5 harm). Resampling the same failed order with nothing inserted repairs 27.5% of greedy-defined
+  degraded states. Reading: unchanged under sampling.
+- Five orders: L1 true (perm_2..5 repair 53.6, 52.2, 50.0, 47.6, overlapping); only 15.6% of degraded states stay wrong under all
+  four re-draws. L2 false is a CODE ERROR at home: luck_block used the sampled stable count (~110 per agent) as |S| instead of the
+  full stable set (~900-1,250), understating the prediction about ninefold. The factory's reading ("not luck") follows from that
+  error and is withdrawn. Corrected by weighting (stable_weights); with ~100 sampled stable states the corrected prediction
+  (about 40, 38, 33, 52%) rests on 15-23 harm events and has an interval of about +-18 points, so it cannot test the model.
+- MR-Search greedy: 7B all three H1 gates true, harm on right answers -2.0 (sampled -4.7); 3B H1_mr_fresh false, harm -15.7. Under
+  greedy decoding a fresh episode without history repeats episode 1 almost exactly, so the fresh baseline is degenerate there; the
+  neutral and re-ask placebos are the meaningful ones. Full reports requested.
+- CPU four-way (H1): review vs filler both 19.8, review only 14.9, filler only 11.6, neither 53.7; 57% of the prompt's repairs are
+  also made by the filler (independence would give about 31%).
+
+Decisions:
+1. Amendment 2 (research/AS2_PROTOCOL.md section 9), registered before it runs: perm_1..perm_5 greedy on every degraded and every
+   stable state of the four as2s agents (as2l); primary reading L2_full_gap (joint interval of observed minus predicted covers zero
+   for every re-draw). The title keeps "regression to the mean" only if it holds.
+2. 32B default resources: all four GPUs at 0.92 (factory measurement), with the single-card-retrieval fallback in the guide.
+3. Factory to return the full CPU outputs (review_cpu.md, semantic_cases.jsonl, arm_diagnose_all.md, four u2_report.md) and an
+   AS2 re-summary with the corrected code (outputs/paper/as2_v2).
+4. Paper: integrate after amendment 2 returns. Headline changes already fixed by the registered readings: content effect is
+   placebo-dependent (0.5-3.3 against five benign fillers, 10.7 against a destructive one); about half the excess harm comes from
+   the protocol sentence and the small GRPO models' harm from the insertion interface; graded controls reported as is; conclusions
+   unchanged under sampling.

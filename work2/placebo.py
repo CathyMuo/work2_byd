@@ -64,7 +64,9 @@ ARM_GROUPS = {"core": CONTROL_ARMS + PLACEBO_ARMS,
               "natural": CONTROL_ARMS + ("perm_1", "review", "neutral", "reflect", "neutral_reflect"),
               # AS2 (2026-11-04): filler variants and graded positive controls on AS1 states; sampled H1 arms.
               "as2": CONTROL_ARMS + ("perm_1", "perm1_review", "perm1_neutral") + FILLER_VARIANT_ARMS + INOBS_ARMS + GRADED_ARMS,
-              "as2s": CONTROL_ARMS + PERMUTATION_ARMS + EXTRA_PERMUTATION_ARMS + SAMPLED_ARMS}
+              "as2s": CONTROL_ARMS + PERMUTATION_ARMS + EXTRA_PERMUTATION_ARMS + SAMPLED_ARMS,
+              # AS2 amendment 2 (2026-11-06): the five orders, greedy, on every degraded and stable state of the four agents
+              "as2l": CONTROL_ARMS + PERMUTATION_ARMS + EXTRA_PERMUTATION_ARMS}
 REVIEW_PROMPT = PROMPTS["review"]  # identical text to SI1 review, for cross-checks
 REFLECT_PROMPT = ("\n\nBefore continuing, reflect: state which part of the original question is still unresolved, "
                   "check whether the information already shown actually resolves it, and if something is missing, "

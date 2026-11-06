@@ -119,16 +119,52 @@ def interface_block(rows, resamples, view="sem"):
             "filler_inside_minus_after_harm": contrast(s, "perm1_neutral", "perm1_neutral_inobs", view, resamples)}
 
 
+def stable_weights(rows, plan_path):
+    """Amendment 2 (bug fix): the AS1 selection keeps every degraded state but only a hash sample of the states stable in both views,
+    so each such sampled state stands for available / selected of them. |S| in the luck model is the full stable set."""
+    sel = load_json(plan_path)["selected_from"]
+    w = sel["available"]["stable"] / sel["selected"]["stable"] if sel["selected"]["stable"] else 1.0
+    for r in rows:
+        r["w"] = w if (r["raw"].get("perm_1") == 1 and r["sem"].get("perm_1") == 1 and r["y0"] == 1) else 1.0
+    return {"available_stable": sel["available"]["stable"], "selected_stable": sel["selected"]["stable"], "weight": w}
+
+
+def boot_gap(deg, st, a, resamples, view="sem", seed=42):
+    """Observed repair of perm_k on D minus its luck-model prediction sum_S w (1 - y) / |D|, with both terms resampled together
+    (question clusters within dataset), so the interval includes the prediction's own sampling error."""
+    import random
+    if not deg:
+        return None
+    cl = {}
+    for r in deg:
+        c = cl.setdefault((r["dataset"], r["sample_id"]), [0.0, 0.0, 0])
+        c[0] += r[view][a]; c[2] += 1
+    for r in st:
+        c = cl.setdefault((r["dataset"], r["sample_id"]), [0.0, 0.0, 0])
+        c[1] += r.get("w", 1.0) * (1 - r[view][a])
+    groups = [[v for k, v in cl.items() if k[0] == ds] for ds in sorted({k[0] for k in cl})]
+    stat = lambda cs: (sum(c[0] for c in cs) - sum(c[1] for c in cs)) / max(1, sum(c[2] for c in cs))
+    rng, draws = random.Random(seed), []
+    for _ in range(resamples):
+        draws.append(stat([c for g in groups for c in rng.choices(g, k=len(g))]))
+    draws.sort()
+    return {"estimate": stat(list(cl.values())), "ci95": [draws[int((resamples - 1) * .025)], draws[int((resamples - 1) * .975)]]}
+
+
 def luck_block(rows, resamples, view="sem"):
     """Amendment 1: with all five non-identity orders, each re-draw perm_k (k = 2..5) is exchangeable with perm_1, so its repair on
-    D should equal harm_S(perm_k) * |S| / |D| and the four repair rates should agree."""
+    D should equal harm_S(perm_k) * |S| / |D| and the four repair rates should agree. Amendment 2: |S| is the full stable set
+    (sampled stable states carry weight r["w"]), and the gap observed - predicted is reported with a joint interval."""
     rows = [r for r in rows if all(a in r[view] for a in ORDERS)]
     deg, st, _ = split(rows, view)
-    out = {"degraded": len(deg), "stable": len(st), "orders": {}}
+    s_full = sum(r.get("w", 1.0) for r in st)
+    out = {"degraded": len(deg), "stable": len(st), "stable_represented": s_full, "orders": {}}
     for a in ORDERS[1:]:
-        rep, harm = rate(deg, lambda r, a=a: r[view][a]), rate(st, lambda r, a=a: 1 - r[view][a])
-        out["orders"][a] = {"repair": boot(deg, lambda r, a=a: r[view][a], resamples), "harm": harm,
-                            "predicted_repair": (harm * len(st) / len(deg)) if deg and harm is not None else None}
+        harm_sum = sum(r.get("w", 1.0) * (1 - r[view][a]) for r in st)
+        out["orders"][a] = {"repair": boot(deg, lambda r, a=a: r[view][a], resamples), "harm": harm_sum / s_full if s_full else None,
+                            "harm_events_in_sample": sum(1 - r[view][a] for r in st),
+                            "predicted_repair": (harm_sum / len(deg)) if deg else None,
+                            "gap": boot_gap(deg, st, a, resamples, view)}
     reps = [v["repair"]["estimate"] for v in out["orders"].values() if v["repair"]]
     out["repair_spread"] = (max(reps) - min(reps)) if reps else None
     out["mean_redraw_repair"] = boot(deg, lambda r: mean(r[view][a] for a in ORDERS[1:]), resamples)
@@ -213,12 +249,20 @@ def readings(r):
         out["L1"] = bool(cis) and max(c[0] for c in cis) <= min(c[1] for c in cis)   # the four re-draws' intervals overlap
         out["L2"] = all(v["predicted_repair"] is not None and v["repair"]["ci95"][0] <= v["predicted_repair"] <= v["repair"]["ci95"][1]
                         for v in lk["orders"].values() if v["repair"])
+        out["L2_gap_covers_zero"] = all(v["gap"] and v["gap"]["ci95"][0] <= 0 <= v["gap"]["ci95"][1] for v in lk["orders"].values())
+    lf = r["luck_full"]["pooled"]["sem"] if r.get("luck_full") and r["luck_full"]["pooled"] else None
+    if lf:   # amendment 2: the same test on the full stable sets
+        out["L2_full"] = all(v["predicted_repair"] is not None and v["repair"]["ci95"][0] <= v["predicted_repair"] <= v["repair"]["ci95"][1]
+                             for v in lf["orders"].values() if v["repair"])
+        out["L2_full_gap_covers_zero"] = all(v["gap"] and v["gap"]["ci95"][0] <= 0 <= v["gap"]["ci95"][1] for v in lf["orders"].values())
+        out["L_full_reading"] = ("luck model confirmed on every re-draw" if out["L2_full_gap_covers_zero"]
+                                 else "luck model rejected for some re-draw; narrow the mechanism claim")
     s = r["sampled"]["pooled"]["sem"] if r["sampled"]["pooled"] else None
     if s:
         out["S1"] = any(above(m["repair_minus_filler"], S1_PP) for m in s["methods"].values())
         out["S2"] = all(m["explained"] is not None and m["explained"] >= EXPLAINED for m in s["methods"].values())
         out["S_reading"] = "unchanged under sampling" if out["S2"] and not out["S1"] else "report as is"
-    reps = [v for part in ("as2", "as2s") for agent in r["reproduction"][part].values() for v in agent.values() if v is not None]
+    reps = [v for part in ("as2", "as2s", "as2l") for agent in r["reproduction"].get(part, {}).values() for v in agent.values() if v is not None]
     out["repro_min"] = min(reps) if reps else None
     out["repro_ok"] = out["repro_min"] is not None and out["repro_min"] >= REPRO_MIN
     return out
@@ -227,9 +271,9 @@ def readings(r):
 def analyze(root, labels, sampled_labels, resamples):
     report = {"analysis_commit": git_output("rev-parse", "HEAD"), "labels": list(labels), "sampled_labels": list(sampled_labels),
               "bootstrap": {"unit": "question (all agents' states of a question together)", "strata": "dataset", "resamples": resamples},
-              "reproduction": {"as2": {}, "as2s": {}}}
-    pooled = {"as2": [], "as2s": []}
-    per = {"filler": {}, "graded": {}, "interface": {}, "sampled": {}, "luck": {}}
+              "reproduction": {"as2": {}, "as2s": {}, "as2l": {}}, "stable_weights": {}, "stable_weights_full": {}}
+    pooled = {"as2": [], "as2s": [], "as2l": []}
+    per = {"filler": {}, "graded": {}, "interface": {}, "sampled": {}, "luck": {}, "luck_full": {}}
     for label in labels:
         d = root / label / "as2"
         if not (d / "states.jsonl").is_file():
@@ -252,14 +296,25 @@ def analyze(root, labels, sampled_labels, resamples):
             per["sampled"][label] = per["luck"][label] = None
             continue
         rows = run_rows(d)
+        report["stable_weights"][label] = stable_weights(rows, root / label / "as2s_plan" / "plan.json")
         pooled["as2s"] += rows
         per["sampled"][label] = {v: sampled_block(rows, resamples, v) for v in ("sem", "raw")}
         per["luck"][label] = {v: luck_block(rows, resamples, v) for v in ("sem", "raw")}
         report["reproduction"]["as2s"][label] = reproduced(root / label / "pcr", d, REPRO_ARMS["as2s"])
+        # amendment 2: perm_1..perm_5 on every degraded and every stable state (greedy)
+        d = root / label / "as2l"
+        if (d / "states.jsonl").is_file():
+            rows = run_rows(d)
+            report["stable_weights_full"][label] = stable_weights(rows, root / label / "as2l_plan" / "plan.json")
+            pooled["as2l"] += rows
+            per["luck_full"][label] = {v: luck_block(rows, resamples, v) for v in ("sem", "raw")}
+            report["reproduction"]["as2l"][label] = reproduced(root / label / "pcr", d, REPRO_ARMS["as2s"])
+        else:
+            per["luck_full"][label] = None
     if not pooled["as2"] and not pooled["as2s"]:
         raise ValueError("No completed AS2 run under " + str(root))
     for part, key, block in (("filler", "as2", filler_block), ("graded", "as2", graded_block), ("interface", "as2", interface_block),
-                             ("sampled", "as2s", sampled_block), ("luck", "as2s", luck_block)):
+                             ("sampled", "as2s", sampled_block), ("luck", "as2s", luck_block), ("luck_full", "as2l", luck_block)):
         report[part] = {"agents": per[part], "pooled": {v: block(pooled[key], resamples, v) for v in ("sem", "raw")} if pooled[key] else None}
     report["readings"] = readings(report)
     return report
@@ -332,16 +387,20 @@ def markdown(r):
                 name, b["degraded"], b["stable"], fmt(b["repair_content_inside"]), fmt(b["repair_content_after"]),
                 fmt(b["harm_content_inside"]), fmt(b["harm_content_after"]), fmt(b["harm_content_inside_minus_after"])))
         L.append("")
-    if r["luck"]["pooled"]:
-        L += ["## 修订 1：全部 5 种非原始顺序（贪心；退化状态上每次重抽的修复率 vs 运气模型预测）", "",
-              "| 智能体 | D | " + " | ".join("{} 修复 / 预测".format(a) for a in ORDERS[1:]) + " | 四次都没修好 |",
-              "| --- | --- | " + " | ".join("---" for _ in ORDERS[1:]) + " | --- |"]
-        for name, v in list(r["luck"]["agents"].items()) + [("**合并**", r["luck"]["pooled"])]:
+    for part, title in (("luck", "修订 1：全部 5 种非原始顺序，稳定状态为抽样（按抽样比例加权，修订 2 的代码更正）"),
+                        ("luck_full", "修订 2：全部 5 种非原始顺序，全部稳定状态")):
+        if not (r.get(part) and r[part]["pooled"]):
+            continue
+        L += ["## " + title, "", "每格：观测修复 / 运气模型预测 / 差（观测 − 预测，联合区间） / 样本中“弄坏”事件数", "",
+              "| 智能体 | D | 代表的稳定状态数 | " + " | ".join(ORDERS[1:]) + " | 四次都没修好 |",
+              "| --- | --- | --- | " + " | ".join("---" for _ in ORDERS[1:]) + " | --- |"]
+        for name, v in list(r[part]["agents"].items()) + [("**合并**", r[part]["pooled"])]:
             if not v:
                 L.append("| {} | 缺失 |".format(name)); continue
             b = v["sem"]
-            L.append("| {} | {} | {} | {} |".format(name, b["degraded"], " | ".join(
-                "{} / {}".format(fmt(o["repair"]), pc(o["predicted_repair"])) for o in b["orders"].values()), pc(b["never_repaired"])))
+            L.append("| {} | {} | {:.0f} | {} | {} |".format(name, b["degraded"], b["stable_represented"], " | ".join(
+                "{} / {} / {} / {:.0f}".format(fmt(o["repair"]), pc(o["predicted_repair"]), fmt(o["gap"]), o["harm_events_in_sample"])
+                for o in b["orders"].values()), pc(b["never_repaired"])))
         L.append("")
     return "\n".join(L)
 

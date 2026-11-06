@@ -1,9 +1,9 @@
 {
-  "updated": "2026-11-05",
+  "updated": "2026-11-06",
   "title": "Most Recovery Is Regression to the Mean：搜索智能体的安慰剂对照审计",
   "subtitle": "RL 训练的搜索智能体：文献里常见的“恢复 / 反思能修复错误”，加上安慰剂对照后还站得住吗？",
   "target": "目标：ACL 2027 主会（ARR 截稿 2027-01-04）",
-  "stage": "审稿意见回应：AS2（含修订 1）待厂内运行——填充变体、观测块内插入、分级阳性对照、采样解码、5 种顺序枚举、MR-Search 贪心复核，另有 CPU 分析；2027-01-04 投 ARR",
+  "stage": "AS2 主体完成（填充变体、观测块内插入、分级阳性对照、采样解码、MR-Search 贪心）；修订 2 待跑：全部稳定状态上检验运气模型；之后写入论文",
   "talk_track": [
     "做什么：给 RL 训练的搜索智能体（Search-R1 一类）做“审计”。文献常说加一段反思、复查或重试，就能把答错的修回来。我们检查这种修复是方法的功劳，还是统计假象。",
     "怎么做：从同一条推理轨迹的同一个位置精确分叉，一路跑“方法”，另一路跑“安慰剂”（只换文档顺序，或加一段等长的无意义文字），比较两路各修回多少。",
@@ -30,7 +30,7 @@
     },
     {
       "label": "下一步",
-      "text": "厂内先做 CPU 分析（四格表、加权、问题级策略、语义口径核查、arm_diagnose），再跑 AS2 GPU 部分（约 1.5–2 天）；结果写入论文。"
+      "text": "厂内：补传 CPU 结果全文、用修正代码重新汇总、跑修订 2（约 5–7 小时）。家服：结果回来后一次性写入论文，定标题。"
     }
   ],
   "question": {
@@ -663,7 +663,13 @@
     },
     {
       "date": "11-05 ~ 11-08",
-      "text": "厂内跑 AS2（含修订 1）：CPU 分析 + 填充变体、观测块内插入、分级阳性对照（14 个智能体）、采样解码与 5 种顺序（4 个智能体）、MR-Search 贪心复核",
+      "text": "AS2 完成：内容效应取决于安慰剂（0.5–3.3 点，被破坏性的打乱文字时为 10.7）；约一半超额伤害来自协议句；采样下结论不变",
+      "done": true,
+      "current": false
+    },
+    {
+      "date": "11-06 ~ 11-07",
+      "text": "修订 2：4 个智能体的全部稳定状态上跑 5 种文档顺序，检验运气模型（L2）",
       "done": false,
       "current": true
     },
@@ -686,107 +692,27 @@
     "ReSeek 只放出了 3B 权重；MR-Search 没有权重，审计的是论文自己的测试时版本。"
   ],
   "campaign": {
-    "title": "当前批次：AS2（含修订 1）——回应三份审稿意见",
+    "title": "当前批次：AS2 修订 2——全部稳定状态上的 5 种文档顺序",
     "items": [
       {
-        "name": "Search-R1 3B PPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v03_3b_ppo/as2",
-        "done": "outputs/u1/v03_3b_ppo/as2/states.jsonl"
+        "name": "Search-R1 3B PPO · 5 种顺序（全部状态）",
+        "run": "outputs/u1/v03_3b_ppo/as2l",
+        "done": "outputs/u1/v03_3b_ppo/as2l/states.jsonl"
       },
       {
-        "name": "Search-R1 3B GRPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v03_3b_grpo/as2",
-        "done": "outputs/u1/v03_3b_grpo/as2/states.jsonl"
+        "name": "Search-R1 7B GRPO · 5 种顺序（全部状态）",
+        "run": "outputs/u1/v03_7b_grpo/as2l",
+        "done": "outputs/u1/v03_7b_grpo/as2l/states.jsonl"
       },
       {
-        "name": "Search-R1 v0.1 7B PPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v01_7b_ppo/as2",
-        "done": "outputs/u1/v01_7b_ppo/as2/states.jsonl"
+        "name": "Search-R1 14B PPO · 5 种顺序（全部状态）",
+        "run": "outputs/u1/v03_14b_ppo/as2l",
+        "done": "outputs/u1/v03_14b_ppo/as2l/states.jsonl"
       },
       {
-        "name": "Search-R1 7B PPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v03_7b_ppo/as2",
-        "done": "outputs/u1/v03_7b_ppo/as2/states.jsonl"
-      },
-      {
-        "name": "Search-R1 7B GRPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v03_7b_grpo/as2",
-        "done": "outputs/u1/v03_7b_grpo/as2/states.jsonl"
-      },
-      {
-        "name": "Search-R1 7B IT-GRPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v03_7b_it_grpo/as2",
-        "done": "outputs/u1/v03_7b_it_grpo/as2/states.jsonl"
-      },
-      {
-        "name": "ZeroSearch Llama-3B · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/zs_llama32_3b/as2",
-        "done": "outputs/u1/zs_llama32_3b/as2/states.jsonl"
-      },
-      {
-        "name": "ZeroSearch Qwen-7B · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/zs_qwen25_7b/as2",
-        "done": "outputs/u1/zs_qwen25_7b/as2/states.jsonl"
-      },
-      {
-        "name": "StepSearch 7B · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/stepsearch_7b/as2",
-        "done": "outputs/u1/stepsearch_7b/as2/states.jsonl"
-      },
-      {
-        "name": "Search-R1 14B PPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v03_14b_ppo/as2",
-        "done": "outputs/u1/v03_14b_ppo/as2/states.jsonl"
-      },
-      {
-        "name": "Search-R1 14B IT-GRPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v03_14b_it_grpo/as2",
-        "done": "outputs/u1/v03_14b_it_grpo/as2/states.jsonl"
-      },
-      {
-        "name": "ReSearch 7B · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/research_7b/as2",
-        "done": "outputs/u1/research_7b/as2/states.jsonl"
-      },
-      {
-        "name": "Search-R1 32B GRPO · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/v03_32b_grpo/as2",
-        "done": "outputs/u1/v03_32b_grpo/as2/states.jsonl"
-      },
-      {
-        "name": "ReSearch 32B · 填充变体与分级对照 AS2",
-        "run": "outputs/u1/research_32b/as2",
-        "done": "outputs/u1/research_32b/as2/states.jsonl"
-      },
-      {
-        "name": "Search-R1 3B PPO · 采样解码 AS2-S",
-        "run": "outputs/u1/v03_3b_ppo/as2s",
-        "done": "outputs/u1/v03_3b_ppo/as2s/states.jsonl"
-      },
-      {
-        "name": "Search-R1 7B GRPO · 采样解码 AS2-S",
-        "run": "outputs/u1/v03_7b_grpo/as2s",
-        "done": "outputs/u1/v03_7b_grpo/as2s/states.jsonl"
-      },
-      {
-        "name": "Search-R1 14B PPO · 采样解码 AS2-S",
-        "run": "outputs/u1/v03_14b_ppo/as2s",
-        "done": "outputs/u1/v03_14b_ppo/as2s/states.jsonl"
-      },
-      {
-        "name": "Search-R1 32B GRPO · 采样解码 AS2-S",
-        "run": "outputs/u1/v03_32b_grpo/as2s",
-        "done": "outputs/u1/v03_32b_grpo/as2s/states.jsonl"
-      },
-      {
-        "name": "MR-Search 贪心复核 · Search-R1 7B PPO",
-        "run": "outputs/u2/mrg_v03_7b_ppo",
-        "done": "outputs/u2/mrg_v03_7b_ppo/records.jsonl"
-      },
-      {
-        "name": "MR-Search 贪心复核 · Search-R1 3B PPO",
-        "run": "outputs/u2/mrg_v03_3b_ppo",
-        "done": "outputs/u2/mrg_v03_3b_ppo/records.jsonl"
+        "name": "Search-R1 32B GRPO · 5 种顺序（全部状态）",
+        "run": "outputs/u1/v03_32b_grpo/as2l",
+        "done": "outputs/u1/v03_32b_grpo/as2l/states.jsonl"
       }
     ]
   },
