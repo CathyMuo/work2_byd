@@ -1584,3 +1584,34 @@ CPU returns (review_cpu, arm_diagnose, MR-Search reports) recorded in the paper:
   harm on right ones (-15.7). Under greedy decoding a fresh episode nearly repeats episode 1, so H1_mr_fresh is uninformative there.
 
 Decision: AS2 closed. No further GPU experiments for the January ARR cycle. Paper integration next (work2_paper).
+
+## 2026-11-12 — Factory feedback on model-family coverage; FAM1 registered; experiments reopened
+
+Factory feedback 2026-11-11 17:54 (local head c6975f3), no runs: 13 of the 14 main agents are Qwen2.5-based, so a reviewer can
+attribute the results to Qwen rather than to the evaluation protocol. The "untrained generic prompt" objection is already
+answered by AS1 (14/14 agents sensitive) and is not reopened.
+
+Home assessment:
+- Agreed, and sharper than the feedback states: the only non-Qwen agent, zs_llama32_3b, has among the largest repair content
+  effects (review +10.5 [2.6, 18.4], reflect +13.2 [5.3, 23.7]; D = 38). With one agent, base family, size and recipe are
+  confounded.
+- Not every claim is family-dependent. RTM inflation of failure-selected repair and P1 = harm(P1)|S|/|D| hold in expectation
+  for any agent by the exchangeability of (pi_1, pi_2). The placebo share, the size of the content effect and the absence of a
+  net gain are empirical and family-dependent; those are what FAM1 tests.
+- Survey (2026-11-11): Search-R1's authors released four Llama-3.2-3B checkpoints (base/instruct x PPO/GRPO) alongside
+  same-version Qwen2.5-3B ones; R1-Searcher released Llama-3.1-8B-Instruct (MIT). OpenResearcher-30B-A3B (Nemotron-3-Nano) is
+  SFT, built for long-horizon web browsing, and would need porting to vLLM 0.15: not run. No mainstream Qwen3 RL search agent
+  compatible with the harness was found; Qwen3 would not close the non-Qwen gap anyway.
+
+Decisions:
+1. Supersedes "No further GPU experiments for the January ARR cycle" (2026-11-06) for FAM1 only. Main-table numbers are frozen.
+2. FAM1 registered (research/FAM1_PROTOCOL.md, roster configs/fam1_agents.json) before any download or run: four Search-R1
+   Llama-3.2-3B agents, R1-Searcher Llama-3.1-8B (date gate 2026-11-28), and four same-version Qwen2.5-3B Search-R1 checkpoints
+   as matched controls for a same-recipe family contrast. Each runs sources, insertion validity, H1, AS1 and U1N. Extra
+   question pool E (500 new dev questions each from HotpotQA, 2Wiki, NQ and MuSiQue) for all non-Qwen agents and the matched
+   controls, same date gate, for power (non-Qwen MDE about 7 pp on the frozen set, about 5 pp with E).
+3. Primary reading F4 per prompt: generalizes / family-dependent / undetermined, with the paper consequences fixed in section 7
+   of the protocol. Because zs_llama32_3b motivated the experiment, a new-agents-only version is always reported.
+4. Home implements: run_fam1.sh, the r1searcher prompt variant (verbatim via ast, tested), the E question selector and
+   work2/fam1.py. The user downloads the nine checkpoints. The factory runs only after home pushes and announces the commit.
+5. Experiments freeze on 2026-12-12; writing until the 2027-01-04 ARR deadline.
