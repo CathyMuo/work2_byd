@@ -59,6 +59,23 @@ class ScannerTests(unittest.TestCase):
             self.assertEqual(logs[0]["lines"], ["line1", "line2"])
             self.assertIsNone(s.log_tail("../../etc"))
 
+    def test_fam1_names_and_campaign_paths(self):
+        fam1 = board.roster_labels(ROOT / "configs/fam1_agents.json")
+        u1x = board.roster_labels(ROOT / "configs/u1x_agents.json")
+        self.assertEqual(board.describe("u1/v01_l3b_ppo/as1", u1x, fam1), ("FAM1", "v01_l3b_ppo", "AS1 阳性对照"))
+        self.assertEqual(board.describe("u1/r1s_l8b/u1n", u1x, fam1), ("FAM1", "r1s_l8b", "U1N 自然失败"))
+        self.assertEqual(board.describe("u1/zs_llama32_3b/pcr_e", u1x, fam1)[0], "FAM1")    # its pool-E runs
+        self.assertEqual(board.describe("u1/zs_llama32_3b/pcr", u1x, fam1)[0], "U1x")       # its earlier runs
+        self.assertEqual(board.describe("u1/v03_3b_ppo/pcr", u1x, fam1)[0], "U1")
+        # Every FAM1 campaign item points at the directories scripts/run_fam1.sh writes.
+        spec = json.loads((ROOT / "progress_board/research.json").read_text(encoding="utf-8"))["campaign"]
+        script = (ROOT / "scripts/run_fam1.sh").read_text()
+        for item in spec["items"]:
+            label, stage = item["run"].split("/")[2:4]
+            self.assertIn(label, fam1 | {"zs_llama32_3b"})
+            self.assertIn('"$d/{}"'.format(stage), script)
+            self.assertTrue(item["done"].startswith(item["run"] + "/"))
+
     def test_stalled_and_rate(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)

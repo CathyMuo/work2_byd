@@ -25,7 +25,12 @@ from .common import ROOT
 PAGE_DIR = ROOT / "progress_board"
 STALL_SECONDS = 20 * 60
 STAGE_NAMES = {"sources": "源轨迹（贪心作答）", "pcr": "H1 同状态安慰剂分支", "ct": "H3 信用真值采样",
-               "pcr_plan": "PCR 计划", "ct_plan": "CT 计划"}
+               "pcr_plan": "PCR 计划", "ct_plan": "CT 计划",
+               "as1": "AS1 阳性对照", "u1n": "U1N 自然失败", "as2": "AS2 填充变体与分级对照", "as2s": "AS2 采样复现",
+               "as2l": "AS2 五种顺序", "pcr_smoke": "H1 smoke", "as1_smoke": "AS1 smoke", "u1n_smoke": "U1N smoke",
+               # FAM1 pool E (research/FAM1_PROTOCOL.md section 4.4)
+               "sources_e": "题集 E · 源轨迹", "pcr_e": "题集 E · H1 安慰剂分支"}
+FAM1_E_STAGES = ("sources_e", "pcr_e")
 
 
 def load(path):
@@ -40,11 +45,14 @@ def roster_labels(path):
     return {a["label"] for a in data.get("agents", [])}
 
 
-def describe(rel, u1x):
-    """(experiment, subject, stage) shown on the page for a run directory relative to outputs/."""
+def describe(rel, u1x, fam1=frozenset()):
+    """(experiment, subject, stage) shown on the page for a run directory relative to outputs/.
+
+    FAM1 agents and every pool-E run (zs_llama32_3b's included) show as FAM1; other U1x agents as U1x."""
     parts = rel.split("/")
     if parts[0] == "u1" and len(parts) >= 3:
-        return ("U1x" if parts[1] in u1x else "U1", parts[1], STAGE_NAMES.get(parts[2], parts[2]))
+        exp = "FAM1" if parts[1] in fam1 or parts[2] in FAM1_E_STAGES else "U1x" if parts[1] in u1x else "U1"
+        return (exp, parts[1], STAGE_NAMES.get(parts[2], parts[2]))
     if parts[0] == "u2" and len(parts) >= 2:
         name = parts[1]
         smoke = name.startswith("smoke_")
@@ -84,9 +92,10 @@ def latest_mtime(run_dir):
 
 
 class Scanner:
-    def __init__(self, outputs, rosters=()):
+    def __init__(self, outputs, rosters=(), fam1_rosters=()):
         self.outputs = Path(outputs)
         self.u1x = set().union(*(roster_labels(r) for r in rosters)) if rosters else set()
+        self.fam1 = set().union(*(roster_labels(r) for r in fam1_rosters)) if fam1_rosters else set()
         self.history = collections.defaultdict(lambda: collections.deque(maxlen=120))
         self.lock = threading.Lock()
 
@@ -136,7 +145,7 @@ class Scanner:
                 status = "stalled"
             speed = self.rate(rel + "|" + (current or ""), recorded, now) if status == "running" else None
             eta = (expected - recorded) / speed if speed and expected is not None and recorded is not None else None
-            exp, subject, stage = describe(rel, self.u1x)
+            exp, subject, stage = describe(rel, self.u1x, self.fam1)
             rows.append({"path": rel, "experiment": exp, "subject": subject, "stage": stage, "status": status,
                          "phase": current, "phases": {k: {"expected": v["expected"], "recorded": v["recorded"],
                                                            "done": all(s == "completed" for s in v["statuses"])}
@@ -237,7 +246,7 @@ def main():
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--outputs", type=Path, default=ROOT / "outputs")
     a = p.parse_args()
-    scanner = Scanner(a.outputs, [ROOT / "configs/u1x_agents.json"])
+    scanner = Scanner(a.outputs, [ROOT / "configs/u1x_agents.json"], [ROOT / "configs/fam1_agents.json"])
     server = ThreadingHTTPServer((a.host, a.port), make_handler(scanner))
     print("Progress board on http://{}:{}/ (outputs: {}); Ctrl-C to stop.".format(a.host, a.port, a.outputs), flush=True)
     try:

@@ -70,3 +70,10 @@ bash scripts/run_fam1.sh pack
 
 - `fam1.md` 给出 F1–F8 的机械值；决定由家服写进 `DECISION_LOG.md`。
 - 请回传 `fam1.md`、`fam1.json`、`fam1_fidelity.json`、题集 E 的 manifest，以及每个智能体打印的插入有效性。
+
+## 5. 看板
+
+看板（`docs/BOARD_GUIDE.md`）已配套更新，需要在**开始 FAM1 运行之前**拉取最新代码并重启看板（`pkill -f "work2.board --host"` 后按看板指南重新启动）：
+
+- FAM1 的 9 个智能体，以及所有题集 E 运行（含 `zs_llama32_3b` 的），实验列显示为 “FAM1”；阶段列显示“AS1 阳性对照”“U1N 自然失败”“题集 E · H1 安慰剂分支”等。
+- “当前批次”换成 FAM1 的 46 项：9 个智能体各 4 步，加题集 E 的 10 个 H1 运行。

@@ -1,9 +1,9 @@
 {
-  "updated": "2026-11-06",
+  "updated": "2026-11-13",
   "title": "Most Recovery Is Regression to the Mean：搜索智能体的安慰剂对照审计",
   "subtitle": "RL 训练的搜索智能体：文献里常见的“恢复 / 反思能修复错误”，加上安慰剂对照后还站得住吗？",
   "target": "目标：ACL 2027 主会（ARR 截稿 2027-01-04）",
-  "stage": "全部实验结束（含三份审稿意见要求的补充实验）；进入论文定稿，2027-01-04 投 ARR",
+  "stage": "FAM1 补充实验：检验主表结论能否推广到非 Qwen（Llama）智能体；脚本已推送，等待厂内运行。12-12 冻结全部实验，之后定稿，2027-01-04 投 ARR",
   "talk_track": [
     "做什么：给 RL 训练的搜索智能体（Search-R1 一类）做“审计”。文献常说加一段反思、复查或重试，就能把答错的修回来。我们检查这种修复是方法的功劳，还是统计假象。",
     "怎么做：从同一条推理轨迹的同一个位置精确分叉，一路跑“方法”，另一路跑“安慰剂”（只换文档顺序，或加一段等长的无意义文字），比较两路各修回多少。",
@@ -13,7 +13,7 @@
     "规模：结论延伸到 Search-R1 32B；ReSearch 32B 上 review 延伸，reflect 与两种安慰剂都分不开。32B 只有两个模型，reflect 不能排除 10 个点以上的内容效应。",
     "已发表方法也一样：MR-Search 的反思回合只比无意义回合多修 1.6 个百分点，远不如直接重开一回合（9.3%）；ReSeek 的判断能察觉问题，但按它去再搜，整体反而更差。",
     "对企业的意义：评估 Agent 改进时，如果只在失败样本上再测一次，结果天然会显得“变好”。必须配同状态对照，并同时统计“救回”和“改错”两笔账。",
-    "现状：共测 18 个智能体，2 个插入无效，16 个有效（14 个 RL 进主表）。所有实验已结束、预登记判定全部通过，进入论文定稿；目标 ACL 2027，2027-01-04 投 ARR。"
+    "现状：共测 18 个智能体，14 个 RL 模型进主表，但其中 13 个基于 Qwen2.5。正在补 FAM1：4 个 Search-R1 Llama-3.2-3B 和 R1-Searcher Llama-3.1-8B，另配 4 个同版本 Qwen2.5-3B 作对照，判定规则已预登记；12-12 冻结实验，2027-01-04 投 ARR。"
   ],
   "overview": [
     {
@@ -30,7 +30,7 @@
     },
     {
       "label": "下一步",
-      "text": "论文定稿：写入 AS2 与 CPU 分析结果、匿名代码与预登记记录、负责任 NLP 清单、投稿前再查一次新。"
+      "text": "FAM1：在 Llama 智能体上复测（厂内运行，12-12 前完成），按预登记的 F4 判定决定论文写“推广成立 / 依赖模型族 / 不确定”；同时推进论文定稿（匿名代码、预登记记录、负责任 NLP 清单、投稿前查新）。"
     }
   ],
   "question": {
@@ -674,6 +674,17 @@
       "current": false
     },
     {
+      "date": "11-11 ~ 11-13",
+      "text": "审稿视角：主表 13/14 个模型基于 Qwen2.5，唯一的 Llama 模型内容效应偏大。登记 FAM1（9 个智能体 + 扩展题集 E），实现 R1-Searcher 格式与运行脚本并推送",
+      "done": true
+    },
+    {
+      "date": "11-13 ~ 12-12",
+      "text": "FAM1 运行（厂内）：源轨迹 → H1 → 插入有效性 → 阳性对照 → 自然失败，再跑题集 E；判定 F1–F8",
+      "done": false,
+      "current": true
+    },
+    {
       "date": "11-04 ~ 12-23",
       "text": "论文定稿：通读、匿名代码与预登记记录、负责任 NLP 清单、投稿前再查一次新",
       "done": false,
@@ -689,31 +700,241 @@
     "两个最大的质疑已有数据回答：阳性对照证明工具灵敏（14/14），自然失败上结论相同。剩下的是篇幅和写作：正文已满 8 页，新增内容只能进附录。",
     "H1 的上界不算很紧：把智能体当随机样本时内容效应上界约 7–8 个点，单个模型可以更高；32B 只有两个模型。",
     "近期相近工作增多（CIR、SearchAuditor、Falsification Not Exposure 等，场景和设计不同）：我们的区别在于 RL 搜索智能体、同前缀精确重放、均值回归的直接证据，以及审计已发表方法。投稿前要再查一次新。",
-    "模型几乎都基于 Qwen2.5；同前缀重放需要控制 token，前沿 API 模型测不了。SearchAuditor 在前沿模型上看到定向修复有增益，论文要正面讨论。",
+    "模型几乎都基于 Qwen2.5，唯一已有的 Llama 模型内容效应反而偏大（复查 +10.5、反思 +13.2，但 D 只有 38）。FAM1 正在补 Llama（3B、8B）和同配方对照，预登记三种结论都有对应写法。同前缀重放需要控制 token，前沿 API 模型仍测不了；SearchAuditor 在前沿模型上看到定向修复有增益，论文要正面讨论。",
     "ReSeek 只放出了 3B 权重；MR-Search 没有权重，审计的是论文自己的测试时版本。"
   ],
   "campaign": {
-    "title": "上一批次：AS2 修订 2（已完成）",
+    "title": "当前批次：FAM1 非 Qwen 推广（厂内运行；先冻结题集，再题集 E）",
     "items": [
       {
-        "name": "Search-R1 3B PPO · 5 种顺序（全部状态）",
-        "run": "outputs/u1/v03_3b_ppo/as2l",
-        "done": "outputs/u1/v03_3b_ppo/as2l/states.jsonl"
+        "name": "Search-R1 Llama-3B PPO · 源轨迹",
+        "run": "outputs/u1/v01_l3b_ppo/sources",
+        "done": "outputs/u1/v01_l3b_ppo/sources/sources.jsonl"
       },
       {
-        "name": "Search-R1 7B GRPO · 5 种顺序（全部状态）",
-        "run": "outputs/u1/v03_7b_grpo/as2l",
-        "done": "outputs/u1/v03_7b_grpo/as2l/states.jsonl"
+        "name": "Search-R1 Llama-3B PPO · H1",
+        "run": "outputs/u1/v01_l3b_ppo/pcr",
+        "done": "outputs/u1/v01_l3b_ppo/pcr/states.jsonl"
       },
       {
-        "name": "Search-R1 14B PPO · 5 种顺序（全部状态）",
-        "run": "outputs/u1/v03_14b_ppo/as2l",
-        "done": "outputs/u1/v03_14b_ppo/as2l/states.jsonl"
+        "name": "Search-R1 Llama-3B PPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_l3b_ppo/as1",
+        "done": "outputs/u1/v01_l3b_ppo/as1/states.jsonl"
       },
       {
-        "name": "Search-R1 32B GRPO · 5 种顺序（全部状态）",
-        "run": "outputs/u1/v03_32b_grpo/as2l",
-        "done": "outputs/u1/v03_32b_grpo/as2l/states.jsonl"
+        "name": "Search-R1 Llama-3B PPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_l3b_ppo/u1n",
+        "done": "outputs/u1/v01_l3b_ppo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B GRPO · 源轨迹",
+        "run": "outputs/u1/v01_l3b_grpo/sources",
+        "done": "outputs/u1/v01_l3b_grpo/sources/sources.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B GRPO · H1",
+        "run": "outputs/u1/v01_l3b_grpo/pcr",
+        "done": "outputs/u1/v01_l3b_grpo/pcr/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_l3b_grpo/as1",
+        "done": "outputs/u1/v01_l3b_grpo/as1/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_l3b_grpo/u1n",
+        "done": "outputs/u1/v01_l3b_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct PPO · 源轨迹",
+        "run": "outputs/u1/v01_l3b_it_ppo/sources",
+        "done": "outputs/u1/v01_l3b_it_ppo/sources/sources.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct PPO · H1",
+        "run": "outputs/u1/v01_l3b_it_ppo/pcr",
+        "done": "outputs/u1/v01_l3b_it_ppo/pcr/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct PPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_l3b_it_ppo/as1",
+        "done": "outputs/u1/v01_l3b_it_ppo/as1/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct PPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_l3b_it_ppo/u1n",
+        "done": "outputs/u1/v01_l3b_it_ppo/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct GRPO · 源轨迹",
+        "run": "outputs/u1/v01_l3b_it_grpo/sources",
+        "done": "outputs/u1/v01_l3b_it_grpo/sources/sources.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct GRPO · H1",
+        "run": "outputs/u1/v01_l3b_it_grpo/pcr",
+        "done": "outputs/u1/v01_l3b_it_grpo/pcr/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_l3b_it_grpo/as1",
+        "done": "outputs/u1/v01_l3b_it_grpo/as1/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_l3b_it_grpo/u1n",
+        "done": "outputs/u1/v01_l3b_it_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B PPO · 源轨迹",
+        "run": "outputs/u1/v01_q3b_ppo/sources",
+        "done": "outputs/u1/v01_q3b_ppo/sources/sources.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B PPO · H1",
+        "run": "outputs/u1/v01_q3b_ppo/pcr",
+        "done": "outputs/u1/v01_q3b_ppo/pcr/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B PPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_q3b_ppo/as1",
+        "done": "outputs/u1/v01_q3b_ppo/as1/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B PPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_q3b_ppo/u1n",
+        "done": "outputs/u1/v01_q3b_ppo/u1n/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B GRPO · 源轨迹",
+        "run": "outputs/u1/v01_q3b_grpo/sources",
+        "done": "outputs/u1/v01_q3b_grpo/sources/sources.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B GRPO · H1",
+        "run": "outputs/u1/v01_q3b_grpo/pcr",
+        "done": "outputs/u1/v01_q3b_grpo/pcr/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_q3b_grpo/as1",
+        "done": "outputs/u1/v01_q3b_grpo/as1/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_q3b_grpo/u1n",
+        "done": "outputs/u1/v01_q3b_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct PPO · 源轨迹",
+        "run": "outputs/u1/v01_q3b_it_ppo/sources",
+        "done": "outputs/u1/v01_q3b_it_ppo/sources/sources.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct PPO · H1",
+        "run": "outputs/u1/v01_q3b_it_ppo/pcr",
+        "done": "outputs/u1/v01_q3b_it_ppo/pcr/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct PPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_q3b_it_ppo/as1",
+        "done": "outputs/u1/v01_q3b_it_ppo/as1/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct PPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_q3b_it_ppo/u1n",
+        "done": "outputs/u1/v01_q3b_it_ppo/u1n/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct GRPO · 源轨迹",
+        "run": "outputs/u1/v01_q3b_it_grpo/sources",
+        "done": "outputs/u1/v01_q3b_it_grpo/sources/sources.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct GRPO · H1",
+        "run": "outputs/u1/v01_q3b_it_grpo/pcr",
+        "done": "outputs/u1/v01_q3b_it_grpo/pcr/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct GRPO · 阳性对照 AS1",
+        "run": "outputs/u1/v01_q3b_it_grpo/as1",
+        "done": "outputs/u1/v01_q3b_it_grpo/as1/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct GRPO · 自然失败 U1N",
+        "run": "outputs/u1/v01_q3b_it_grpo/u1n",
+        "done": "outputs/u1/v01_q3b_it_grpo/u1n/states.jsonl"
+      },
+      {
+        "name": "R1-Searcher Llama-8B · 源轨迹",
+        "run": "outputs/u1/r1s_l8b/sources",
+        "done": "outputs/u1/r1s_l8b/sources/sources.jsonl"
+      },
+      {
+        "name": "R1-Searcher Llama-8B · H1",
+        "run": "outputs/u1/r1s_l8b/pcr",
+        "done": "outputs/u1/r1s_l8b/pcr/states.jsonl"
+      },
+      {
+        "name": "R1-Searcher Llama-8B · 阳性对照 AS1",
+        "run": "outputs/u1/r1s_l8b/as1",
+        "done": "outputs/u1/r1s_l8b/as1/states.jsonl"
+      },
+      {
+        "name": "R1-Searcher Llama-8B · 自然失败 U1N",
+        "run": "outputs/u1/r1s_l8b/u1n",
+        "done": "outputs/u1/r1s_l8b/u1n/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B PPO · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/v01_l3b_ppo/pcr_e",
+        "done": "outputs/u1/v01_l3b_ppo/pcr_e/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B GRPO · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/v01_l3b_grpo/pcr_e",
+        "done": "outputs/u1/v01_l3b_grpo/pcr_e/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct PPO · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/v01_l3b_it_ppo/pcr_e",
+        "done": "outputs/u1/v01_l3b_it_ppo/pcr_e/states.jsonl"
+      },
+      {
+        "name": "Search-R1 Llama-3B-Instruct GRPO · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/v01_l3b_it_grpo/pcr_e",
+        "done": "outputs/u1/v01_l3b_it_grpo/pcr_e/states.jsonl"
+      },
+      {
+        "name": "R1-Searcher Llama-8B · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/r1s_l8b/pcr_e",
+        "done": "outputs/u1/r1s_l8b/pcr_e/states.jsonl"
+      },
+      {
+        "name": "ZeroSearch Llama-3B · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/zs_llama32_3b/pcr_e",
+        "done": "outputs/u1/zs_llama32_3b/pcr_e/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B PPO · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/v01_q3b_ppo/pcr_e",
+        "done": "outputs/u1/v01_q3b_ppo/pcr_e/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B GRPO · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/v01_q3b_grpo/pcr_e",
+        "done": "outputs/u1/v01_q3b_grpo/pcr_e/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct PPO · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/v01_q3b_it_ppo/pcr_e",
+        "done": "outputs/u1/v01_q3b_it_ppo/pcr_e/states.jsonl"
+      },
+      {
+        "name": "对照 Qwen-3B-Instruct GRPO · 题集 E（源轨迹 + H1）",
+        "run": "outputs/u1/v01_q3b_it_grpo/pcr_e",
+        "done": "outputs/u1/v01_q3b_it_grpo/pcr_e/states.jsonl"
       }
     ]
   },
