@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-11-12",
-  "current_stage": "fam1_registered_awaiting_implementation",
-  "status": "FAM1 registered after factory feedback on model-family coverage (13 of 14 main agents are Qwen2.5; the only Llama agent shows among the largest content effects). Main-table numbers frozen.",
-  "next_action": "Home: implement run_fam1.sh, r1searcher variant, question pool E and work2/fam1.py (date gate 2026-11-28); user downloads the nine FAM1 checkpoints; factory runs after home announces the commit.",
+  "updated_at": "2026-11-13",
+  "current_stage": "fam1_implemented_awaiting_factory_runs",
+  "status": "FAM1 implemented (run_fam1.sh, work2/fam1.py, r1searcher variant, pool E selector) with amendment 1 registered before any run; nine checkpoints downloaded by the factory. Main-table numbers frozen.",
+  "next_action": "Factory: write the nine local configs, test, check, freeze-e, smoke, then run_fam1.sh all and summary; return fam1.md/json, fidelity, pool E manifest and validity lines. Experiments freeze 2026-12-12.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {

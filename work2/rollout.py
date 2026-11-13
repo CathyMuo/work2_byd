@@ -60,6 +60,26 @@ STEPSEARCH_TEMPLATE = (
 RESEARCH_PROMPT_VERSION = "research_official_sys_v1"
 RESEARCH_SYSTEM = 'You are a helpful assistant that can solve the given question step by step with the help of the wikipedia search tool. Given a question, you need to first think about the reasoning process in the mind and then provide the answer. During thinking, you can invoke the wikipedia search tool to search for fact information about specific topics if needed. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags respectively, and the search query and result are enclosed within <search> </search> and <result> </result> tags respectively. For example, <think> This is the reasoning process. </think> <search> search query here </search> <result> search result here </result> <think> This is the reasoning process. </think> <answer> The final answer is \\[ \\boxed{answer here} \\] </answer>. In the last part of the answer, the final exact answer is enclosed within \\boxed{} with latex format.'
 SYSTEM_OF["research"] = RESEARCH_SYSTEM
+# FAM1 (2026-11-13, research/FAM1_PROTOCOL.md section 3): R1-Searcher (RUCAIBox/R1-Searcher at ad86a669, file
+# evaluation/eval_search_loacl.py, function process_text, base_prompt_v0 = the prompt type its README uses for every
+# evaluation), read with ast and never executed. It is a raw completion prompt (no chat template; vLLM adds BOS) that ends
+# with "Assistant: <think>". Queries are "<|begin_of_query|> ... <|end_of_query|>" (generation stops at either
+# "<|end_of_query|>" or "</answer>"); the last query in the segment is cleaned exactly as upstream (quotes, tabs and "..."
+# removed); documents come back as "<|end_of_query|>\n\n<|begin_of_documents|>\n(1)doc\n(2)doc\n...<|end_of_documents|>\n\n".
+# Harness deviations (recorded in the protocol): our E5 + Wiki-18, top-3, at most 4 searches (upstream BGE + KILT, top-5,
+# up to 8 rounds); upstream strips whitespace around each generated segment and re-tokenizes the text, we keep the
+# generated tokens verbatim, as for every other agent.
+R1SEARCHER_PROMPT_VERSION = "r1searcher_v0_official_v1"
+R1SEARCHER_TEMPLATE = (
+    'The User asks a question, and the Assistant solves it.\nThe Assistant first thinks about the reasoning process in the '
+    'mind and then provides the User with the final answer.\nThe output format of reasoning process and final answer are '
+    'enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., "<think> reasoning process here '
+    '</think>\n\n<answer> final answer here </answer>".\nDuring the thinking process, the Assistant can perform searching for '
+    'uncertain knowledge if necessary with the format of "<|begin_of_query|> search query (only keywords) here '
+    '<|end_of_query|>". **A query must involve only a single triple**.\nThen, the system will provide the Assistant with '
+    'helpful information with the format of "<|begin_of_documents|> ...search results... <|end_of_documents|>".\n\n'
+    'User:{question}\nAssistant: <think>')
+R1S_QUERY_OPEN, R1S_QUERY_CLOSE = "<|begin_of_query|>", "<|end_of_query|>"
 
 # Observation rendering per prompt variant. Search-R1 / AutoRefine / StepSearch strip the document block;
 # bounded / official / reseek keep the historical unstripped block (every earlier run used it).
@@ -71,6 +91,11 @@ FORMATS = {
     "stepsearch": {"version": STEPSEARCH_PROMPT_VERSION, "tag": "information", "pad": " ", "strip": True, "docs": "stepsearch"},
     "research": {"version": RESEARCH_PROMPT_VERSION, "tag": "result", "pad": "\n", "strip": True, "docs": "contents",
                  "before": " ", "after": "", "answer": "boxed"},
+    # FAM1: no XML tag pair; "open"/"close" replace "<tag>"/"</tag>", "chat": False keeps the raw completion prompt,
+    # "action": the query syntax for parse_action, "search_tag": the query tag named in inserted protocol sentences.
+    "r1searcher": {"version": R1SEARCHER_PROMPT_VERSION, "tag": None, "pad": "", "strip": False, "docs": "r1searcher",
+                   "open": "<|begin_of_documents|>\n", "close": "<|end_of_documents|>", "chat": False,
+                   "action": "r1searcher", "search_tag": R1S_QUERY_OPEN},
 }
 VARIANT_OF_VERSION = {f["version"]: v for v, f in FORMATS.items()}
 
@@ -79,6 +104,8 @@ def observation_text(documents, variant="bounded"):
     f = FORMATS[variant]
     body = format_documents(documents, f["docs"])
     body = body.strip() if f["strip"] else body
+    if "open" in f:
+        return f.get("before", "\n\n") + f["open"] + body + f["close"] + f.get("after", "\n\n")
     return "{3}<{0}>{1}{2}{1}</{0}>{4}".format(f["tag"], f["pad"], body, f.get("before", "\n\n"), f.get("after", "\n\n"))
 
 
@@ -106,6 +133,8 @@ def initial_text(generator, question, agent):
     """Rendered initial prompt for an agent format, with its system message if it has one."""
     variant = agent.get("prompt_variant", "bounded")
     user = question_prompt(question, agent["max_search_turns"], variant)
+    if FORMATS[variant].get("chat", True) is False:
+        return generator.raw_prompt(user)
     system = SYSTEM_OF.get(variant)
     return generator.initial_prompt(user, system=system) if system is not None else generator.initial_prompt(user)
 
@@ -125,6 +154,8 @@ def question_prompt(question, max_search_turns, variant="bounded"):
         return STEPSEARCH_TEMPLATE.replace("{question}", question)
     if variant == "research":
         return question
+    if variant == "r1searcher":
+        return R1SEARCHER_TEMPLATE.replace("{question}", question)
     if variant != "bounded":
         raise ValueError("Unknown prompt variant: " + str(variant))
     return ("Answer the given question. You must conduct reasoning inside <think> and </think> "
@@ -137,7 +168,23 @@ def question_prompt(question, max_search_turns, variant="bounded"):
             .format(max_search_turns, question))
 
 
-def parse_action(text):
+def r1searcher_action(text):
+    """R1-Searcher's own rule (eval_search_loacl.py): the segment stops at "</answer>" or "<|end_of_query|>"; the answer is
+    the text after the last "<answer>", the query the text after the last "<|begin_of_query|>", with quotes, tabs and "..."
+    removed. An empty query or any other ending is not an action."""
+    if text.endswith("</answer>") and "<answer>" in text:
+        value = text.split("<answer>")[-1][:-len("</answer>")].strip()
+        return ("answer", value) if value else (None, None)
+    if text.endswith(R1S_QUERY_CLOSE) and R1S_QUERY_OPEN in text:
+        query = text.split(R1S_QUERY_OPEN)[-1][:-len(R1S_QUERY_CLOSE)]
+        query = query.replace('"', "").replace("'", "").replace("\t", " ").replace("...", "").strip()
+        return ("search", query) if query else (None, None)
+    return None, None
+
+
+def parse_action(text, variant="bounded"):
+    if FORMATS.get(variant, {}).get("action") == "r1searcher":
+        return r1searcher_action(text)
     matches = list(re.finditer(r"<(search|answer)>(.*?)</\1>", text, re.DOTALL))
     if len(matches) != 1 or not matches[0].group(2).strip():
         return None, None
@@ -183,7 +230,7 @@ def continue_record(record, generator, retriever, agent, retrieval, text, tokens
             record["steps"].append(step)
             text += generated["text"]
             tokens += generated["token_ids"]
-            kind, value = parse_action(generated["text"])
+            kind, value = parse_action(generated["text"], record_variant(record))
             if kind == "answer":
                 record["final_answer"], record["status"] = final_answer(value, record_variant(record)), "answered"
                 break

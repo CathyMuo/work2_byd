@@ -1,6 +1,6 @@
 # FAM1 预登记协议：主要结论能否推广到非 Qwen 底座
 
-登记：2026-11-12　分支：`feat/credit-testbed`　名单：`configs/fam1_agents.json`　脚本：`scripts/run_fam1.sh`（待实现）　分析：`work2/fam1.py`（待实现）
+登记：2026-11-12　分支：`feat/credit-testbed`　名单：`configs/fam1_agents.json`　脚本：`scripts/run_fam1.sh`　分析：`work2/fam1.py`　厂内指南：`docs/FAM1_FACTORY_GUIDE.md`（2026-11-13 实现，见第 11 节修订 1）
 起因：厂内反馈《审计对象是否要扩到非 Qwen2.5 / 更新的搜索智能体》（2026-11-11 17:54，厂内本地 HEAD c6975f3）。
 本文件在任何 FAM1 运行之前冻结。之后的任何改动都写成带日期的修订，放在文末，且必须在受影响的运行之前完成。
 
@@ -171,3 +171,59 @@ F4 的三选一（两种提示分别判定）：
 - 不重跑主表 14 个智能体；不改主表的任何数字。
 - 不做 AS2 的各项。
 - 不审 OpenResearcher、Qwen3 或其他 Qwen 族的新智能体。
+
+## 11. 修订 1（2026-11-13，任何 FAM1 运行之前；实现时发现的问题与细化）
+
+起因：厂内 2026-11-13 08:53 的反馈（9 个权重已就绪，脚本未实现）。本修订与实现一起提交；提交时还没有任何 FAM1 输出。
+
+### 11.1 Search-R1 检查点的提示词改为 `bounded`
+
+- 第 3 节要求这 8 个检查点的“提示词与主实验的 Search-R1 智能体逐字相同”。主表的 Search-R1 智能体用的是 `bounded` 提示词（FC1 决定，2026-10-23），名单里写的 `official` 与此矛盾。
+- 以第 3 节为准：名单（`configs/fam1_agents.json`）中这 8 个检查点改为 `bounded`。
+- `zs_llama32_3b` 仍沿用它在 U1x 中的 `official`。
+
+### 11.2 R1-Searcher 的格式（`r1searcher` 变体，`work2/rollout.py`）
+
+上游来源：`RUCAIBox/R1-Searcher` 的提交 `ad86a6692be0d7fc4445c77938c090349815e997`，文件 `evaluation/eval_search_loacl.py`（sha256 c313d59f…171b）。
+
+- **提示词**：取 `process_text` 中的 `base_prompt_v0`，即 README 中所有评测命令用的 `--prompt_type v0`。
+  - 用 ast 读出，不执行上游代码；sha256 `10e11a97…ed93` 写进 `tests/test_fam1.py`。
+  - 这是一段纯文本补全提示，以 “Assistant: <think>” 结尾。上游**不套 chat template**，因此即使 Llama-3.1-8B-Instruct 的分词器带 chat template，也直接使用原文；BOS 按上游 vLLM 的行为添加。
+- **停止符**：`<|end_of_query|>` 和 `</answer>`。其他变体的停止符不变。
+- **动作解析**：完全按上游规则。
+  - 片段以 `</answer>` 结尾时，取最后一个 `<answer>` 之后的文本作答案。
+  - 片段以 `<|end_of_query|>` 结尾时，取最后一个 `<|begin_of_query|>` 之后的文本作查询，并去掉引号、制表符和 “...”。
+  - 查询为空或片段以其他方式结束，都不算有效动作。
+- **观测**：`\n\n<|begin_of_documents|>\n(1)文档\n(2)文档\n(3)文档\n<|end_of_documents|>\n\n`，文档用语料原文。
+- **与上游的偏差**（如实记录）：
+  - 检索与轮数：E5 + Wiki-18、前 3 篇、最多 4 次检索；上游是 BGE + KILT、前 5 篇、最多 8 轮。
+  - 生成文本的处理：上游会去掉每段生成文本首尾的空白，并重新分词；我们与所有其他智能体一样，逐 token 保留生成内容。
+
+### 11.3 插入文本里的协议句
+
+- 各提示都以 “Use the original <search> or <answer> protocol.” 结尾。对 R1-Searcher，这句里的 `<search>` 换成它自己的查询标记 `<|begin_of_query|>`。
+- 填充文本按实际插入的文本做 token 等长匹配。
+- 其他所有变体的插入文本逐字节不变；有测试核对。
+
+### 11.4 运行细节
+
+- **复现控制**：FAM1 的全部运行都用 `--on-control-mismatch record`，与 AS1 / U1N / U1L 相同。超过 2%（`CONTROL_MISMATCH_MAX`）的智能体记为不可测量。
+- **插入有效性**：根据 H1 运行的结果计算（`work2/arm_diagnose.py`），所以实际顺序是：源轨迹 → H1 → 插入有效性 → AS1 → U1N。
+- **题集 E**：
+  - 种子 20261113，输出到 `outputs/fam1_e`。
+  - 排除范围：`outputs/` 下所有 `samples.jsonl`（包括冻结的 2,125 道题和此前所有题集），以及 AC1 / U1 的历史设计文件列表。
+  - 按 ID 和归一化文本双重排除；数据文件与 U1 冻结时用的本地文件相同。
+  - 运行结果放在 `outputs/u1/<标签>/{sources_e, pcr_e}`。
+- **smoke 运行**：允许，输出放在 `pcr_smoke`，不进入任何分析。
+
+### 11.5 分析细节（`work2/fam1.py`）
+
+- **Qwen 对照**：主表中 13 个 Qwen 智能体在冻结题集上的 H1 运行。
+- **自助法**：
+  - F1（运气差）、F4 中与 Qwen 的差、F8：对每题求和后做题目聚类自助法。按数据集分层，同一道题在两组中一起抽，共 2,000 次（与主表的单位和分层相同）。
+  - 其余区间沿用主表的 `boot`。
+- **F6**：只在冻结题集的 AS1 运行上计算（题集 E 不跑 AS1）。
+- **F4 判定规则**：
+  - 差的区间下界 > 0：判为“依赖模型族”。
+  - 否则，若非 Qwen 合并的区间上界 < 10 pp：判为“推广成立”。
+  - 其余情形：判为“不确定”。

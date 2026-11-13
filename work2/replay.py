@@ -50,7 +50,7 @@ def validate_prefix(source, turn, agent, retrieval, generator=None):
             raise ValueError("Source prefix token checksum mismatch")
         if prefix["sample_id"] != source["sample_id"] or prefix["search_turn"] != index + 1:
             raise ValueError("Source prefix ID/turn mismatch")
-        kind, query = parse_action(step["text"])
+        kind, query = parse_action(step["text"], variant)
         if kind != "search" or query != prefix["search_query"]:
             raise ValueError("Source prefix query does not match its emitted action")
         generated += len(step["token_ids"])

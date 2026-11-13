@@ -278,6 +278,14 @@ def deletion_plan(prefix, source, turn):
     return plan
 
 
+def protocol_text(text, variant):
+    """FAM1 amendment 1 (2026-11-13, before any FAM1 run): the inserted prompts end with "Use the original <search> or
+    <answer> protocol."; for an agent whose query tag is not <search> (R1-Searcher) that sentence names its own tag. Every
+    other variant gets the text unchanged, byte for byte. Fillers are token-matched to the text actually inserted."""
+    tag = FORMATS.get(variant, {}).get("search_tag")
+    return text.replace("<search>", tag) if tag else text
+
+
 def arm_spec(arm, prefix, source, turn, encode, deletion):
     """Return (documents, format variant, instruction, extra budget, metadata) or None."""
     if arm in SAMPLED_ARMS:  # AS2 experiment 3: the same branch as its greedy arm; only decoding differs (run_branch)
@@ -286,10 +294,11 @@ def arm_spec(arm, prefix, source, turn, encode, deletion):
     visible = copy.deepcopy(prefix["visible_documents"])
     perms = permutations_for(source["sample_id"], turn, len(visible))
     permuted = lambda k: [copy.deepcopy(visible[i]) for i in perms[k]]
-    review_tokens = len(encode(REVIEW_PROMPT))
+    tagged = lambda text: protocol_text(text, PROMPT_VARIANT_OF.get(source.get("prompt_version")))
+    review_tokens = len(encode(tagged(REVIEW_PROMPT)))
     # Each content prompt and the filler matched to it; "neutral" is the review-matched filler (H1 naming).
-    prompts = {"review": REVIEW_PROMPT, "reflect": REFLECT_PROMPT, "alert": ALERT_PROMPT,
-               "hint": HINT_TEMPLATE.format(gold_list(source["gold_answer"])[0])}
+    prompts = {"review": tagged(REVIEW_PROMPT), "reflect": tagged(REFLECT_PROMPT), "alert": tagged(ALERT_PROMPT),
+               "hint": tagged(HINT_TEMPLATE.format(gold_list(source["gold_answer"])[0]))}
     method_of = {"neutral": "review", "neutral_reflect": "reflect", "neutral_alert": "alert", "neutral_hint": "hint"}
     if arm in CONTROL_ARMS:
         return visible, "canonical", "", 0, {"family": "E0_control"}

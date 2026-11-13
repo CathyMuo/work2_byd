@@ -1,5 +1,8 @@
 """Local inference adapters; optional dependencies imported only at runtime."""
 STOP_STRINGS = ["</search>", "</answer>"]
+# FAM1 (2026-11-13): R1-Searcher stops at its query close tag (eval_search_loacl.py stop list; the Qwen end tokens in that
+# list never occur for Llama, whose EOS vLLM handles). Every other prompt variant keeps STOP_STRINGS.
+STOP_STRINGS_OF = {"r1searcher": ["<|end_of_query|>", "</answer>"]}
 # MR-Search (generation.py) strips the Qwen default system turn to build its retry user turn.
 QWEN_DEFAULT_SYSTEM_END = "You are a helpful assistant.<|im_end|>"
 
@@ -17,8 +20,13 @@ class TokenizerMixin:
             return self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
         if system is not None:
             raise ValueError("A system message needs a chat template")
-        # Without a chat template the upstream code calls tokenizer.encode(prompt), which prepends BOS for
-        # tokenizers such as Llama-3 (ZeroSearch inference.py); encode() here never adds special tokens.
+        return self.raw_prompt(text)
+
+    def raw_prompt(self, text):
+        """The prompt as plain text, without any chat template, plus BOS where the tokenizer would add it.
+
+        Without a chat template the upstream code calls tokenizer.encode(prompt) (ZeroSearch inference.py) or passes the string
+        to vLLM (R1-Searcher), which prepends BOS for tokenizers such as Llama-3; encode() here never adds special tokens."""
         bos = getattr(self.tokenizer, "bos_token", None)
         if bos and self.tokenizer.encode("x")[:1] == [self.tokenizer.bos_token_id] and not text.startswith(bos):
             return bos + text
@@ -43,10 +51,11 @@ class VLLMGenerator(TokenizerMixin):
                          max_model_len=agent["max_context_tokens"], seed=agent["seed"],
                          trust_remote_code=False)
         self.tokenizer = self.model.get_tokenizer()
+        self.stop_strings = STOP_STRINGS_OF.get(agent.get("prompt_variant"), STOP_STRINGS)
 
     def generate(self, tokens, max_tokens, seed):
         params = self.sampling_class(temperature=0.0, max_tokens=max_tokens, seed=seed,
-                                     stop=STOP_STRINGS, include_stop_str_in_output=True)
+                                     stop=self.stop_strings, include_stop_str_in_output=True)
         result = self.model.generate([{"prompt_token_ids": list(tokens)}], params,
                                      use_tqdm=False)[0].outputs[0]
         return {"text": result.text, "token_ids": list(result.token_ids),
@@ -59,7 +68,7 @@ class VLLMGenerator(TokenizerMixin):
     def sample_batch(self, prompts, max_tokens, seeds, temperature, top_p=1.0, stop=None):
         """One batched vLLM call; each request has its own seed (CT1 on-policy sampling)."""
         params = [self.sampling_class(temperature=temperature, top_p=top_p, max_tokens=m, seed=s,
-                                      stop=stop or STOP_STRINGS, include_stop_str_in_output=True)
+                                      stop=stop or self.stop_strings, include_stop_str_in_output=True)
                   for m, s in zip(max_tokens, seeds)]
         results = self.model.generate([{"prompt_token_ids": list(p)} for p in prompts], params, use_tqdm=False)
         return [{"text": r.outputs[0].text, "token_ids": list(r.outputs[0].token_ids),

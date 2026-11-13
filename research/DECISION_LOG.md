@@ -1615,3 +1615,28 @@ Decisions:
 4. Home implements: run_fam1.sh, the r1searcher prompt variant (verbatim via ast, tested), the E question selector and
    work2/fam1.py. The user downloads the nine checkpoints. The factory runs only after home pushes and announces the commit.
 5. Experiments freeze on 2026-12-12; writing until the 2027-01-04 ARR deadline.
+
+## 2026-11-13 — FAM1 implemented; amendment 1 before any run
+
+Factory report 2026-11-13 08:53 (local head 5e6a726, containing 1036b2c): the nine FAM1 checkpoints are downloaded and
+binary-checked (129.2 GB); none of the registered scripts existed. No FAM1 run has been made.
+
+Implemented (one commit, 223 tests pass on the home server):
+- scripts/run_fam1.sh (test | check | freeze-e | smoke | agent | e | all | summary | pack) and docs/FAM1_FACTORY_GUIDE.md.
+- work2/fam1.py: freeze-e (pool E, seed 20261113, excluded against every outputs/**/samples.jsonl and the historical design
+  files), fidelity (Search-R1 Table 3 / R1-Searcher Table 2 references), analyze (F1-F8, three versions, per agent).
+- r1searcher prompt variant: base_prompt_v0 read with ast from RUCAIBox/R1-Searcher ad86a669 (sha256 in tests), raw
+  completion prompt without chat template, stops at <|end_of_query|> / </answer>, upstream query cleaning, upstream
+  document block. Every other variant is byte-identical (STOP_STRINGS, parse_action and inserted texts unchanged; tests).
+- configs/{fidelity,pcr_u1,as1,u1n}_r1searcher.json.
+
+Amendment 1 (research/FAM1_PROTOCOL.md section 11), registered with the code and before any FAM1 output:
+1. The eight Search-R1 checkpoints use the bounded prompt of the main Search-R1 agents (section 3 required it verbatim; the
+   roster's "official" contradicted it).
+2. For R1-Searcher the inserted prompts' protocol sentence names its own query tag; fillers are matched to the text inserted.
+3. All FAM1 runs record control mismatches (as AS1/U1N/U1L); insertion validity comes from the H1 run.
+4. Contrasts with the Qwen pool and F1 use a joint question-cluster bootstrap on per-question sums (main-table unit and
+   strata); F6 on frozen AS1 only.
+
+Answers to the factory: local configs keep the existing schema; pool E goes to outputs/fam1_e; smoke runs are allowed and
+never analysed. Date gate of 2026-11-28 met for both r1s_l8b and pool E.
