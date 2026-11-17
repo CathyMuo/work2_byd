@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project": "work2_byd",
-  "updated_at": "2026-11-13",
-  "current_stage": "fam1_implemented_awaiting_factory_runs",
-  "status": "FAM1 implemented (run_fam1.sh, work2/fam1.py, r1searcher variant, pool E selector) with amendment 1 registered before any run; nine checkpoints downloaded by the factory. Main-table numbers frozen.",
-  "next_action": "Factory: write the nine local configs, test, check, freeze-e, smoke, then run_fam1.sh all and summary; return fam1.md/json, fidelity, pool E manifest and validity lines. Experiments freeze 2026-12-12.",
+  "updated_at": "2026-11-17",
+  "current_stage": "acl_revision_cpu_validation",
+  "status": "FAM1 completion and ACL revision CPU and blinded scoring summaries received from the factory. Final arm-local raw EM tables and audit verification pending.",
+  "next_action": "Factory: use docs/ACL_MAIN_REVISION_SCORING_FOLLOWUP.md to return verified raw EM, scoring audit and matched sensitivity tables from saved runs. Home: update manuscript after verifying the tables.",
   "execution_environment": "User-managed existing Search-R1 environment on 4×H800; recommended checklist only, no developer provisioning.",
   "experiment_results": [
     {

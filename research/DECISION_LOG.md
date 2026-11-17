@@ -1640,3 +1640,8 @@ Amendment 1 (research/FAM1_PROTOCOL.md section 11), registered with the code and
 
 Answers to the factory: local configs keep the existing schema; pool E goes to outputs/fam1_e; smoke runs are allowed and
 never analysed. Date gate of 2026-11-28 met for both r1s_l8b and pool E.
+
+
+## 2026-11-17 — ACL revision scoring verification and CPU follow-up
+
+Factory completion and independent score-audit summaries were received. The legacy format heuristic can copy clean EM onto another branch even when that branch matches a gold alias. The revised manuscript will foreground independent normalized exact match for each arm. Preserve the registered scoring and its outcomes, report the change as post-registration, and use the existing blinded labels to validate the measurement. Use fixed-panel leave-one-checkpoint-out and same-question, recipe-matched comparisons to qualify model-family claims. Complete the CPU checks before updating the manuscript figures. See [the follow-up guide](../docs/ACL_MAIN_REVISION_SCORING_FOLLOWUP.md).
